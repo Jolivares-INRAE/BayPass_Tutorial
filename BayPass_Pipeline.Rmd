@@ -3,13 +3,15 @@ author: "Jérôme OLIVARES"
 date: "Février 2021"
 output:
   github_document:
-    fig_width: 5
-    fig_height: 5
+    fig_width: 10
+    fig_height: 10
     dev: jpeg
+  
+editor_options: 
+  chunk_output_type: inline
 ---
 
 #Prérequis:
-
 
 Les analyses BayPass se font à partir d'un fichier VCF, obtenu selon le process suivant:
 Fastqc 
@@ -21,25 +23,22 @@ Fastqc
     -Samtools mpileup BamFile1, BamFile2... -> pileupFile -> Varscan-> VCF
 
 Pour extraire d'un fichier BAM/BAI les nom de chromosomes avec leur start/end:
-samtools view -H /home/msiegwart/work/BamFile/RAZpop.bam | awk '{if($1~/@SQ/){print $2"\t1\t"$3}}' | sed 's/[SL]N://g' > Chr_list.bed
+samtools view -H ~/work/BamFile/RAZpop.bam | awk '{if($1~/@SQ/){print $2"\t1\t"$3}}' | sed 's/[SL]N://g' > Chr_list.bed
 Regroupement de plusieurs BAM dans un fichier mpileup et extraction des variants avec Varscan dans un VCF:
-  
-editor_options: 
-  chunk_output_type: inline
+
 
 #installation des libraries
-
-```{r}
+```{r, Install-packages}
 install.packages(c("poolfstat"))
 install.packages(c("ggplot2"))
+install.packages(c("RColorBrewer"))
+BiocManager::install("mixOmics")
 
 install.packages(c("gridextra"))
 install.packages(c("reshape2"))
-install.packages(c("RColorBrewer"))
 install.packages(c("BiocManager"))
 install.packages(c("mvtnorm"))
 install.packages(c("geigen"))
-BiocManager::install("mixOmics")
 BiocManager::install("edgeR")
 install.packages(c("corrplot"))
 nstall.packages(c("ape"))
@@ -48,9 +47,9 @@ install.packages("qqman")
 install.packages(c("nVennR"))
 install.packages(c("dplyr"))
 ```
-#chargement des libraries
 
-```{r loadPackages, message=FALSE, warning=FALSE}
+#chargement des libraries
+```{r load-Packages, message=FALSE, warning=FALSE}
 library(poolfstat)
 library(ggplot2)
 library(RColorBrewer)
@@ -88,7 +87,7 @@ ex:
 0.1 0.8 -1.15 1.6 0.02 -0.5
 
 
-```{r}
+```{r Info-pops}
 #pnames <- as.character(c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')) #GWAS 15 pops
 #psizes <- as.numeric(c('150', '180', '24', '114', '160', '184', '194', '74', '80', '54', '180', '72', '44', '200', '200')) #GWAS 15 pops
 
