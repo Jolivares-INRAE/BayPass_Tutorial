@@ -10,6 +10,9 @@ output:
       collapsed: no
     self_contained: yes
 
+toto
+
+
 
 Les analyses BayPass se font à partir d'un fichier VCF, obtenu selon le process suivant:
 -Fastqc 
@@ -19,6 +22,7 @@ Les analyses BayPass se font à partir d'un fichier VCF, obtenu selon le process
 -variant calling = 2 stratégies :
     -GATK 1bam/pop -> GVCF -> regroupement GVCF et conversion en VCF
     -Samtools mpileup BamFile1, BamFile2... -> pileupFile -> Varscan-> VCF
+
 Pour extraire d'un fichier BAM/BAI les nom de chromosomes avec leur start/end:
 samtools view -H /home/msiegwart/work/BamFile/RAZpop.bam | awk '{if($1~/@SQ/){print $2"\t1\t"$3}}' | sed 's/[SL]N://g' > Chr_list.bed
 Regroupement de plusieurs BAM dans un fichier mpileup et extraction des variants avec Varscan dans un VCF:
