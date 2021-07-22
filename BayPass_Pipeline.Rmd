@@ -2,20 +2,17 @@
 author: "Jérôme OLIVARES"
 date: "Février 2021"
 output:
-  html_document:
-    numbered_sections: yes
-    theme: journal
-    toc: yes
-    toc_float:
-      collapsed: no
-    self_contained: yes
+  github_document:
+    fig_width: 5
+    fig_height: 5
+    dev: jpeg
+---
 
-toto
-
+#Prérequis:
 
 
 Les analyses BayPass se font à partir d'un fichier VCF, obtenu selon le process suivant:
--Fastqc 
+Fastqc 
 -Trimgalore
 -BWA-mem
 -Remove duplicates
@@ -29,7 +26,7 @@ Regroupement de plusieurs BAM dans un fichier mpileup et extraction des variants
   
 editor_options: 
   chunk_output_type: inline
----
+
 #installation des libraries
 
 ```{r}
