@@ -9,6 +9,8 @@ output:
     toc_float:
       collapsed: no
     self_contained: yes
+
+
 Les analyses BayPass se font à partir d'un fichier VCF, obtenu selon le process suivant:
 -Fastqc 
 -Trimgalore
