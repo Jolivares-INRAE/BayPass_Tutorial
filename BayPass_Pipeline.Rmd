@@ -65,8 +65,6 @@ library(mixOmics)
 #library(xfun)
 #library(readr)
 #library(VennDiagram)
-
-
 ```
 
 # Infos sur les pops
@@ -74,11 +72,11 @@ library(mixOmics)
 Lister le nom des pops dans un objet "pnames". (à piocher dans le VCF: grep -w '^CHROM' FILE.vcf)
 Lister les tailles haploides de chaque pop (2x nbr individus) dans un objet "psizes"
 
-créer un fichier texte "contraste" dans lequel on identifie sur une ligne l'appartenance de chaque pop à un groupe référence (-1), mutant (1) ou aucun groupe (0).
+créer un fichier texte/tabulation "contraste" dans lequel on identifie sur une ligne l'appartenance de chaque pop à un groupe référence (-1), mutant (1) ou aucun groupe (0).
 ex:
 1 -1 0 0 -1 1
 
-Créer un fichier texte "ecotype" dans lequel on identifie une variable écologique pour chaque pop (une variable par ligne, plusieurs lignes possibles).
+Créer un fichier texte/tabulation "ecotype" dans lequel on identifie une variable écologique pour chaque pop (une variable par ligne, plusieurs lignes possibles).
 Uniquement des valeurs numériques de préférence en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des variables géographiques pourront êtres remplacées par une latitude ou une longitude.
 ex:
 150 1500 800 300 200 2500
@@ -91,47 +89,54 @@ ex:
 #pnames <- as.character(c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')) #GWAS 15 pops
 #psizes <- as.numeric(c('150', '180', '24', '114', '160', '184', '194', '74', '80', '54', '180', '72', '44', '200', '200')) #GWAS 15 pops
 
-
+#pnames <- as.character(c('RGV2021', 'SV2021'))
+pnames <- as.character(c('17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R')) #GWAS 5 pops
+#psizes <- as.numeric(c('200', '200'))
+psizes <- as.numeric(c('180', '24', '114', '160', '184')) #GWAS 5 pops
 #création du fichier contraste, si plusieurs lignes c'est plus facile de faire avec Excel et exporter en texte/tabulation
 #pcontrast <-read.table(text = "-1 1 -1 -1 1 -1 1 1 1 1 -1 1 -1 1 -1") #GWAS 15 pops full
 pcontrast <-read.table("C:/Bioinfo/Analyses_R/poolfstat/VCF/contraste")
 pecotype <-read.table("C:/Bioinfo/Analyses_R/poolfstat/VCF/ecotype")
 
 ```
-#conversion of VCF to pooldata
+#conversion du fichier VCF en objet pooldata
 
 Le fichier doit être ".vcf" ou zippé ".vcf.gz"
+
 min.rc =  the minimum reads that an allele needs to have (across all pools) to be called 
 min.cov.per.pool = the minimum allowed read count per pool for SNP to be called
 max.cov.per.pool = the maximum read count per pool for SNP to be called 
 min.maf = the minimum allele frequency (over all pools) for a SNP to be called (note this is obtained from dividing the read counts for the minor allele over the total read coverage) 
 nlines.per.readblock = number of lines in sync file to be read simultaneously 
-```{r}
-#pnames <- as.character(c('RGV2021', 'SV2021'))
-pnames <- as.character(c('17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R')) #GWAS 5 pops
-#psizes <- as.numeric(c('200', '200'))
-psizes <- as.numeric(c('180', '24', '114', '160', '184')) #GWAS 5 pops
-GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/Old/GWAS2018_5POPS_chr10-19_Varscan.vcf.gz", poolsizes = psizes, poolnames = pnames,
-                              min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+```{r conversion-pooldata}
+GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/Old/GWAS2018_5POPS_chr10-19_Varscan.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
-#Computing and plotting multi-locus FST to scan the genome over sliding-windows of SNPs
-```{r fig.width=20, fig.height=20}
+#Analyses préliminaires
+A partir de cet objet pooldata on faire une première analyse des Fst.
+On peut par exemple analyser des Fst multi-locus (ou multi-snp) en fenêtre glissante le long des chromosomes/scaffold/contig afin de détecter des régions génomiques qui seraient visiblement très différenciées entre les populations (outliers)
+On peut aussi analyser ces Fst entre les populations 2 à 2 (pairwise) afin de déterminer des liens de "parentés" entre populations.
+D'autres outils sont décrits et exemplifiés dans la vignette de PoolFstat (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf)
+
+
+Calcul et graphe des Fst multi-locus en balayant le genome avec une fenetre glissante de snp consécutifs.
+```{r plot-sliding-Fst, fig.width=20, fig.height=20}
+#calcul des Fst avec une fenetre glissante de 100 snp
 Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
-#conversion in data frame objet
+#conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
 df.fst
 #plot en wrap / the treshold line indicates the estimated overall genome-wide FST
 WrapPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
-WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=1) + facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
+WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
 #plot en grid / the treshold line indicates the estimated overall genome-wide FST
 GridPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
-GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Multi.Loc.fst$FST,lty=1) + facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
+GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
 
 ```
 
-#Computing and heatmap of pairwise population FST
-```{r heatmap, fig.width=20, fig.height=20}
-###Calcul des pairwise fst 
+Calcul et heatmap des Fst entre population (pairwise)
+```{r heatmap-PW-fst, fig.width=20, fig.height=20}
+###Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.01, output.snp.values = FALSE)
 ###heatmap
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
