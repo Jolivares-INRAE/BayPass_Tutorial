@@ -12,19 +12,9 @@ editor_options:
 ---
 
 #Prérequis:
-
-Les analyses BayPass se font à partir d'un fichier VCF, obtenu selon le process suivant:
-Fastqc 
--Trimgalore
--BWA-mem
--Remove duplicates
--variant calling = 2 stratégies :
-    -GATK 1bam/pop -> GVCF -> regroupement GVCF et conversion en VCF
-    -Samtools mpileup BamFile1, BamFile2... -> pileupFile -> Varscan-> VCF
-
-Pour extraire d'un fichier BAM/BAI les nom de chromosomes avec leur start/end:
-samtools view -H ~/work/BamFile/RAZpop.bam | awk '{if($1~/@SQ/){print $2"\t1\t"$3}}' | sed 's/[SL]N://g' > Chr_list.bed
-Regroupement de plusieurs BAM dans un fichier mpileup et extraction des variants avec Varscan dans un VCF:
+L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul. Les commandes décrites dans cet article ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec tous les packages nécessaires à jour.
+Les lignes de commandes et scripts sous Linux ont été développées dans l’environnement bash et SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
+Bien que l’essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur.
 
 
 #installation des libraries
@@ -38,14 +28,6 @@ install.packages(c("mvtnorm"))
 install.packages(c("geigen"))
 install.packages(c("corrplot"))
 nstall.packages(c("ape"))
-
-#install.packages(c("gridextra"))
-#install.packages(c("reshape2"))
-#BiocManager::install("edgeR")
-#install.packages(c("xfun"))
-#install.packages("qqman")
-#install.packages(c("nVennR"))
-#install.packages(c("dplyr"))
 ```
 
 #chargement des libraries
@@ -58,20 +40,36 @@ library(mvtnorm)
 library(geigen)
 library(corrplot)
 library(ape)
-
-#library(gplots)
-#library(gridExtra) # utile?
-#library(reshape2)
-#library(edgeR)
-#library(xfun)
-#library(readr)
-#library(VennDiagram)
 ```
+Nous recommandons pour le variant calling l’utilisation des Samtools et de Varscan avec les paramètres de base, sauf la p-value qui est montée à 0.8 pour être le moins stringent possible. 
+Ce variant calling s'effectue sur le cluster de calcul avec le script suivant:
+
+------SCRIPT START------
+#!/bin/bash
+#SBATCH --cpus-per-task=1
+
+module load bioinfo/samtools-1.9
+module load bioinfo/VarScan-2.4.2
+
+ls -1 ~/chemin/*.bam > BamList.txt
+ls ~/chemin/*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt
+
+samtools mpileup -C 50 -d 5000 -q 20 -l ~/chemin/chr1.bed -f ~/chemin/reference.fas  -b BamList.txt | java -Xmx2G -jar /usr/local/bioinfo/src/VarScan/VarScan-2.4.2/VarScan.v2.4.2.jar mpileup2cns --variants --min-coverage 3 --min-avg-qual 20 --min-var-freq 0.001 --p-value 0.8 --output-vcf 1 --vcf-sample-list NameList.txt > ~/chemin/Poolseq.vcf
+
+rm BamList.txt
+rm NameList.txt
+
+module unload bioinfo/samtools-1.9
+module unload bioinfo/VarScan-2.4.2
+------SCRIPT END------
+
+IMPORTANT : 
+Il est indispensable de travailler sur des fichiers .bam correctement indexés idéalement avec Samtools.
+Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part en bornant le variant calling avec un fichier .bed comme dans l'exemple ci-dessus.
 
 # Infos sur les pops
-
 Lister le nom des pops dans un objet "pnames". (à piocher dans le VCF: grep -w '^CHROM' FILE.vcf)
-Lister les tailles haploides de chaque pop (2x nbr individus) dans un objet "psizes"
+Lister les tailles haploïdes de chaque pop (2x nbr individus pour les diploïdes) dans un objet "psizes"
 
 créer un fichier texte/tabulation "contraste" dans lequel on identifie sur une ligne l'appartenance de chaque pop à un groupe référence (-1), mutant (1) ou aucun groupe (0).
 ex:
@@ -85,20 +83,11 @@ ex:
 1 1 0 0 1 1
 0.1 0.8 -1.15 1.6 0.02 -0.5
 
-
+#création des objets contenant les informations des populations
 ```{r Info-pops}
-#pnames <- as.character(c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')) #GWAS 15 pops
-#psizes <- as.numeric(c('150', '180', '24', '114', '160', '184', '194', '74', '80', '54', '180', '72', '44', '200', '200')) #GWAS 15 pops
-
-#pnames <- as.character(c('RGV2021', 'SV2021'))
-pnames <- as.character(c('17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R')) #GWAS 5 pops
-#psizes <- as.numeric(c('200', '200'))
-psizes <- as.numeric(c('180', '24', '114', '160', '184')) #GWAS 5 pops
-#création du fichier contraste, si plusieurs lignes c'est plus facile de faire avec Excel et exporter en texte/tabulation
-#pcontrast <-read.table(text = "-1 1 -1 -1 1 -1 1 1 1 1 -1 1 -1 1 -1") #GWAS 15 pops full
+pnames <- as.character(c('17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R')) psizes <- as.numeric(c('180', '124', '114', '160', '184')) 
 pcontrast <-read.table("C:/Bioinfo/Analyses_R/poolfstat/VCF/contraste")
 pecotype <-read.table("C:/Bioinfo/Analyses_R/poolfstat/VCF/ecotype")
-
 ```
 #conversion du fichier VCF en objet pooldata
 
