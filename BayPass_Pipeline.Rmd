@@ -16,8 +16,7 @@ L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et êtr
 Les lignes de commandes et scripts sous Linux ont été développées dans l’environnement bash et SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
 Bien que l’essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur.
 
-
-#installation des libraries
+#installation des librairies
 ```{r, Install-packages}
 install.packages(c("poolfstat"))
 install.packages(c("ggplot2"))
@@ -27,10 +26,10 @@ BiocManager::install("mixOmics")
 install.packages(c("mvtnorm"))
 install.packages(c("geigen"))
 install.packages(c("corrplot"))
-nstall.packages(c("ape"))
+install.packages(c("ape"))
 ```
 
-#chargement des libraries
+#chargement des librairies
 ```{r load-Packages, message=FALSE, warning=FALSE}
 library(poolfstat)
 library(ggplot2)
@@ -41,12 +40,13 @@ library(geigen)
 library(corrplot)
 library(ape)
 ```
-Nous recommandons pour le variant calling l’utilisation des Samtools et de Varscan avec les paramètres de base, sauf la p-value qui est montée à 0.8 pour être le moins stringent possible. 
+L’utilisation des Samtools et de Varscan est recommandé pour le variant calling, avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible. 
 Ce variant calling s'effectue sur le cluster de calcul avec le script suivant:
 
 ------SCRIPT START------
 #!/bin/bash
 #SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4G
 
 module load bioinfo/samtools-1.9
 module load bioinfo/VarScan-2.4.2
@@ -54,7 +54,7 @@ module load bioinfo/VarScan-2.4.2
 ls -1 ~/chemin/*.bam > BamList.txt
 ls ~/chemin/*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt
 
-samtools mpileup -C 50 -d 5000 -q 20 -l ~/chemin/chr1.bed -f ~/chemin/reference.fas  -b BamList.txt | java -Xmx2G -jar /usr/local/bioinfo/src/VarScan/VarScan-2.4.2/VarScan.v2.4.2.jar mpileup2cns --variants --min-coverage 3 --min-avg-qual 20 --min-var-freq 0.001 --p-value 0.8 --output-vcf 1 --vcf-sample-list NameList.txt > ~/chemin/Poolseq.vcf
+samtools mpileup -C 50 -d 5000 -q 20 -l ~/chemin/chr1.bed -f ~/chemin/reference.fas  -b BamList.txt | java -Xmx4G -jar $VARSCAN mpileup2cns --variants --min-coverage 3 --min-avg-qual 20 --min-var-freq 0.001 --p-value 0.8 --output-vcf 1 --vcf-sample-list NameList.txt > ~/chemin/Poolseq.vcf
 
 rm BamList.txt
 rm NameList.txt
@@ -67,37 +67,33 @@ IMPORTANT :
 Il est indispensable de travailler sur des fichiers .bam correctement indexés idéalement avec Samtools.
 Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part en bornant le variant calling avec un fichier .bed comme dans l'exemple ci-dessus.
 
-# Infos sur les pops
-Lister le nom des pops dans un objet "pnames". (à piocher dans le VCF: grep -w '^CHROM' FILE.vcf)
-Lister les tailles haploïdes de chaque pop (2x nbr individus pour les diploïdes) dans un objet "psizes"
-
-créer un fichier texte/tabulation "contraste" dans lequel on identifie sur une ligne l'appartenance de chaque pop à un groupe référence (-1), mutant (1) ou aucun groupe (0).
+#création des objets contenant les informations des populations
+Lister le nom des populations dans le même ordre que ce qu’elles sont dans le fichier .vcf dans un objet "pnames".
+Lister les tailles haploïdes de chaque population (2x nbr individus pour les diploïdes) dans un objet "psizes"
+créer un fichier texte/tabulation "contraste.txt" dans lequel on identifie sur une ligne l'appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun groupe (0).
 ex:
 1 -1 0 0 -1 1
 
-Créer un fichier texte/tabulation "ecotype" dans lequel on identifie une variable écologique pour chaque pop (une variable par ligne, plusieurs lignes possibles).
-Uniquement des valeurs numériques de préférence en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des variables géographiques pourront êtres remplacées par une latitude ou une longitude.
+Créer un fichier texte/tabulation "ecotype.txt" dans lequel on identifie une variable écologique pour chaque population (une variable par ligne, plusieurs lignes possibles).
+Uniquement des valeurs numériques en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des variables géographiques pourront être remplacées par une latitude ou une longitude.
 ex:
 150 1500 800 300 200 2500
 181.5 172.6 152.3 191.8 154.2 166.8
 1 1 0 0 1 1
 0.1 0.8 -1.15 1.6 0.02 -0.5
 
-#création des objets contenant les informations des populations
 ```{r Info-pops}
-pnames <- as.character(c('17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R')) psizes <- as.numeric(c('180', '124', '114', '160', '184')) 
-pcontrast <-read.table("C:/Bioinfo/Analyses_R/poolfstat/VCF/contraste")
-pecotype <-read.table("C:/Bioinfo/Analyses_R/poolfstat/VCF/ecotype")
+pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05'))
+psizes <- as.numeric(c('180', '124', '114', '160', '184')) 
+pcontrast <-read.table("C:/Bioinfo/Analyses_R/poolfstat/contraste.txt")
+pecotype <-read.table("C:/Bioinfo/Analyses_R/poolfstat/ecotype.txt")
 ```
 #conversion du fichier VCF en objet pooldata
-
-Le fichier doit être ".vcf" ou zippé ".vcf.gz"
-
-min.rc =  the minimum reads that an allele needs to have (across all pools) to be called 
-min.cov.per.pool = the minimum allowed read count per pool for SNP to be called
-max.cov.per.pool = the maximum read count per pool for SNP to be called 
-min.maf = the minimum allele frequency (over all pools) for a SNP to be called (note this is obtained from dividing the read counts for the minor allele over the total read coverage) 
-nlines.per.readblock = number of lines in sync file to be read simultaneously 
+Le fichier doit être ".vcf" ou gzippé ".vcf.gz"
+min.rc =  minimum de reads qu'un allèle doit avoir (dans tous les pools) pour être retenu 
+min.cov.per.pool = minimum de reads autorisées par pool pour que SNP soit retenu.
+max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit retenu.
+min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
 ```{r conversion-pooldata}
 GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/Old/GWAS2018_5POPS_chr10-19_Varscan.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
@@ -107,34 +103,33 @@ On peut par exemple analyser des Fst multi-locus (ou multi-snp) en fenêtre glis
 On peut aussi analyser ces Fst entre les populations 2 à 2 (pairwise) afin de déterminer des liens de "parentés" entre populations.
 D'autres outils sont décrits et exemplifiés dans la vignette de PoolFstat (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf)
 
-
-Calcul et graphe des Fst multi-locus en balayant le genome avec une fenetre glissante de snp consécutifs.
-```{r plot-sliding-Fst, fig.width=20, fig.height=20}
-#calcul des Fst avec une fenetre glissante de 100 snp
-Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
-#conversion en objet data frame
-df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
-df.fst
-#plot en wrap / the treshold line indicates the estimated overall genome-wide FST
-WrapPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
-WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
-#plot en grid / the treshold line indicates the estimated overall genome-wide FST
-GridPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
-GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
-
-```
-
-Calcul et heatmap des Fst entre population (pairwise)
-```{r heatmap-PW-fst, fig.width=20, fig.height=20}
+#Calcul et heatmap des Fst entre population (pairwise)
+```{r heatmap-PW-fst, fig.width=10, fig.height=10}
 ###Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.01, output.snp.values = FALSE)
 ###heatmap
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
 df
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(25)
-cim(df, color = cim_color, symkey = FALSE, margins = c(15, 15), title = "Genome wide Pairwise FST heatmap between populations")
+cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Genome wide Pairwise FST heatmap between populations")
+```
+Calcul et graphe des Fst multi-locus en balayant le genome avec une fenetre glissante de snp consécutifs.
+```{r plot-sliding-Fst, fig.width=20, fig.height=10}
+#calcul des Fst avec une fenetre glissante de 100 snp
+Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
+#conversion en objet data frame
+df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
+df.fst
+#plot en facet wrap / la ligne de seuil indique le Fst global estimé à l'échelle du génome.
+WrapPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
+WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
+#plot en facet grid / la ligne de seuil indique le Fst global estimé à l'échelle du génome
+GridPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
+GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
 
 ```
+
+
 #Conversion du pooldata en Input files pour BayPass
 
 On récupère un fichier genobaypass, snpdet et poolsize.
