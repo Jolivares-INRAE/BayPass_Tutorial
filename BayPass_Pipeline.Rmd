@@ -99,11 +99,11 @@ GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/Ol
 ```
 #Analyses préliminaires
 A partir de cet objet pooldata on faire une première analyse des Fst.
-On peut par exemple analyser des Fst multi-locus (ou multi-snp) en fenêtre glissante le long des chromosomes/scaffold/contig afin de détecter des régions génomiques qui seraient visiblement très différenciées entre les populations (outliers)
-On peut aussi analyser ces Fst entre les populations 2 à 2 (pairwise) afin de déterminer des liens de "parentés" entre populations.
-D'autres outils sont décrits et exemplifiés dans la vignette de PoolFstat (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf)
+Des outils sont décrits et exemplifiés dans la vignette de PoolFstat : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf)
+On peut analyser ces Fst entre les populations deux à deux (pairwise) afin de déterminer et visualiser les différentiations génétiques entre populations.
+On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
 
-#Calcul et heatmap des Fst entre population (pairwise)
+#Calcul et heatmap des Fst entre population (pairwise):
 ```{r heatmap-PW-fst, fig.width=10, fig.height=10}
 ###Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.01, output.snp.values = FALSE)
@@ -113,31 +113,27 @@ df
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(25)
 cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Genome wide Pairwise FST heatmap between populations")
 ```
-Calcul et graphe des Fst multi-locus en balayant le genome avec une fenetre glissante de snp consécutifs.
+#Calcul et plot des Fst en fenêtre glissante:
 ```{r plot-sliding-Fst, fig.width=20, fig.height=10}
-#calcul des Fst avec une fenetre glissante de 100 snp
+#calcul des Fst avec une fenêtre glissante de 100 SNP ("sliding.window.size")
 Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
 #conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
 df.fst
-#plot en facet wrap / la ligne de seuil indique le Fst global estimé à l'échelle du génome.
+#plot en facet wrap / la ligne de seuil indique la Fst globale estimée à l'échelle du génome.
 WrapPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
 WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
-#plot en facet grid / la ligne de seuil indique le Fst global estimé à l'échelle du génome
+#plot en facet grid / la ligne de seuil indique la Fst globale estimée à l'échelle du génome
 GridPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
 GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
-
 ```
-
-
-#Conversion du pooldata en Input files pour BayPass
-
-On récupère un fichier genobaypass, snpdet et poolsize.
+#Conversion du pooldata en fichiers d'entrées pour BayPass
 ```{r}
-pooldata2genobaypass(GWAS.pooldata, writing.dir = "C:/Bioinfo/Analyses_R/poolfstat/Resultats/GWAS15pops/chr16/", subsamplesize = -1, subsamplingmethod = "thinning")
+pooldata2genobaypass(GWAS.pooldata, writing.dir = "~/chemin/", subsamplesize = -1, subsamplingmethod = "thinning")
 ```
-#Transfert des données sur le cluster de calcul
+On récupère un fichier genobaypass qui contient les données brutes de génotypage, un fichier snpdet qui contient la liste des positions correspondantes et des fichiers poolsize, ecotype, contraste qui sont des copies des objets psizes, pecotype et pcontrast.
 
+#Transfert des données sur le cluster de calcul
 Copier les sorties genobaypass, snpdet, poolsize et les fichiers contraste et ecotype sur votre espace "~/work/baypass/Input/" du Genotoul.
 Passer tous les fichiers à la commande dos2unix:
 dos2unix ~/work/baypass/Input/*
