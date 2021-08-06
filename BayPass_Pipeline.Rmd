@@ -67,34 +67,19 @@ IMPORTANT :
 Il est indispensable de travailler sur des fichiers .bam correctement indexés idéalement avec Samtools.
 Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part en bornant le variant calling avec un fichier .bed comme dans l'exemple ci-dessus.
 
-#création des objets contenant les informations des populations
-Lister le nom des populations dans le même ordre que ce qu’elles sont dans le fichier .vcf dans un objet "pnames".
-Lister les tailles haploïdes de chaque population (2x nbr individus pour les diploïdes) dans un objet "psizes"
-créer un fichier texte/tabulation "contraste.txt" dans lequel on identifie sur une ligne l'appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun groupe (0).
-ex:
-1 -1 0 0 -1 1
-
-Créer un fichier texte/tabulation "ecotype.txt" dans lequel on identifie une variable écologique pour chaque population (une variable par ligne, plusieurs lignes possibles).
-Uniquement des valeurs numériques en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des variables géographiques pourront être remplacées par une latitude ou une longitude.
-ex:
-150 1500 800 300 200 2500
-181.5 172.6 152.3 191.8 154.2 166.8
-1 1 0 0 1 1
-0.1 0.8 -1.15 1.6 0.02 -0.5
-
-```{r Info-pops}
-pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05'))
-psizes <- as.numeric(c('180', '124', '114', '160', '184')) 
-pcontrast <-read.table("C:/Bioinfo/Analyses_R/poolfstat/contraste.txt")
-pecotype <-read.table("C:/Bioinfo/Analyses_R/poolfstat/ecotype.txt")
-```
 #conversion du fichier VCF en objet pooldata
-Le fichier doit être ".vcf" ou gzippé ".vcf.gz"
+Lister le nom des populations dans le même ordre que celui du fichier .vcf dans un objet "pnames".
+Lister les tailles haploïdes de chaque population (2x nbr individus pour les diploïdes) dans un objet "psizes"
+Le fichier doit être ".vcf" ou compressé au format gzip ".vcf.gz"
 min.rc =  minimum de reads qu'un allèle doit avoir (dans tous les pools) pour être retenu 
 min.cov.per.pool = minimum de reads autorisées par pool pour que SNP soit retenu.
 max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit retenu.
 min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
 ```{r conversion-pooldata}
+#Infos sur les pops
+pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05'))
+psizes <- as.numeric(c('180', '124', '114', '160', '184')) 
+#conversion du .vcf
 GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/Old/GWAS2018_5POPS_chr10-19_Varscan.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
 #Analyses préliminaires
@@ -131,202 +116,99 @@ GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=elem
 ```{r}
 pooldata2genobaypass(GWAS.pooldata, writing.dir = "~/chemin/", subsamplesize = -1, subsamplingmethod = "thinning")
 ```
-On récupère un fichier genobaypass qui contient les données brutes de génotypage, un fichier snpdet qui contient la liste des positions correspondantes et des fichiers poolsize, ecotype, contraste qui sont des copies des objets psizes, pecotype et pcontrast.
+On récupère un fichier genobaypass qui contient les données brutes de génotypage, un fichier snpdet qui contient la liste des positions correspondantes et un fichier poolsize, qui est une copie de l'objet psizes.
 
-#Transfert des données sur le cluster de calcul
-Copier les sorties genobaypass, snpdet, poolsize et les fichiers contraste et ecotype sur votre espace "~/work/baypass/Input/" du Genotoul.
-Passer tous les fichiers à la commande dos2unix:
-dos2unix ~/work/baypass/Input/*
+#Design de l’analyse BayPass
+Deux fichiers de paramétrages au format texte/tabulation doivent être créés :
+Le premier fichier ecotype.txt identifie les covariables écologiques de chaque population, avec une covariable par ligne et autant de lignes que nécessaire. Seules sont acceptées les valeurs numériques de préférence en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des noms de villes pourront être remplacées par une latitude ou une longitude. L’exemple suivant donne la structure d’un fichier pour 3 covariables (latitude/longitude/année) et 5 populations :
 
+4.75	0.53	0.27	-0.86	-0.61
+43.90	44.37	44.29	47.36	47.86
+2019	2017	2017	2017	2018
 
-#Subsampling des données
-Les temps de calculs augmentent exponentiellement avec le nombre de snp il est donc préférable de subdiviser les données en 10 jeux de données indépendants, cela permet aussi de casser les déséquilibre de liaisons entre snp.
-On pourrait utiliser l'option subsamplingmethod = "thinning" pour faire ce subsampling mais ça buggue systématiquement:le dernier subset n'est pas exporté.
-Du coup on le fait pour les fichier genobaypass et snpdet sous Bash avec la commande sed.
-On récupère 1 ligne sur 10 dans l'exemple ci-dessous.
+Le deuxième fichier contraste.txt identifie l’appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste. L’exemple suivant donne la structure d’un fichier pour 3 analyses de contraste : 
 
-for i in {1..20}; do sed -n "$i~20p" genobaypass > genobaypass.sub$i; done 
-for i in {1..20}; do sed -n "$i~20p" snpdet > snpdet.sub$i; done
+1	1	-1	-1	-1
+1	0	0	-1	-1
+0	1	-1	-1	0
 
-On éxécute alors le script suivant en allouant 4 cores et 8Go de Ram par core à chaque fichier du subset avec un array de 0 à n subset.
-Les chemins sont à adapter à votre environnement de travail, les résultats seront copiés dans le dossier contenant le script.
+1ere ligne = pop 1 et 2 VS pop 3, 4 et 5
+2e ligne = pop 1 VS pop 4 et 5
+3e ligne = pop 2 VS pop 3 et 4.
 
-#méthode de base = Core Model
-Le Core Model de BayPass permet une analyse simple de la différentiation XtX des SNPs entre populations:
+Ces fichiers seront aussi transférés sur le cluster de calcul.
 
+IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) il est très fortement conseillé de multiplier les analyses de contraste ou de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d’entre elles. 
 
---- script begins here ---
+#Copie, subdivision des données et temps de calculs
+Copier les fichiers genobaypass, snpdet, poolsize et les fichiers contraste.txt et ecotype.txt sur le cluster de calcul. Afin d’éviter d’éventuels problèmes de format les fichiers .txt sont passé à la commande dos2unix
+La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec la commande sed.
+Exemple pour 100 sous jeux:
+
+for i in {1..26}; do sed -n "$i~26p" genobaypass > genobaypass.sub$i; sed -n "$i~26p" snpdet > snpdet.sub$i; done
+
+IMPORTANT: pour 25 000 SNP et 12 populations, une analyse (1contraste, 3 covariables) avec 1 CPU dure environ 8H, si on augmente le nombre de contraste à 8, le temps de calcul passe à environ 10H ce qui est nettement plus rentable que de relancer 8 fois l’analyse.
+Si on alloue 4 CPU on pourrait espérer un traitement 4 fois plus rapide des données, mais en fait le gain n’est que de 3 fois  , du coup on perd 25 à 30% de temps d’occupation CPU. Si on monte à 8 CPU, l’analyse est 5 fois plus rapide mais consomme au final 50 à 60% de ressources CPU en plus par rapport à un traitement mono processeur. A noter que la consommation de mémoire vive est négligeable, il n’y a pas de gain à espérer à allouer des gigaoctets de mémoire.
+
+La stratégie la plus rentable est donc d’inclure dans une même analyse un maximum de combinaison de contraste/covariables, de découper en sous jeux de données de 25 000 à 50 000 SNP et d’allouer 1 CPU à chacun. Il n’est pas aberrant de faire un test sur une fraction des données totale et d’extrapoler pour avoir une idée du coût en temps et en ressources. 
+
+#Baypass : l’analyse poolseq
+La commande est la même pour les différents modèles employés par BayPass, ce sont les fichiers optionnels qui définissent le modèle : pas de fichiers pour le core model, l’option -efile pour le covariate model et l’option poolsize pour activer le mode Pool-Seq.
+L'exemple ci-dessous correspond à une analyse de type Pool-Seq, parrallélisée sur 50 CPU.
+
+--- script begin ---
 #!/bin/bash
-#SBATCH --array=0-9             #création de l'array: un élément/indice par subset prévu (indice base 0)
-#SBATCH --cpus-per-task=4       #2h30 de calcul pour 50000 snp/subset       
-#SBATCH --mem-per-cpu=2G        #Utilisation mémoire faible
-#SBATCH --time=04:00:00
-
-
-module load system/R-3.4.3
-module load bioinfo/baypass_2.2
-module load compiler/intel-2018.0.128
-
-FILES_R1=($(ls ~/work/BayPass/Input/genobaypass.sub* | sed -r 's/^.+\///'))
-
-INPUT_F1=${FILES_R1[$SLURM_ARRAY_TASK_ID]}
-INPUT_F2=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/snpdet}
-OUTPUT=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/Souches_chr1_CoreM}
-
-baypass -nthreads 4 -npop 4 -gfile ~/work/BayPass/Input/$INPUT_F1 -poolsizefile ~/work/BayPass/Input/poolsize -d0yij 1 -burnin 10000 -npilot 100 -outprefix $OUTPUT
-
-module purge
-
---- scripts ends here ---
-
-#Méthode d'analyses par contraste: Aux Model
-Analyse la différentiation XtX des SNPs au regard de données écologiques de chaque population (altitude, longitude, etc...) et en calculant un contraste C2 en fonction de l'appartenance des populations à 2 groupes définis (sensible/résistant, sain/malade, etc...).
-
---- script begins here ---
-#!/bin/bash
-#SBATCH --array=0-9             #création de l'array: un élément/indice par job prévu (indice base 0)
-#SBATCH --cpus-per-task=12      # 7h de calcul pour 250 000 snp/subset 
+#SBATCH --array=0-49             
+#SBATCH --cpus-per-task=1      
 #SBATCH --mem-per-cpu=2G        
-#SBATCH --time=24:00:00
-
-
 
 module load system/R-3.4.3
 module load bioinfo/baypass_2.2
 module load compiler/intel-2018.0.128
 
-FILES_R1=($(ls ~/work/BayPass/Input/GWAS-5pops-10-19/genobaypass.sub* | sed -r 's/^.+\///'))
+FILES=($(ls ~/chemin/genobaypass.sub* | sed -r 's/^.+\///'))
+INPUT=${FILES[$SLURM_ARRAY_TASK_ID]}
+OUTPUT=${FILES[$SLURM_ARRAY_TASK_ID]/genobaypass/Poolseq_chr1}
 
-INPUT_F1=${FILES_R1[$SLURM_ARRAY_TASK_ID]}
-INPUT_F2=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/snpdet}
-OUTPUT=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/GWAS2018_5pops-chr10-19_AuxM}
-
-baypass -gfile ~/work/BayPass/Input/$INPUT_F1 -poolsizefile ~/work/BayPass/Input/poolsize -d0yij 5 -burnin 10000 -npilot 100 -contrastfile ~/work/BayPass/Input/contraste -efile ~/work/BayPass/Input/ecotype -nthreads 12 -outprefix $OUTPUT
+baypass -gfile ~/chemin/$INPUT -poolsizefile ~/chemin/poolsize -d0yij 20 -contrastfile ~/chemin/contraste.txt -efile ~/chemin/ecotype.txt -outprefix $OUTPUT
 
 module purge
---- scripts ends here ---
+--- script end ---
 
+Il est recommandé dans le cadre d’une analyse Pool-Seq d’utiliser et fixer le paramètre -d0yij à 1/5e de la valeur la plus faible du poolsize. (voir page 22 et 39 du manuel de BayPass).
+Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.
 
+#Regroupement et validation des résultats
+Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets.
 
-
-
-
-#Lecture des résultats
-Comparaisons des Omegas:
-Récuperer tous les fichiers "_mat_omega.out" et "_beta_params.out" comparer les répliquats entre eux.
-Si les SD sont très proches (<0,05??) on peut regrouper les sorties des différents subsets sans problèmes.
-
-
-
+Avant de regrouper les résultats, il faut valider l’homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l’indice sera faible plus les matrices donc les analyses seront comparables.
 ```{r heatmap, fig.width=10, fig.height=10}
-#png(file = "C:/Bioinfo/Analyses_R/poolfstat/Resultats/Omega.heatmap.png", width = 1000, height = 1000, res = 300)
-#dev.off()
-
-```
-Pour regrouper les resultats des subsets on utilise les scripts "Merge***.scripts".
-Chaque script fusionne chaque subset "snpdet.sub*" qui comporte le chromosome et la position avec son fichier de sortie correspondant pour lier chaque position à son résultat. Les subset sont alors compilés les uns après les autres et en point final trié par chromosome puis par position.
--Merge_BF.script regroupe les sorties Bayes Factor "summary_betai_reg.out"(Aux Model)
--Merge_C2.script regroupe les sorties de contraste "summary_contrast.out" (Aux Model)
--Merge_xtx.script regroupe les sorties de xtx (~Fst) "summary_pi_xtx.out"
-Se referer à http://varianceexplained.org/statistics/interpreting-pvalue-histogram/ pour l'interprétation de l'histogramme.
-si l'histogramme ne reflète pas le scénario A il faut calibrer les xtx avec un jeu de données "POD".
-
-```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-#issu du manuel de BayPass:
-#Estimates of the XtX differentiation measures (using the calibrated XtXst estimator)
-xtx.coreM=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/CoreModel/Souches_chr1_CoreM_summary_pi_xtx2.merged",h=T)
-#check behavior of the p-values associated to the XtXst estimator
-hist(10**(-1*xtx.coreM$log10.1.pval.),freq=F,breaks=50)
-abline(h=1)
-layout(matrix(1:2,2,1))
-#plot(xtx.coreM$XtXst, xtx.coreM$pos)
-plot(xtx.coreM$pos,xtx.coreM$XtXst,xlab="chr position", ylab="XtX")
-plot(xtx.coreM$pos,xtx.coreM$log10.1.pval.,xlab="chr position",ylab="XtX P-value (-log10 scale)")
-abline(h=3,lty=2) #0.001 p--value theshold
-```
-'''
-#2e étape: création d'un jeu de données POD.
-Si les xtx n'ont pas une distribution "correcte" il faut les calibrer avec un jeu de données simulées "POD".
-On récupère la matrice moyenne omega déjà calculée (omega.mean) ainsi que les beta.pi moyens calculés (betaK.mean), on regroupe avec le fichier genobaypass initial et on lance la simulation
-
-```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-POD.data=geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
-POD_BayPass<-simulate.baypass(omega.mat=omega.mean,nsnp = 10000, beta.coef = NA, beta.pi = betaK.mean[1:2], sample.size=POD.data$NN, suffix="Souches.core.POD" )
-
-```
-4 fichiers *Souches.POD sont créés dans le dossier contenant ce pipeline Rmd.
-Transferer les fichiers sur le genotoul et executer le script "POD_CORE_Simulation.script" (30 minutes pour 4 pop, sans MCMC)
-On récupère les fichiers de sorties en local.
-#Analyse des résultats Core POD:
-
-```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-# Read the new omega matrix and compare to original. Here you want similar values between the two
-POD.omega=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/Souche.core.POD_mat_omega.out"))
-plot(POD.omega,omega.mean) ; abline(a=0,b=1)
-# Get the Forstner and Moonen Distance (FMD) between simulated and original posterior estimates (here a smaller value is better) 
-fmd.dist(POD.omega,omega.mean)
-# Look at POD xtx values, and identify SNPs where the xtx values are above the 99% significance threshold from the POD. So in the plot, it is those loci (dots) which are above the abline
-POD.xtx=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/Souche.core.POD_summary_pi_xtx.out",h=T)$M_XtX
-POD.thresh=quantile(POD.xtx,probs=0.99)
-plot(xtx.coreM$pos,xtx.coreM$M_XtX,xlab="chr position")
-abline(h=POD.thresh,lty=2)
-POD.thresh
-```
-'''
-#Analyse des résultats avec contraste
-Tous les fichiers *sub*.out doivent avoir la même taille entre répliquat: tous les *.sub*_mat_omega.out ont la même taille, idem pour les *.sub*_summary_pi_xtx.out etc...
-Si l'analyse d'un des répliquats s'est terminée prématurément le fichier de sortie est plus petit, ça ne se ressent pas forcément sur les moyennes ou les matrices Omegas mais ça fini par donner des résultats tronqués voire décalés.
-
-Analyses des Omega et Beta_pi
-
-'''
-
-Calcul des FMD entre matrice omega pour évaluer l'homogénéité des RUNs
-```{r heatmap, fig.width=10, fig.height=10}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-#### Select results directory
-path<-"C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/"
-
-#### Count the number of matrix in the folder
+source("~/chemin/baypass_2.2/utils/baypass_utils.R")
+#identifie le répertoire contenant les fichiers puis liste et compte les matrices Ω.
+path<-"~/chemin/"
+prefix <- "Poolseq.sub"
 listMatrix <- list.files(path, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
 cat("Nbr matrix files =", nMatrix, "\n")
 
-#### set the matrix N°1 as the reference matrix and create an object list to store the FMD results
-prefix <- "GWAS_15pops-Fullchr1_AuxM.sub"
+#boucle sur toutes les matrices, calcule les distances FMD en parwise et stocke le résultat
 ListFMD<-c()
-
-####Loop across all matrix, calculate pairwise FMD value and store results
 for (i in 1:nMatrix) for (j in 1:nMatrix) if(i!=j) {
 omegaA=as.matrix(read.table(paste(path, prefix, i,"_mat_omega.out", sep="")))
 omegaB=as.matrix(read.table(paste(path, prefix, j,"_mat_omega.out", sep="")))
 FMD <- fmd.dist(omegaA, omegaB)
 ListFMD <- c(ListFMD,FMD)
 }
-###get the mean and the sd of all FMD values
+#calcule la moyenne et la sd de toutes les distances FMD
 cat("FMD mean =", mean(ListFMD), "\n")
 cat("FMD sd =" , sd(ListFMD), "\n")
 
-###Get omega matrix in 1 list
-ListOmega <-c()
-for (i in 1:nMatrix){
-ListOmega[[i]] <- as.matrix(read.table(paste(path, prefix, i,"_mat_omega.out", sep="")))
-}
-
-###get the mean for each elements across all matrix = mean matrix across all BayPass sub runs
-omega.mean=apply(simplify2array(ListOmega), 1:2, mean)
-#omega.sd=apply(simplify2array(ListOmega), 1:2, sd)
-colnames(omega.mean) <-c(pnames)
-rownames(omega.mean) <-c(pnames)
-
-###get the correlation map based on the mean of all omega matrix
-cor.mat=cov2cor(omega.mean)
+#heatmap de la dernière matrice Ω.
+colnames(omegaB) <-c(pnames)
+rownames(omegaB) <-c(pnames)
+cor.mat=cov2cor(omegaB)
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(16)
-cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on the meaning of all "~hat(Omega))
-
+cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on last "~hat(Omega))
 ```
 Si les répliquats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats:
 
@@ -657,6 +539,29 @@ omega.mean
 omega.sd
 
 ```
+core model
+--- script begins here ---
+#!/bin/bash
+#SBATCH --array=0-9             #création de l'array: un élément/indice par subset prévu (indice base 0)
+#SBATCH --cpus-per-task=4       #2h30 de calcul pour 50000 snp/subset       
+#SBATCH --mem-per-cpu=2G        #Utilisation mémoire faible
+#SBATCH --time=04:00:00
+
+
+module load system/R-3.4.3
+module load bioinfo/baypass_2.2
+module load compiler/intel-2018.0.128
+
+FILES_R1=($(ls ~/work/BayPass/Input/genobaypass.sub* | sed -r 's/^.+\///'))
+
+INPUT_F1=${FILES_R1[$SLURM_ARRAY_TASK_ID]}
+OUTPUT=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/Souches_chr1_CoreM}
+
+baypass -nthreads 4 -npop 4 -gfile ~/work/BayPass/Input/$INPUT_F1 -poolsizefile ~/work/BayPass/Input/poolsize -d0yij 1 -outprefix $OUTPUT
+
+module purge
+
+--- scripts ends here ---
 
 
 ```
