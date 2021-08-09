@@ -21,4 +21,6 @@ samtools mpileup -C 50 -d 5000 -q 20 \
 --vcf-sample-list NameList.txt > Poolseq.vcf
 
 module purge
-
+#Note: l'option -r est à privilégier pour borner le variant calling à une région car elle utilise l'indexation.
+#l'option intervalle n'utilise pas l'indexation et fini par faire abandonner Varscan.
+#se référer au manuel Samtools
