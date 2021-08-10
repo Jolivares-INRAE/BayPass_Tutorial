@@ -199,14 +199,11 @@ http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
 On récupère la matrice moyenne omega déjà calculée (omega.mean) ainsi que les beta.pi moyens calculés (betaK.mean), on regroupe avec le fichier genobaypass initial et on lance la simulation POD sur le cluster
 
 ```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-POD.data=geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
-
-# !!! Attention qu'omega.mean n'ait pas d'entètes => matrice pure !!!
-POD_BayPass<-simulate.baypass(omega.mat=omega.mean,nsnp = 10000, beta.coef = NA, beta.pi = betaK.mean[1:2], sample.size=POD.data$NN, suffix="RAZ.Aux.POD" )
-
+source("~/chemin/baypass_2.2/utils/baypass_utils.R")
+POD.data=geno2YN("~/chemin/genobaypass")
+pi.betaK=read.table("~/chemin/Poolseq.sub10_summary_beta_params.out",h=T)$Mean
+POD_BayPass<-simulate.baypass(omega.mat=omegaB,nsnp = 5000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="Poolseq.POD" )
 ```
-
 #Analyse des résultats  POD:
 
 ```{r}
@@ -222,28 +219,13 @@ POD.thresh=quantile(POD.xtx,probs=0.99)
 plot(xtx.AuxM$pos,xtx.AuxM$M_XtX,xlab="chr position")
 abline(h=POD.thresh,lty=2)
 POD.thresh
-```
 
-```{r}
 # We can also assess population differentiation with hierarchical clustering:
 bta14.tree=as.phylo(hclust(as.dist(1-cor.mat**2)))
 plot(bta14.tree,type="p",
      main=expression("Hier. clust. tree based on"~hat(Omega)~"("*d[ij]*"=1-"*rho[ij]*")"))
-```{r}
-#Simuler un jeu de données POD
-# Read the xtx BayPass output
-SG.snp.res=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS_chr1.sub1_summary_pi_xtx.out",h=T)
-
-# Get the Pi Beta distribution for POD generation
-SG.pi.beta.coef=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS_chr1.sub1_summary_beta_params.out",h=T)$Mean
-
-# Upload original data to get read counts
-SG.data<-geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
-
-# Simulate POD dataset to use for outlier SNP detection
-simu.SG <-simulate.baypass(omega.mat=SG.omega,nsnp=10000,sample.size=SG.data$NN,
-                           beta.pi=SG.pi.beta.coef,pi.maf=0,suffix="SG.BP.sim")
 ```
+
 Plots des pvalues de contrastes (C2) et différenciation (XtX)
 
 
