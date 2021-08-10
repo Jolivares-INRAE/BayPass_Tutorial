@@ -194,6 +194,56 @@ abline(h=1)
 Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
 http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
 
+
+#Création d'un jeu de données POD
+On récupère la matrice moyenne omega déjà calculée (omega.mean) ainsi que les beta.pi moyens calculés (betaK.mean), on regroupe avec le fichier genobaypass initial et on lance la simulation POD sur le cluster
+
+```{r}
+source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
+POD.data=geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
+
+# !!! Attention qu'omega.mean n'ait pas d'entètes => matrice pure !!!
+POD_BayPass<-simulate.baypass(omega.mat=omega.mean,nsnp = 10000, beta.coef = NA, beta.pi = betaK.mean[1:2], sample.size=POD.data$NN, suffix="RAZ.Aux.POD" )
+
+```
+
+#Analyse des résultats  POD:
+
+```{r}
+source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
+# Read the new omega matrix and compare to original. Here you want similar values between the two
+POD.omega=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/RAZ.Aux.POD_mat_omega.out"))
+plot(POD.omega,omega.mean) ; abline(a=0,b=1)
+# Get the Forstner and Moonen Distance (FMD) between simulated and original posterior estimates (here a smaller value is better) 
+fmd.dist(POD.omega,omega.mean)
+# Look at POD xtx values, and identify SNPs where the xtx values are above the 99% significance threshold from the POD. So in the plot, it is those loci (dots) which are above the abline
+POD.xtx=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/RAZ.Aux.POD_summary_pi_xtx.out",h=T)$M_XtX
+POD.thresh=quantile(POD.xtx,probs=0.99)
+plot(xtx.AuxM$pos,xtx.AuxM$M_XtX,xlab="chr position")
+abline(h=POD.thresh,lty=2)
+POD.thresh
+```
+
+```{r}
+# We can also assess population differentiation with hierarchical clustering:
+bta14.tree=as.phylo(hclust(as.dist(1-cor.mat**2)))
+plot(bta14.tree,type="p",
+     main=expression("Hier. clust. tree based on"~hat(Omega)~"("*d[ij]*"=1-"*rho[ij]*")"))
+```{r}
+#Simuler un jeu de données POD
+# Read the xtx BayPass output
+SG.snp.res=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS_chr1.sub1_summary_pi_xtx.out",h=T)
+
+# Get the Pi Beta distribution for POD generation
+SG.pi.beta.coef=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS_chr1.sub1_summary_beta_params.out",h=T)$Mean
+
+# Upload original data to get read counts
+SG.data<-geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
+
+# Simulate POD dataset to use for outlier SNP detection
+simu.SG <-simulate.baypass(omega.mat=SG.omega,nsnp=10000,sample.size=SG.data$NN,
+                           beta.pi=SG.pi.beta.coef,pi.maf=0,suffix="SG.BP.sim")
+```
 Plots des pvalues de contrastes (C2) et différenciation (XtX)
 
 
@@ -335,60 +385,12 @@ module load bioinfo/seqtk-1.3; seqtk subseq ~/work/Pipe_RNAseq/Transcriptome_GTF
 ```
 
 
-#Création d'un jeu de données POD
-On récupère la matrice moyenne omega déjà calculée (omega.mean) ainsi que les beta.pi moyens calculés (betaK.mean), on regroupe avec le fichier genobaypass initial et on lance la simulation POD sur le cluster
 
-```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-POD.data=geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
-
-# !!! Attention qu'omega.mean n'ait pas d'entètes => matrice pure !!!
-POD_BayPass<-simulate.baypass(omega.mat=omega.mean,nsnp = 10000, beta.coef = NA, beta.pi = betaK.mean[1:2], sample.size=POD.data$NN, suffix="RAZ.Aux.POD" )
-
-```
-
-#Analyse des résultats  POD:
-
-```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-# Read the new omega matrix and compare to original. Here you want similar values between the two
-POD.omega=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/RAZ.Aux.POD_mat_omega.out"))
-plot(POD.omega,omega.mean) ; abline(a=0,b=1)
-# Get the Forstner and Moonen Distance (FMD) between simulated and original posterior estimates (here a smaller value is better) 
-fmd.dist(POD.omega,omega.mean)
-# Look at POD xtx values, and identify SNPs where the xtx values are above the 99% significance threshold from the POD. So in the plot, it is those loci (dots) which are above the abline
-POD.xtx=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/RAZ.Aux.POD_summary_pi_xtx.out",h=T)$M_XtX
-POD.thresh=quantile(POD.xtx,probs=0.99)
-plot(xtx.AuxM$pos,xtx.AuxM$M_XtX,xlab="chr position")
-abline(h=POD.thresh,lty=2)
-POD.thresh
-```
-
-```{r}
-# We can also assess population differentiation with hierarchical clustering:
-bta14.tree=as.phylo(hclust(as.dist(1-cor.mat**2)))
-plot(bta14.tree,type="p",
-     main=expression("Hier. clust. tree based on"~hat(Omega)~"("*d[ij]*"=1-"*rho[ij]*")"))
 
 
 ```
 
 
-```{r}
-#Simuler un jeu de données POD
-# Read the xtx BayPass output
-SG.snp.res=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS_chr1.sub1_summary_pi_xtx.out",h=T)
-
-# Get the Pi Beta distribution for POD generation
-SG.pi.beta.coef=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS_chr1.sub1_summary_beta_params.out",h=T)$Mean
-
-# Upload original data to get read counts
-SG.data<-geno2YN("C:/Bioinfo/Analyses_R/poolfstat/Resultats/genobaypass")
-
-# Simulate POD dataset to use for outlier SNP detection
-simu.SG <-simulate.baypass(omega.mat=SG.omega,nsnp=10000,sample.size=SG.data$NN,
-                           beta.pi=SG.pi.beta.coef,pi.maf=0,suffix="SG.BP.sim")
-```
 
 
 ```{r heatmap, fig.width=10, fig.height=10}
