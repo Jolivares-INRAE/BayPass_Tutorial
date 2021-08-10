@@ -177,39 +177,26 @@ cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Co
 Si les répliquats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats, un exemple de script est disponible à l'adresse suivante:
 https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
 
+Si l'analyse a été découpée en plusieurs chromosome on peut concaténé simplement en créant un nouveau fichier complet avec entêtes à partir du chr1, puis on concatène à la suite les autres fichiers sans l'entête:
+cat Poolseq-chr1.Results.sorted > Poolseq-complet.results 
+cat Poolseq-chr2.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results 
+cat Poolseq-chr3.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results 
+etc...
 
-
-On Regroupe si besoin tous les fichiers résultats des différentes analyses (chromosomes...)
-
-#on créé un nouveau fichier complet avec entètes à partir du chr1, puis on ajoute à la suite les autres fichiers sans l'entête
-cat Souches-chr1_Aux.Results.sorted > Souches_Full.results 
-cat Souches-chr2-9_Aux.Results.sorted |  grep -v "MRK" - >> Souches_Full.results
-cat Souches-chr10-19_Aux.Results.sorted |  grep -v "MRK" - >> Souches_Full.results
-cat Souches-chr20-mt_Aux.Results.sorted |  grep -v "MRK" - >> Souches_Full.results
-
-
-
-
-
+#Evaluation de la distribution des p.values des XtX
+Si cette distribution n’est pas normale il est souhaitable de calibrer nos statistiques avec un jeu de données simulées.
 ```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-#issu du manuel de BayPass:
-#Estimates of the XtX differentiation measures (using the calibrated XtXst estimator)
-xtx.AuxM=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-Fullchr1_Aux.Results.sorted",h=T)
-#plot(xtx.coreM$XtXst, xtx.coreM$pos)
-plot(xtx.AuxM$pos,xtx.AuxM$XtXst,xlab="chr position", ylab="XtX")
-plot(xtx.AuxM$pos,xtx.AuxM$XtX_log10.1.pval.,xlab="chr position",ylab="XtX P-value (-log10 scale)")
-abline(h=3,lty=2) #0.001 p--value theshold
-#check behavior of the p-values associated to the XtXst estimator
-hist(10**(-1*xtx.AuxM$XtX_log10.1.pval.),freq=F,breaks=50)
+source("~/chemin/baypass_2.2/utils/baypass_utils.R")
+xtx.sorted=read.table("~/chemin/Poolseq.xtx.merged.sorted",h=T)
+hist(10**(-1*xtx.sorted$XtX_log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
-
 ```
+Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
 http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
-Si les xtx n'ont pas une distribution "correcte" (A définir A ou C?) il faut les calibrer avec un jeu de données simulées "POD".
-
 
 Plots des pvalues de contrastes (C2) et différenciation (XtX)
+
+
 ```{r fig.width=20, fig.height=20}
 #lsa.results=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/Aux_5pops/GWAS2018_5pops_Full.Results.Log2",h=T)
 lsa.results=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-53-6R-chr16_Aux.Results.sorted",h=T)
