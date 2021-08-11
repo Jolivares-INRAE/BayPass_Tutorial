@@ -204,67 +204,44 @@ POD.data=geno2YN("~/chemin/genobaypass")
 pi.betaK=read.table("~/chemin/Poolseq.sub10_summary_beta_params.out",h=T)$Mean
 POD_BayPass<-simulate.baypass(omega.mat=omegaB,nsnp = 5000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="Poolseq.POD" )
 ```
-#Analyse des résultats  POD:
-
+#Analyse des résultats POD:
 ```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-# Read the new omega matrix and compare to original. Here you want similar values between the two
-POD.omega=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/RAZ.Aux.POD_mat_omega.out"))
-plot(POD.omega,omega.mean) ; abline(a=0,b=1)
-# Get the Forstner and Moonen Distance (FMD) between simulated and original posterior estimates (here a smaller value is better) 
-fmd.dist(POD.omega,omega.mean)
-# Look at POD xtx values, and identify SNPs where the xtx values are above the 99% significance threshold from the POD. So in the plot, it is those loci (dots) which are above the abline
-POD.xtx=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/POD/RAZ.Aux.POD_summary_pi_xtx.out",h=T)$M_XtX
-POD.thresh=quantile(POD.xtx,probs=0.99)
-plot(xtx.AuxM$pos,xtx.AuxM$M_XtX,xlab="chr position")
-abline(h=POD.thresh,lty=2)
-POD.thresh
-
-# We can also assess population differentiation with hierarchical clustering:
-bta14.tree=as.phylo(hclust(as.dist(1-cor.mat**2)))
-plot(bta14.tree,type="p",
-     main=expression("Hier. clust. tree based on"~hat(Omega)~"("*d[ij]*"=1-"*rho[ij]*")"))
+source("~/chemin/baypass_2.2/utils/baypass_utils.R")
+path.POD <- "~/chemin/"
+POD.omega=as.matrix(read.table(paste(path.POD, "Poolseq.POD_mat_omega.out", sep="")))
+plot(POD.omega,omegaB) ; abline(a=0,b=1)
+FMD.POD <- fmd.dist(POD.omega,omegaB)
+cat("Distance FMD =", FMD.POD, "\n")
+#Seuil XtX top 1%
+POD.XtX=read.table(paste(path.POD, "Poolseq.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
+thresh.XtX=quantile(POD.XtX,probs=0.99)
+cat("Seuil XtX =", thresh.XtX, "(Max=", max(POD.XtX) ,")", "\n")
+#Seuil C2 top 1%, pour chaque combinaison de contraste (8 dans l'exemple)
+List.tresh.C2<-c()
+for (j in 1:8) {
+POD.C2.j=read.table(paste(path.POD, "Poolseq.POD_",j,"summary_contrast.out", sep=""),h=T)$M_C2
+thresh.C2.j=quantile(POD.C2.j,probs=0.99)
+cat("Seuil C2-Contrast", j," =", thresh.C2.j, "(Max=", max(POD.C2.j) ,")", "\n")
+List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des seuils
+}
 ```
-
-Plots des pvalues de contrastes (C2) et différenciation (XtX)
+#Plots des résultats
 
 
 ```{r fig.width=20, fig.height=20}
-#lsa.results=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/Aux_5pops/GWAS2018_5pops_Full.Results.Log2",h=T)
-lsa.results=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-53-6R-chr16_Aux.Results.sorted",h=T)
-#Déterminer un seuil de XtX pour une P-value < 0.001
-Min_XtX <- min(lsa.results$M_XtX[lsa.results$XtX_log10.1.pval.>3])
-Min_C2 <- min(lsa.results$M_C2[lsa.results$C2_log10.1.pval.>3])
-
-Min_XtX
-Min_C2
+path.results <- "~/chemin/output/"
+XtX.results=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
+BF.results=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
+C2.results=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
+thresh.C2=List.tresh.C2[1]
 
 #plot des xtx versus C2
 singlePlot2 = ggplot(data=lsa.results, aes(x=M_XtX, y=M_C2)) + geom_point(color="blue")
 singlePlot2 + geom_vline(xintercept=Min_XtX)+ geom_hline(yintercept=Min_C2)
-
-#plot des BF(db) ecotype1 versus C2
-#singlePlot2 = ggplot(data=lsa.results, aes(x=BF.dB.1, y=M_C2)) + geom_point(color="blue")
-#singlePlot2 + geom_vline(xintercept=20)+ geom_hline(yintercept=Min_C2)
-
-#plot des BF(db) ecotype2 versus C2
-#singlePlot2 = ggplot(data=lsa.results, aes(x=BF.dB.2, y=M_C2)) + geom_point(color="blue")
-#singlePlot2 + geom_vline(xintercept=20)+ geom_hline(yintercept=Min_C2)
-
 #plot XtX sur chr avec seuil Pvalue <0.001 soit log(1/pval) > 3
 singlePlot2 = ggplot(data=lsa.results, aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
 singlePlot2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Min_XtX) + facet_grid(~chr, scales = 'free_x', space = 'free_x', switch = 'x')
-#Plot XtX en wrap
-singlePlot2 = ggplot(data=lsa.results, aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-singlePlot2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Min_XtX) + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
-
-#plot C2 en grid sur chr avec seuil Pvalue <0.001 soit log(1/pval) > 3
-singlePlot2 = ggplot(data=lsa.results, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-singlePlot2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Min_C2) + facet_grid(~chr, scales = 'free_x', space = 'free_x', switch = 'x')
-#Plot C2 en wrap
-singlePlot2 = ggplot(data=lsa.results, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-singlePlot2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Min_C2) + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
-
+#facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
 ```
 #Si on veut comparer des sorties BayPass entre plusieurs jeux de données avec un diagramme de venn:
 #Créer à partir du fichier de résultats une liste chr/position pour chaque jeu de résultats.
