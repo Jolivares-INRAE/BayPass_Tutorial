@@ -27,6 +27,10 @@ install.packages(c("mvtnorm"))
 install.packages(c("geigen"))
 install.packages(c("corrplot"))
 install.packages(c("ape"))
+install.packages(c("VennDiagram"))
+install.packages(c("gridExtra"))
+install.packages(c("nVennR"))
+install.packages(c("dplyr"))
 ```
 
 #chargement des librairies
@@ -39,6 +43,10 @@ library(mvtnorm)
 library(geigen)
 library(corrplot)
 library(ape)
+library(VennDiagram)
+library(gridExtra)
+library(nVennR)
+library(dplyr)
 ```
 L’utilisation des Samtools et de Varscan est recommandé pour le variant calling, avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible. 
 Un exemple de script est disponible à l'adresse suivante:
@@ -58,10 +66,10 @@ max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit reten
 min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
 ```{r conversion-pooldata}
 #Infos sur les pops
-pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05'))
-psizes <- as.numeric(c('180', '124', '114', '160', '184')) 
+pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05', 'Pop06', 'Pop07', 'Pop08', 'Pop09', 'Pop10', 'Pop11', 'Pop12', 'Pop13'))
+psizes <- as.numeric(c('150', '180', '124', '114', '160', '184', '194', '74', '80', '54', '180', '72', '84')) 
 #conversion du .vcf
-GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/Old/GWAS2018_5POPS_chr10-19_Varscan.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/scaffOld/chr1-9.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
 #Analyses préliminaires
 A partir de cet objet pooldata on faire une première analyse des Fst.
@@ -82,7 +90,7 @@ cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Genome 
 #Calcul et plot des Fst en fenêtre glissante:
 ```{r plot-sliding-Fst, fig.width=20, fig.height=10}
 #calcul des Fst avec une fenêtre glissante de 100 SNP ("sliding.window.size")
-Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
+Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 10)
 #conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
 df.fst
@@ -147,9 +155,9 @@ Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec
 
 Avant de regrouper les résultats, il faut valider l’homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l’indice sera faible plus les matrices donc les analyses seront comparables.
 ```{r heatmap, fig.width=10, fig.height=10}
-source("~/chemin/baypass_2.2/utils/baypass_utils.R")
+source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
 #identifie le répertoire contenant les fichiers puis liste et compte les matrices Ω.
-path<-"~/chemin/"
+path<-"C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/"
 prefix <- "Poolseq.sub"
 listMatrix <- list.files(path, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
@@ -184,27 +192,28 @@ cat Poolseq-chr3.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results
 etc...
 
 #Evaluation de la distribution des p.values des XtX
-Si cette distribution n’est pas normale il est souhaitable de calibrer nos statistiques avec un jeu de données simulées.
+Cette évaluation se fait sur les p.values du fichier "XtX.merged.sorted":
 ```{r}
-source("~/chemin/baypass_2.2/utils/baypass_utils.R")
-xtx.sorted=read.table("~/chemin/Poolseq.xtx.merged.sorted",h=T)
+source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
+xtx.sorted=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/Poolseq.xtx.merged.sorted",h=T)
 hist(10**(-1*xtx.sorted$XtX_log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
 ```
 Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
 http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
+Si cette distribution n’est pas normale il est souhaitable de calibrer nos statistiques avec un jeu de données simulées.
 
-
-#Création d'un jeu de données POD
-On récupère la matrice moyenne omega déjà calculée (omega.mean) ainsi que les beta.pi moyens calculés (betaK.mean), on regroupe avec le fichier genobaypass initial et on lance la simulation POD sur le cluster
-
+#Création d'un jeu de données simulées "POD"
+La fonction geno2YN convertit les données de comptages brutes en « Pseudo-Observed Data » (POD) et la fonction simulate.baypass génère un jeu de données simulées à partir de la matrice Ω déjà calculée (omegaB) ainsi qu'un constante Pi.beta que l'on récupère dans un des fichiers de sorties.
 ```{r}
 source("~/chemin/baypass_2.2/utils/baypass_utils.R")
 POD.data=geno2YN("~/chemin/genobaypass")
 pi.betaK=read.table("~/chemin/Poolseq.sub10_summary_beta_params.out",h=T)$Mean
 POD_BayPass<-simulate.baypass(omega.mat=omegaB,nsnp = 5000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="Poolseq.POD" )
 ```
+Les 4 fichiers .POD générés sont à copier sur le cluster de calcul. Le fichier G.Poolseq.POD sera analysé de la même manière que le jeu de données initial si ce n’est qu’il n’est pas nécessaire de découper ni de paralléliser l'analyse, le reste des paramètres (contraste, ecotype…) doit être identique.
 #Analyse des résultats POD:
+Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
 ```{r}
 source("~/chemin/baypass_2.2/utils/baypass_utils.R")
 path.POD <- "~/chemin/"
@@ -218,31 +227,47 @@ thresh.XtX=quantile(POD.XtX,probs=0.99)
 cat("Seuil XtX =", thresh.XtX, "(Max=", max(POD.XtX) ,")", "\n")
 #Seuil C2 top 1%, pour chaque combinaison de contraste (8 dans l'exemple)
 List.tresh.C2<-c()
-for (j in 1:8) {
+for (j in 1:3) {
 POD.C2.j=read.table(paste(path.POD, "Poolseq.POD_",j,"summary_contrast.out", sep=""),h=T)$M_C2
 thresh.C2.j=quantile(POD.C2.j,probs=0.99)
 cat("Seuil C2-Contrast", j," =", thresh.C2.j, "(Max=", max(POD.C2.j) ,")", "\n")
 List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des seuils
 }
 ```
-#Plots des résultats
-
-
+La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc. Enfin on affiche un plot de la corrélation entre les deux matrice Ω, le seuil calculé pour la statistique XtX et pour toutes les combinaisons de contraste C2. Le calcul d'un seuil pour le les Bayes Factors n'est pas pertinent.
+#Analyses des résultats
+L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
 ```{r fig.width=20, fig.height=20}
-path.results <- "~/chemin/output/"
+path.results <- "C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/"
 XtX.results=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
 BF.results=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
 C2.results=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
-thresh.C2=List.tresh.C2[1]
-
+thresh.BF<-c(15)
+thresh.C2<-c(3)#=List.tresh.C2[1]
 #plot des xtx versus C2
-singlePlot2 = ggplot(data=lsa.results, aes(x=M_XtX, y=M_C2)) + geom_point(color="blue")
-singlePlot2 + geom_vline(xintercept=Min_XtX)+ geom_hline(yintercept=Min_C2)
-#plot XtX sur chr avec seuil Pvalue <0.001 soit log(1/pval) > 3
-singlePlot2 = ggplot(data=lsa.results, aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-singlePlot2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Min_XtX) + facet_grid(~chr, scales = 'free_x', space = 'free_x', switch = 'x')
-#facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+XtX_VS_C2 = ggplot(NULL, aes(x=XtX.results$M_XtX, y=C2.results$M_C2)) + geom_point(color="blue")
+XtX_VS_C2 + geom_vline(xintercept=thresh.XtX)+ geom_hline(yintercept=thresh.C2)
+#plot C2 sur chr 
+XtX_VS_pos = ggplot(data=C2.results, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
+XtX_VS_pos + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2) + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+#plot BF sur chr 
+XtX_VS_pos = ggplot(data=BF.results, aes(x=pos, y=BF.dB.)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
+XtX_VS_pos + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.BF) + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+#facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
+Le premier graphique est un plot des XtX versus C2, extrait chacun des fichiers de résultats complets et triés, le deuxième est une représentation des XtX le long d'un chromosome. Si le fichier de résultats concerne plusieurs chromosome, ils seront tous disposés en lignes (facet_grid) pour une disposition en grille il faudra utiliser l'option "facet_wrap" qui est sous forme de commentaireS.
+Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
+#Analyses affinées
+```{r fig.width=20, fig.height=20}
+#regroupe 2 fichiers de résultats
+XtX_C2_Join = merge(x=XtX.results,y=C2.results, by=c("chr","pos"))
+#plot XtX sur chr sous 2 conditions
+XtX_VS_pos = ggplot(data=subset(XtX_C2_Join, M_XtX> thresh.XtX & M_C2>thresh.C2), aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
+XtX_VS_pos + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+#facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+```
+
+
 #Si on veut comparer des sorties BayPass entre plusieurs jeux de données avec un diagramme de venn:
 #Créer à partir du fichier de résultats une liste chr/position pour chaque jeu de résultats.
  
@@ -250,33 +275,43 @@ awk '{if($17 >= 3) {print} }' GWAS2018_5pops-Full.results | grep -v "pos" - > GW
 
 Vendiagram :
 ```{r venn}
-
+path.results <- "C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/"
 #Extraction des colonnes chr/position
-Datmp1 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-44-2R-chr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
-Datmp2 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-Fullchr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
-Datmp3 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-RGVchr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
-Datmp4 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-47-2R-chr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
-Datmp5 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-30-R-chr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
-Datmp6 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-53-6R-chr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
-Datmp7 <- read.csv(file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/GWAS_15pops-IT-R-chr1_Aux.Results.sorted.log3", header = F, sep=" ")[,1:2]
+XtX.results=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
+BF.results=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
+C2.results1=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
+C2.results2=read.table(paste(path.results, "Poolseq.contrast-C2.merged.sorted", sep=""),h=T)
+C2.results3=read.table(paste(path.results, "Poolseq.contrast-C3.merged.sorted", sep=""),h=T)
+C2.results4=read.table(paste(path.results, "Poolseq.contrast-C4.merged.sorted", sep=""),h=T)
+C2.results5=read.table(paste(path.results, "Poolseq.contrast-C5.merged.sorted", sep=""),h=T)
 
 #L'objet liste doit être une liste en ligne et pas en colonne
 #Concatenage Chr_pos
-Data_1<-paste(Datmp1$V1, "_", Datmp1$V2)
-Data_2<-paste(Datmp2$V1, "_", Datmp2$V2)
-Data_3<-paste(Datmp3$V1, "_", Datmp3$V2)
-Data_4<-paste(Datmp4$V1, "_", Datmp4$V2)
-Data_5<-paste(Datmp5$V1, "_", Datmp5$V2)
-Data_6<-paste(Datmp6$V1, "_", Datmp6$V2)
-Data_7<-paste(Datmp7$V1, "_", Datmp7$V2)
+XtX_C2_Join1 = merge(x=XtX.results,y=C2.results1, by=c("chr","pos"))
+XtX_C2_Join2 = merge(x=XtX.results,y=C2.results2, by=c("chr","pos"))
+XtX_C2_Join3 = merge(x=XtX.results,y=C2.results3, by=c("chr","pos"))
+XtX_C2_Join4 = merge(x=XtX.results,y=C2.results4, by=c("chr","pos"))
+XtX_C2_Join5 = merge(x=XtX.results,y=C2.results5, by=c("chr","pos"))
 
+#Filtrage selon conditions
+Datmp1 = subset(XtX_C2_Join1, M_XtX> thresh.XtX & M_C2>thresh.C2)
+Datmp2 = subset(XtX_C2_Join2, M_XtX> thresh.XtX & M_C2>thresh.C2)
+Datmp3 = subset(XtX_C2_Join3, M_XtX> thresh.XtX & M_C2>thresh.C2)
+Datmp4 = subset(XtX_C2_Join4, M_XtX> thresh.XtX & M_C2>thresh.C2)
+Datmp5 = subset(XtX_C2_Join5, M_XtX> thresh.XtX & M_C2>thresh.C2)
+
+#Conversion en objet liste au format "Chr_pos"
+Data_1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
+Data_2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
+Data_3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
+Data_4<-paste(Datmp4[,1], "_", Datmp4[,2], sep="")
+Data_5<-paste(Datmp5[,1], "_", Datmp5[,2], sep="")
 
 #vd <- venn.diagram(x=list("44-2R" = Data_1, "15_pops" = Data_2, "RGV" = Data_3), fill = brewer.pal(3, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred"), cat.cex = 1.5, fontface = "bold", filename = NULL)
 
-vd <- venn.diagram(x=list("44-2R" = Data_1, "15_pops" = Data_2, "RGV" = Data_3, "IT-R" = Data_7, "30-R" = Data_5), fill = brewer.pal(5, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred", "lightgreen", "lightblue"), cat.cex = 1.5, fontface = "bold", filename = NULL)
-
+vd <- venn.diagram(x=list("All-R" = Data_1, "Pop25" = Data_2, "Pop07" = Data_3, "Pop0810" = Data_4, "Pop12" = Data_5), fill = brewer.pal(5, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred", "lightgreen", "lightblue"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+grid.newpage()
 grid.draw(vd)
-
 ```
 
 Extraire les listes de chaque groupe du diagramme:
@@ -285,9 +320,10 @@ Extraire les listes de chaque groupe du diagramme:
 library(nVennR)
 library(dplyr)
 #myV <- plotVenn(list("44-2R" = Data_1, "5_pops" = Data_2, "RGV" = Data_3))
-myV <- plotVenn(list("44-2R" = Data_1, "15_pops" = Data_2, "RGV" = Data_3, "47-2R" = Data_4, "30-R" = Data_5, "53-R" = Data_6 ))
+myV <- plotVenn(list("All-R" = Data_1, "Pop02-05" = Data_2, "Pop07" = Data_3, "Pop08-10" = Data_4, "Pop12" = Data_5 ))
 myV <- plyr::ldply(listVennRegions(myV), cbind)
-write.table(myV, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/overlap_chr1.txt", quote = TRUE, sep = " ")
+write.table(myV, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/overlap_CTI.txt", quote = TRUE, sep = " ")
+myV
 ```
 
 
@@ -330,122 +366,3 @@ awk '{print $15}' GWAS_Full.intersect | sed -e 's/"\|;//g' - | sort -u - > cds.l
 # extraire les séquences correspondantes à cette liste depuis un fasta transcript:
 Très léger, ça passe en frontal:
 module load bioinfo/seqtk-1.3; seqtk subseq ~/work/Pipe_RNAseq/Transcriptome_GTF/Merged/Cpom_Full_2021_transcripts.fasta cds.list > cds.fas
-
-
-
-
-
-
-```{r}
-
-
-
-
-```
-
-
-
-
-
-```
-
-
-
-
-```{r heatmap, fig.width=10, fig.height=10}
-# Read omega matrix BayPass output
-omega1=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub1_mat_omega.out"))
-omega2=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub2_mat_omega.out"))
-omega3=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub3_mat_omega.out"))
-omega4=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub4_mat_omega.out"))
-omega5=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub5_mat_omega.out"))
-omega6=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub6_mat_omega.out"))
-omega7=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub7_mat_omega.out"))
-omega8=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub8_mat_omega.out"))
-omega9=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub9_mat_omega.out"))
-omega10=as.matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub10_mat_omega.out"))
-
-
-betak1=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub1_summary_beta_params.out",header=TRUE)$Mean)
-betak2=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub2_summary_beta_params.out",header=TRUE)$Mean)
-betak3=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub3_summary_beta_params.out",header=TRUE)$Mean)
-betak4=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub4_summary_beta_params.out",header=TRUE)$Mean)
-betak5=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub5_summary_beta_params.out",header=TRUE)$Mean)
-betak6=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub6_summary_beta_params.out",header=TRUE)$Mean)
-betak7=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub7_summary_beta_params.out",header=TRUE)$Mean)
-betak8=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub8_summary_beta_params.out",header=TRUE)$Mean)
-betak9=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub9_summary_beta_params.out",header=TRUE)$Mean)
-betak10=matrix(read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/Full-chr1/Raw_Out/GWAS_15pops-Fullchr1_AuxM.sub10_summary_beta_params.out",header=TRUE)$Mean)
-betaK.sd <- matrix(mapply(function(a,b,c,d,e,f,g,h,i,j) sd(c(a,b,c,d,e,f,g,h,i,j)),betak1, betak2,betak3,betak4,betak5,betak6,betak7,betak8,betak9,betak10),ncol=ncol(betak1))
-betaK.mean <- matrix(mapply(function(a,b,c,d,e,f,g,h,i,j) mean(c(a,b,c,d,e,f,g,h,i,j)),betak1, betak2,betak3,betak4,betak5,betak6,betak7,betak8,betak9,betak10),ncol=ncol(betak1))
-colnames(betaK.mean) <- c('Mean')
-rownames(betaK.mean) <- c('a_beta_pi', 'b_beta_pi')
-
-omega.sd <- matrix(mapply(function(a,b,c,d,e,f,g,h,i,j) sd(c(a,b,c,d,e,f,g,h,i,j)),omega1, omega2, omega3, omega4, omega5, omega6, omega7, omega8, omega9, omega10), ncol=ncol(omega1))
-omega.mean <- matrix(mapply(function(a,b,c,d,e,f,g,h,i,j) mean(c(a,b,c,d,e,f,g,h,i,j)),omega1, omega2, omega3, omega4, omega5, omega6, omega7, omega8, omega9, omega10), ncol=ncol(omega1))
-write.table(omega.mean, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/GWAS-15pops/omega.mean", sep = " ")
-
-#Correlation map based on mean Omegas
-# Identify pool names for plotting
-#colnames(omega.mean) <- c('17-47-002-R_Chrom', '17-47-003-S_Chrom', '17-49-001-S_Chrom', '17-53-006-R_Chrom', '18-84-001-R_Chrom')
-#rownames(omega.mean) <- c('17-47-002-R_Chrom', '17-47-003-S_Chrom', '17-49-001-S_Chrom', '17-53-006-R_Chrom', '18-84-001-R_Chrom')
-#colnames(omega.mean) <- c('RAZ', 'RD', 'RGV', 'SV')
-#rownames(omega.mean) <- c('RAZ', 'RD', 'RGV', 'SV')
-colnames(omega.mean) <- c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')
-rownames(omega.mean) <- c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')
-cor.mat=cov2cor(omega.mean)
-cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(16)
-cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on"~hat(Omega))
-
-#Standard deviation beetween replicate => homogéneité des analyses subset
-#colnames(omega.mean) <- c('17-47-002-R_Chrom', '17-47-003-S_Chrom', '17-49-001-S_Chrom', '17-53-006-R_Chrom', '18-84-001-R_Chrom')
-#rownames(omega.mean) <- c('17-47-002-R_Chrom', '17-47-003-S_Chrom', '17-49-001-S_Chrom', '17-53-006-R_Chrom', '18-84-001-R_Chrom')
-#colnames(omega.mean) <- c('RAZ', 'RD', 'RGV', 'SV')
-#rownames(omega.mean) <- c('RAZ', 'RD', 'RGV', 'SV')
-colnames(omega.sd) <- c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')
-rownames(omega.sd) <- c('13-1-S', '17-47-002-R', '17-47-003-S', '17-49-001-S', '17-53-006-R', '18-84-001-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', '85-3-4-S', 'IT-ID1-R', 'IT-ID3-S', 'RGV2021', 'SV2021')
-cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(16)
-cim(omega.sd, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Omega Standard deviation between replicates")
-
-
-#données moyennées
-colnames(betaK.mean)<- c('Mean')
-row.names(betaK.mean)<- c('A Beta.pi', 'B_beta.pi')
-colnames(betaK.sd)<- c('SD')
-row.names(betaK.sd)<- c('A Beta.pi', 'B_beta.pi')
-
-
-betaK.mean
-betaK.sd
-omega.mean
-omega.sd
-
-```
-core model
---- script begins here ---
-#!/bin/bash
-#SBATCH --array=0-9             #création de l'array: un élément/indice par subset prévu (indice base 0)
-#SBATCH --cpus-per-task=4       #2h30 de calcul pour 50000 snp/subset       
-#SBATCH --mem-per-cpu=2G        #Utilisation mémoire faible
-#SBATCH --time=04:00:00
-
-
-module load system/R-3.4.3
-module load bioinfo/baypass_2.2
-module load compiler/intel-2018.0.128
-
-FILES_R1=($(ls ~/work/BayPass/Input/genobaypass.sub* | sed -r 's/^.+\///'))
-
-INPUT_F1=${FILES_R1[$SLURM_ARRAY_TASK_ID]}
-OUTPUT=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/Souches_chr1_CoreM}
-
-baypass -nthreads 4 -npop 4 -gfile ~/work/BayPass/Input/$INPUT_F1 -poolsizefile ~/work/BayPass/Input/poolsize -d0yij 1 -outprefix $OUTPUT
-
-module purge
-
---- scripts ends here ---
-
-
-```
-
-
