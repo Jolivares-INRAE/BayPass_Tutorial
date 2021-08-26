@@ -97,9 +97,7 @@ df.fst
 #plot en facet wrap / la ligne de seuil indique la Fst globale estimée à l'échelle du génome.
 WrapPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
 WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
-#plot en facet grid / la ligne de seuil indique la Fst globale estimée à l'échelle du génome
-GridPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
-GridPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) + facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
+#facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
 ```
 #Conversion du pooldata en fichiers d'entrées pour BayPass
 ```{r}
@@ -239,90 +237,60 @@ La matrice Ω POD est comparée à la matrice Ω initialement calculée (omega
 L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
 ```{r fig.width=20, fig.height=20}
 path.results <- "C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/"
-XtX.results=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
-BF.results=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
-C2.results=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
+XtX.res=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
+BF.res.Cov1=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
+C2.res.C1=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
+C2.res.C2=read.table(paste(path.results, "Poolseq.contrast-C2.merged.sorted", sep=""),h=T)
+C2.res.C3=read.table(paste(path.results, "Poolseq.contrast-C3.merged.sorted", sep=""),h=T)
+
+# Fusion des résultats XtX/C2/BF par chr puis position
+Joined.res = merge(x=XtX.res,y=merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
+
+#Définition des seuils
+thresh.C2=List.tresh.C2[1]
 thresh.BF<-c(15)
-thresh.C2<-c(3)#=List.tresh.C2[1]
-#plot des xtx versus C2
-XtX_VS_C2 = ggplot(NULL, aes(x=XtX.results$M_XtX, y=C2.results$M_C2)) + geom_point(color="blue")
-XtX_VS_C2 + geom_vline(xintercept=thresh.XtX)+ geom_hline(yintercept=thresh.C2)
-#plot C2 sur chr 
-XtX_VS_pos = ggplot(data=C2.results, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-XtX_VS_pos + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2) + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
-#plot BF sur chr 
-XtX_VS_pos = ggplot(data=BF.results, aes(x=pos, y=BF.dB.)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-XtX_VS_pos + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.BF) + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
-#facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#Manhattan plot C2 simple
+Manplot.C2 = ggplot(data=Joined.res, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
+Manplot.C2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#Manhattan plot XtX sous 2 conditions: XtX>seuil & BF>seuil
+XtX.BF = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & BF.dB.>thresh.BF), aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
+XtX.BF + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#Exporte les données filtrées sous conditions
+write.table(XtX.BF$data, row.names = FALSE, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/C2_VS_pos_CTI.txt", quote = TRUE, sep = " ")
 ```
-Le premier graphique est un plot des XtX versus C2, extrait chacun des fichiers de résultats complets et triés, le deuxième est une représentation des XtX le long d'un chromosome. Si le fichier de résultats concerne plusieurs chromosome, ils seront tous disposés en lignes (facet_grid) pour une disposition en grille il faudra utiliser l'option "facet_wrap" qui est sous forme de commentaireS.
+Le premier graphique est un Manhattan plot des valeurs de C2 le long des chromosomes disposés en lignes (facet_grid). Pour une disposition en grille il faudra utiliser l'option "facet_wrap": facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom")).
 Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
-#Analyses affinées
-```{r fig.width=20, fig.height=20}
-#regroupe 2 fichiers de résultats
-XtX_C2_Join = merge(x=XtX.results,y=C2.results, by=c("chr","pos"))
-#plot XtX sur chr sous 2 conditions
-XtX_VS_pos = ggplot(data=subset(XtX_C2_Join, M_XtX> thresh.XtX & M_C2>thresh.C2), aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-XtX_VS_pos + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
-#facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
-```
+Le deuxième graphique est un Manhattan plot selon 2 conditions: toutes les positions pour lesquelles le XtX et le BF sont supérieurs aux seuils définis
+Enfin on peut exporter dans un fichier les données qui ont servies à établir le deuxième graphique.
 
-
-#Si on veut comparer des sorties BayPass entre plusieurs jeux de données avec un diagramme de venn:
-#Créer à partir du fichier de résultats une liste chr/position pour chaque jeu de résultats.
- 
-awk '{if($17 >= 3) {print} }' GWAS2018_5pops-Full.results | grep -v "pos" - > GWAS2018-Full.log3
-
-Vendiagram :
+#Comparaison par diagramme de Venn:
 ```{r venn}
-path.results <- "C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/"
-#Extraction des colonnes chr/position
-XtX.results=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
-BF.results=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
-C2.results1=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
-C2.results2=read.table(paste(path.results, "Poolseq.contrast-C2.merged.sorted", sep=""),h=T)
-C2.results3=read.table(paste(path.results, "Poolseq.contrast-C3.merged.sorted", sep=""),h=T)
-C2.results4=read.table(paste(path.results, "Poolseq.contrast-C4.merged.sorted", sep=""),h=T)
-C2.results5=read.table(paste(path.results, "Poolseq.contrast-C5.merged.sorted", sep=""),h=T)
-
-#L'objet liste doit être une liste en ligne et pas en colonne
-#Concatenage Chr_pos
-XtX_C2_Join1 = merge(x=XtX.results,y=C2.results1, by=c("chr","pos"))
-XtX_C2_Join2 = merge(x=XtX.results,y=C2.results2, by=c("chr","pos"))
-XtX_C2_Join3 = merge(x=XtX.results,y=C2.results3, by=c("chr","pos"))
-XtX_C2_Join4 = merge(x=XtX.results,y=C2.results4, by=c("chr","pos"))
-XtX_C2_Join5 = merge(x=XtX.results,y=C2.results5, by=c("chr","pos"))
-
+#Merge des résultats par chr et pos
+XtX_C2_Join1 = merge(x=XtX.res,y=C2.res.C1, by=c("chr","pos"))
+XtX_C2_Join2 = merge(x=XtX.res,y=C2.res.C2, by=c("chr","pos"))
+XtX_C2_Join3 = merge(x=XtX.res,y=C2.res.C3, by=c("chr","pos"))
 #Filtrage selon conditions
 Datmp1 = subset(XtX_C2_Join1, M_XtX> thresh.XtX & M_C2>thresh.C2)
 Datmp2 = subset(XtX_C2_Join2, M_XtX> thresh.XtX & M_C2>thresh.C2)
 Datmp3 = subset(XtX_C2_Join3, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp4 = subset(XtX_C2_Join4, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp5 = subset(XtX_C2_Join5, M_XtX> thresh.XtX & M_C2>thresh.C2)
-
-#Conversion en objet liste au format "Chr_pos"
+#Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
 Data_1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
 Data_2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
 Data_3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
-Data_4<-paste(Datmp4[,1], "_", Datmp4[,2], sep="")
-Data_5<-paste(Datmp5[,1], "_", Datmp5[,2], sep="")
-
-#vd <- venn.diagram(x=list("44-2R" = Data_1, "15_pops" = Data_2, "RGV" = Data_3), fill = brewer.pal(3, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred"), cat.cex = 1.5, fontface = "bold", filename = NULL)
-
-vd <- venn.diagram(x=list("All-R" = Data_1, "Pop25" = Data_2, "Pop07" = Data_3, "Pop0810" = Data_4, "Pop12" = Data_5), fill = brewer.pal(5, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred", "lightgreen", "lightblue"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+#Diagramme de Venn
+vd <- venn.diagram(x=list("Pop01" = Data_1, "pop02" = Data_2, "pop03" = Data_3), fill = brewer.pal(3, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred"), cat.cex = 1.5, fontface = "bold", filename = NULL)
 grid.newpage()
 grid.draw(vd)
 ```
 
-Extraire les listes de chaque groupe du diagramme:
-
+#Extraire les listes de chaque groupe du diagramme:
 ```{r}
-library(nVennR)
-library(dplyr)
-#myV <- plotVenn(list("44-2R" = Data_1, "5_pops" = Data_2, "RGV" = Data_3))
-myV <- plotVenn(list("All-R" = Data_1, "Pop02-05" = Data_2, "Pop07" = Data_3, "Pop08-10" = Data_4, "Pop12" = Data_5 ))
+myV <- plotVenn(list("pop01" = Data_1, "pop02" = Data_2, "pop03" = Data_3))
 myV <- plyr::ldply(listVennRegions(myV), cbind)
-write.table(myV, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/overlap_CTI.txt", quote = TRUE, sep = " ")
+write.table(myV, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/overlap_CTI.txt", quote = FALSE, sep = "\t", row.names = FALSE)
 myV
 ```
 
