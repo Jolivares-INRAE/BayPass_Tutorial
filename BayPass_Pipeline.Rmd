@@ -31,6 +31,7 @@ install.packages(c("VennDiagram"))
 install.packages(c("gridExtra"))
 install.packages(c("nVennR"))
 install.packages(c("dplyr"))
+install.packages(c("tidyverse"))
 ```
 
 #chargement des librairies
@@ -47,6 +48,7 @@ library(VennDiagram)
 library(gridExtra)
 library(nVennR)
 library(dplyr)
+library(tidyverse)
 ```
 L’utilisation des Samtools et de Varscan est recommandé pour le variant calling, avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible. 
 Un exemple de script est disponible à l'adresse suivante:
@@ -255,11 +257,15 @@ Manplot.C2 = ggplot(data=Joined.res, aes(x=pos, y=M_C2)) + geom_point(aes(color=
 Manplot.C2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 
 #Manhattan plot XtX sous 2 conditions: XtX>seuil & BF>seuil
-XtX.BF = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & BF.dB.>thresh.BF), aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-XtX.BF + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Manplot.thresh = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & BF.dB.>thresh.BF), aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
+Manplot.thresh + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 
 #Exporte les données filtrées sous conditions
-write.table(XtX.BF$data, row.names = FALSE, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/C2_VS_pos_CTI.txt", quote = TRUE, sep = " ")
+write.table(Manplot.thresh$data, row.names = FALSE, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/C2_VS_pos_CTI.txt", quote = FALSE, sep = "\t")
+#créé et exporte un fichier au format bed
+list.tmp <- paste(Manplot.thresh$data[,1], Manplot.thresh$data[,2]-1, Manplot.thresh$data[,2])
+List.bed<-separate(plyr::ldply(List.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
+write.table(List.bed, row.names = FALSE, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/List_Outliers.bed", quote = FALSE, sep = "\t")
 ```
 Le premier graphique est un Manhattan plot des valeurs de C2 le long des chromosomes disposés en lignes (facet_grid). Pour une disposition en grille il faudra utiliser l'option "facet_wrap": facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom")).
 Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
@@ -281,20 +287,30 @@ Data_1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
 Data_2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
 Data_3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
 #Diagramme de Venn
-vd <- venn.diagram(x=list("Pop01" = Data_1, "pop02" = Data_2, "pop03" = Data_3), fill = brewer.pal(3, "Set3"), cat.col = c("darkgreen",  "darkblue", "darkred"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd <- venn.diagram(x=list("Pop01" = Data_1, "pop02" = Data_2, "pop03" = Data_3), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
 grid.newpage()
 grid.draw(vd)
 ```
 
-#Extraire les listes de chaque groupe du diagramme:
+#Extraire les listes de chaque intersecte du diagramme:
 ```{r}
 myV <- plotVenn(list("pop01" = Data_1, "pop02" = Data_2, "pop03" = Data_3))
 myV <- plyr::ldply(listVennRegions(myV), cbind)
-write.table(myV, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/overlap_CTI.txt", quote = FALSE, sep = "\t", row.names = FALSE)
-myV
+write.table(myV, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/overlap.txt", quote = FALSE, sep = "\t", row.names = FALSE)
+#récupère la liste des intersects
+myV %>% distinct(myV[,1])
+
 ```
+#Convertir les liste de SNP dans un intersecte en fichier bed
+```{r}
+#subset en fonction de l'intersecte que l'on veut
+tmp<-subset(myV,myV[,1] == "1, 1, 1 (pop01, pop02, pop03)")
+List.tmp<-separate(plyr::ldply(paste(tmp[,2]), cbind), col = "1",  sep = "_", into = c("chr", "pos"))
+List.bed2 <- plyr::ldply(paste(List.tmp[,1], as.numeric(List.tmp[,2])-1, List.tmp[,2]), cbind)
+List.bed2<-mutate(separate(List.bed2, col = "1",  sep = " ", into = c("chr", "start", "end")))
+write.table(Liste.bed2, file="C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/overlap.bed", quote = FALSE, sep = "\t", row.names = FALSE)
 
-
+```
 
 ---
 #Filtres et analyses de SNP Sur le cluster Genotoul:
