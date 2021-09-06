@@ -76,7 +76,7 @@ min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soi
 pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05', 'Pop06', 'Pop07', 'Pop08', 'Pop09', 'Pop10', 'Pop11', 'Pop12', 'Pop13'))
 psizes <- as.numeric(c('150', '180', '124', '114', '160', '184', '194', '74', '80', '54', '180', '72', '84')) 
 #conversion du .vcf
-GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/Bioinfo/Analyses_R/poolfstat/VCF/scaffOld/chr1-9.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+GWAS.pooldata <- vcf2pooldata(vcf.file = "C:/BayPass_pipeline/vcf/chr1-9.vcf.gz", poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
 #Analyses préliminaires
 A partir de cet objet pooldata on faire une première analyse des Fst.
@@ -86,29 +86,28 @@ On peut aussi calculer et plotter des Fst multi-locus en balayant le génome ave
 
 ##Calcul et heatmap des Fst entre population (pairwise):
 ```{r heatmap-PW-fst, fig.width=10, fig.height=10}
-###Calcul des pairwise Fst 
+#Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.01, output.snp.values = FALSE)
-###heatmap
+#conversion en matrice de distance
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
-df
+#heatmap
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(25)
 cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Genome wide Pairwise FST heatmap between populations")
 ```
 ##Calcul et plot des Fst en fenêtre glissante:
 ```{r plot-sliding-Fst, fig.width=20, fig.height=10}
-#calcul des Fst avec une fenêtre glissante de 100 SNP ("sliding.window.size")
-Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
+#calcul des Fst avec une fenêtre glissante de 10 SNP ("sliding.window.size")
+Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 10)
 #conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
-df.fst
-#plot en facet wrap / la ligne de seuil indique la Fst globale estimée à l'échelle du génome.
-WrapPlot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
-WrapPlot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) +  facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
+#plot en ligne. (le seuil indique la Fst globale estimée à l'échelle du génome).
+Fst.plot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
+Fst.plot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) +  facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')
 #facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
 ```
 #Conversion du pooldata en fichiers d'entrées pour BayPass
-```{r}
-pooldata2genobaypass(GWAS.pooldata, writing.dir = "~/chemin/", subsamplesize = -1, subsamplingmethod = "thinning")
+```{r Input-BayPass}
+pooldata2genobaypass(GWAS.pooldata, writing.dir = "C:/BayPass_pipeline/Input/", subsamplesize = -1, subsamplingmethod = "thinning")
 ```
 On récupère un fichier genobaypass qui contient les données brutes de génotypage, un fichier snpdet qui contient la liste des positions correspondantes et un fichier poolsize, qui est une copie de l'objet psizes.
 
@@ -148,7 +147,7 @@ Si on alloue 4 CPU on pourrait espérer un traitement 4 fois plus rapide des don
 La stratégie la plus rentable est donc d’inclure dans une même analyse un maximum de combinaison de contraste/covariables, de découper en sous jeux de données de 25 000 à 50 000 SNP et d’allouer 1 CPU à chacun. Il n’est pas aberrant de faire un test sur une fraction des données totale et d’extrapoler pour avoir une idée du coût en temps et en ressources. 
 
 #Baypass : l’analyse poolseq
-La commande est la même pour les différents modèles employés par BayPass, ce sont les fichiers optionnels qui définissent le modèle : pas de fichiers pour le core model, l’option -efile pour le covariate model et l’option poolsize pour activer le mode Pool-Seq.
+La commande est la même pour les différents modèles employés par BayPass, ce sont les fichiers optionnels qui définissent le modèle : pas de fichiers pour le core model, l'option -efile pour le covariate model et l'option poolsize pour activer le mode Pool-Seq.
 Un exemple de script d'analyse de type Pool-Seq, parallélisée sur 25 CPU est disponible à l'adresse suivante:
 https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
 
@@ -156,14 +155,14 @@ Il est recommandé dans le cadre d’une analyse Pool-Seq d’utiliser et fixer 
 Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.
 
 #Regroupement et validation des résultats
-Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets.
+Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l'analyse (crash, disque plein…) conduisant à des fichiers incomplets.
 
-Avant de regrouper les résultats, il faut valider l’homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l’indice sera faible plus les matrices donc les analyses seront comparables.
-```{r heatmap, fig.width=10, fig.height=10}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-#identifie le répertoire contenant les fichiers puis liste et compte les matrices Ω.
-path<-"C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/"
+Avant de regrouper les résultats, il faut valider l'homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l'indice sera faible plus les matrices donc les analyses seront comparables.
+```{r validation-matrice-omega, fig.width=10, fig.height=10}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+path<-"C:/BayPass_pipeline/Output/CTI/"
 prefix <- "Poolseq.sub"
+#liste et compte les matrices Ω du répertoire "path"
 listMatrix <- list.files(path, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
 cat("Nbr matrix files =", nMatrix, "\n")
@@ -190,7 +189,7 @@ cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Co
 Si les répliquats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats, un exemple de script est disponible à l'adresse suivante:
 https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
 
-Si l'analyse a été découpée en plusieurs chromosome on peut concaténé simplement en créant un nouveau fichier complet avec entêtes à partir du chr1, puis on concatène à la suite les autres fichiers sans l'entête:
+Si l'analyse a été découpée en plusieurs chromosome on peut concaténer simplement en créant un nouveau fichier complet avec entêtes à partir du chr1, puis on concatène à la suite les autres fichiers sans l'entête:
 cat Poolseq-chr1.Results.sorted > Poolseq-complet.results 
 cat Poolseq-chr2.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results 
 cat Poolseq-chr3.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results 
@@ -198,9 +197,9 @@ etc...
 
 #Evaluation de la distribution des p.values des XtX
 Cette évaluation se fait sur les p.values du fichier "XtX.merged.sorted":
-```{r}
-source("C:/Bioinfo/Analyses_R/baypass_2.2/utils/baypass_utils.R")
-xtx.sorted=read.table("C:/Bioinfo/Analyses_R/baypass_2.2/Output/CTI/Poolseq.xtx.merged.sorted",h=T)
+```{r Distribution-XtX}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+xtx.sorted=read.table("C:/BayPass_pipeline/Output/CTI/Poolseq.xtx.merged.sorted",h=T)
 hist(10**(-1*xtx.sorted$XtX_log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
 ```
@@ -210,18 +209,18 @@ Si cette distribution n’est pas normale il est souhaitable de calibrer nos sta
 
 #Création d'un jeu de données simulées "POD"
 La fonction geno2YN convertit les données de comptages brutes en « Pseudo-Observed Data » (POD) et la fonction simulate.baypass génère un jeu de données simulées à partir de la matrice Ω déjà calculée (omegaB) ainsi qu'un constante Pi.beta que l'on récupère dans un des fichiers de sorties.
-```{r}
-source("~/chemin/baypass_2.2/utils/baypass_utils.R")
-POD.data=geno2YN("~/chemin/genobaypass")
-pi.betaK=read.table("~/chemin/Poolseq.sub10_summary_beta_params.out",h=T)$Mean
+```{r POD data}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+POD.data=geno2YN("C:/BayPass_pipeline/Input/genobaypass")
+pi.betaK=read.table("C:/BayPass_pipeline/Output/CTI/Poolseq.sub3_summary_beta_params.out",h=T)$Mean
 POD_BayPass<-simulate.baypass(omega.mat=omegaB,nsnp = 5000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="Poolseq.POD" )
 ```
-Les 4 fichiers .POD générés sont à copier sur le cluster de calcul. Le fichier G.Poolseq.POD sera analysé de la même manière que le jeu de données initial si ce n’est qu’il n’est pas nécessaire de découper ni de paralléliser l'analyse, le reste des paramètres (contraste, ecotype…) doit être identique.
+Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copier sur le cluster de calcul. Le fichier G.Poolseq.POD sera analysé de la même manière que le jeu de données initial si ce n’est qu’il n’est pas nécessaire de découper ni de paralléliser l'analyse, le reste des paramètres (contraste, ecotype…) doit être identique.
 #Analyse des résultats POD:
 Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
-```{r}
-source("~/chemin/baypass_2.2/utils/baypass_utils.R")
-path.POD <- "~/chemin/"
+```{r Thresholds}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+path.POD <- "C:/BayPass_pipeline/Output/CTI/"
 POD.omega=as.matrix(read.table(paste(path.POD, "Poolseq.POD_mat_omega.out", sep="")))
 plot(POD.omega,omegaB) ; abline(a=0,b=1)
 FMD.POD <- fmd.dist(POD.omega,omegaB)
@@ -230,10 +229,10 @@ cat("Distance FMD =", FMD.POD, "\n")
 POD.XtX=read.table(paste(path.POD, "Poolseq.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
 thresh.XtX=quantile(POD.XtX,probs=0.99)
 cat("Seuil XtX =", thresh.XtX, "(Max=", max(POD.XtX) ,")", "\n")
-#Seuil C2 top 1%, pour chaque combinaison de contraste (8 dans l'exemple)
+#Seuil C2 top 1%, pour chaque combinaison de contraste (3 dans l'exemple)
 List.tresh.C2<-c()
 for (j in 1:3) {
-POD.C2.j=read.table(paste(path.POD, "Poolseq.POD_",j,"summary_contrast.out", sep=""),h=T)$M_C2
+POD.C2.j=read.table(paste(path.POD, "Poolseq.POD_C2_",j,".summary_contrast.out", sep=""),h=T)$M_C2
 thresh.C2.j=quantile(POD.C2.j,probs=0.99)
 cat("Seuil C2-Contrast", j," =", thresh.C2.j, "(Max=", max(POD.C2.j) ,")", "\n")
 List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des seuils
@@ -242,8 +241,8 @@ List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des 
 La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc. Enfin on affiche un plot de la corrélation entre les deux matrice Ω, le seuil calculé pour la statistique XtX et pour toutes les combinaisons de contraste C2. Le calcul d'un seuil pour le les Bayes Factors n'est pas pertinent.
 #Analyses des résultats
 L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
-```{r fig.width=20, fig.height=20}
-path.results <- "~/chemin/"
+```{r Fusion-&-plot, fig.width=20, fig.height=20}
+path.results <- "C:/BayPass_pipeline/Output/CTI/"
 XtX.res=read.table(paste(path.results, "Poolseq.xtx.merged.sorted", sep=""),h=T)
 BF.res.Cov1=read.table(paste(path.results, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
 C2.res.C1=read.table(paste(path.results, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
@@ -264,11 +263,11 @@ Manplot.thresh = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & BF.dB.>thres
 Manplot.thresh + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 
 #Exporte les données filtrées sous conditions
-write.table(Manplot.thresh$data, row.names = FALSE, file="~/chemin/C2_VS_pos_CTI.txt", quote = FALSE, sep = "\t")
+write.table(Manplot.thresh$data, row.names = FALSE, file="C:/BayPass_pipeline/Output/CTI/C2_VS_pos_CTI.txt", quote = FALSE, sep = "\t")
 #créé et exporte un fichier au format bed
 list.tmp <- paste(Manplot.thresh$data[,1], Manplot.thresh$data[,2]-1, Manplot.thresh$data[,2])
-List.bed<-separate(plyr::ldply(List.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
-write.table(List.bed, row.names = FALSE, file="~/chemin/List_Outliers.bed", quote = FALSE, sep = "\t")
+List.bed<-separate(plyr::ldply(list.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
+write.table(List.bed, row.names = FALSE, file="C:/BayPass_pipeline/Output/CTI/List_Outliers.bed", quote = FALSE, sep = "\t")
 ```
 Le premier graphique est un Manhattan plot des valeurs de C2 le long des chromosomes disposés en lignes (facet_grid). Pour une disposition en grille il faudra utiliser l'option "facet_wrap": facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom")).
 Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
