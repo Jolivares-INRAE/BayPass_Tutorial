@@ -1,21 +1,26 @@
 ---
-author: "Jérôme OLIVARES"
-date: "Février 2021"
+title: "BayPass Pipeline"
+author: "Jérôme OLIVARES & Mathieu GAUTIER"
+date: "Septembre 2021"
 output:
   github_document:
-    fig_width: 10
+    fig_width: 15
     fig_height: 10
     dev: jpeg
-  
-editor_options: 
+  pdf_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+editor_options:
   chunk_output_type: inline
 ---
 
 #Prérequis:
-L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul. Les commandes décrites dans cet article ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec tous les packages nécessaires à jour.
-Les lignes de commandes et scripts sous Linux ont été développées dans l’environnement bash et SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
-Bien que l’essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur.
-
+L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul. Les commandes décrites dans ce document ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec tous les packages nécessaires à jour.
+Les lignes de commandes et scripts sous Linux ont été développés dans l’environnement bash et SLURM du cluster de calcul de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
+La dernière version du logiciel BayPass sera téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur.
+Dans tous les codes qui suivent nous utiliserons l’expression « ~/chemin/ » afin de signifier que l’utilisateur devra remplacer cette partie par ses propres chemins de répertoires qui correspondent à son organisation personnelle.
+Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 ##installation des librairies
 L'utilisation de ce pipeline nécessite l'installation au préalable des packages ci-dessous, il appartient à l'utilisateur de les installer sur son système.
 install.packages(c("poolfstat"))
@@ -49,12 +54,14 @@ library(nVennR)
 library(dplyr)
 library(tidyverse)
 ```
+##Obtention d'un fichier VCF
+L'analyse qualité et l'alignement sur le génome de référence devront avoir été réalisé au préalable afin d'obtenir un fichier BAM correctement indéxé.
 L’utilisation des Samtools et de Varscan est recommandé pour le variant calling, avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible. 
 Un exemple de script est disponible à l'adresse suivante:
 https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
 
 IMPORTANT : 
-Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part en bornant le variant calling avec un fichier .bed comme dans l'exemple ci-dessus.
+Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
 
 #conversion du fichier VCF en objet pooldata
 Lister le nom des populations dans le même ordre que celui du fichier .vcf dans un objet "pnames".
