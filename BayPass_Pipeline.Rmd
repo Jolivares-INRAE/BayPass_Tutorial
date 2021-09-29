@@ -3,13 +3,17 @@ title: "BayPass Pipeline"
 author: "Jérôme OLIVARES & Mathieu GAUTIER"
 date: "Septembre 2021"
 output:
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    df_print: paged
   github_document:
     fig_width: 15
     fig_height: 10
     dev: jpeg
   pdf_document:
-    toc: true
-    toc_float: true
+    toc: yes
+    toc_float: yes
     toc_depth: 2
 editor_options:
   chunk_output_type: inline
@@ -24,7 +28,6 @@ Le terme de chromosome sera utilisé en références aux appellations de contigs
 ##installation des librairies
 L'utilisation de ce pipeline nécessite l'installation au préalable des packages ci-dessous, il appartient à l'utilisateur de les installer sur son système.
 install.packages(c("poolfstat"))
-install.packages(c("ggplot2"))
 install.packages(c("RColorBrewer"))
 install.packages(c("BiocManager"))
 BiocManager::install("mixOmics")
@@ -35,13 +38,11 @@ install.packages(c("ape"))
 install.packages(c("VennDiagram"))
 install.packages(c("gridExtra"))
 install.packages(c("nVennR"))
-install.packages(c("dplyr"))
 install.packages(c("tidyverse"))
 
 ##chargement des librairies
 ```{r load-Packages, message=FALSE, warning=FALSE}
 library(poolfstat)
-library(ggplot2)
 library(RColorBrewer)
 library(mixOmics)
 library(mvtnorm)
@@ -51,7 +52,6 @@ library(ape)
 library(VennDiagram)
 library(gridExtra)
 library(nVennR)
-library(dplyr)
 library(tidyverse)
 ```
 ##Obtention d'un fichier VCF
