@@ -23,7 +23,6 @@ editor_options:
 L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul. Les commandes décrites dans ce document ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec tous les packages nécessaires à jour.
 Les lignes de commandes et scripts sous Linux ont été développés dans l’environnement bash et SLURM du cluster de calcul de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
 La dernière version du logiciel BayPass sera téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur.
-Dans tous les codes qui suivent nous utiliserons l’expression « ~/chemin/ » afin de signifier que l’utilisateur devra remplacer cette partie par ses propres chemins de répertoires qui correspondent à son organisation personnelle.
 Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 ##installation des packages
 L'utilisation de ce pipeline nécessite l'installation au préalable des packages ci-dessous, il appartient à l'utilisateur de les installer sur son système.
@@ -55,12 +54,13 @@ library(nVennR)
 library(tidyverse)
 ```
 ##Définition d'un espace de travail
+Chaque utilisateur définira une arborescence de travail avec plusieurs dossiers contenant respectivement les fichiers vcf, les entrées BayPass, les sorties BayPass, les sorties POD et enfin un dossier recueillant les différents résultats (plots, liste de SNP...)
 ```{r work-space}
-path_vcf <- "C:/BayPass_pipeline/vcf/"    #dossier contenant les .vcf
-path_input <- "C:/BayPass_pipeline/Input/"  #dossier destination des fichiers d'entrées BayPass
-path_out <- "C:/BayPass_pipeline/Output/CTI/" #dossier contenant les fichiers de sorties BayPass 
-path_POD <- "C:/BayPass_pipeline/POD/CTI/" #dossier contenant les fichiers de sorties BayPass - POD
-path_res <- "C:/BayPass_pipeline/Resultats/" #dossier destination des résultats (plots, liste SNP...)
+path_vcf <- "C:/BayPass_pipeline/vcf/"
+path_input <- "C:/BayPass_pipeline/Input/"
+path_out <- "C:/BayPass_pipeline/Output/"
+path_POD <- "C:/BayPass_pipeline/POD/"
+path_res <- "C:/BayPass_pipeline/Resultats/"
 ```
 ##Obtention d'un fichier VCF
 L'analyse qualité et l'alignement sur le génome de référence devront avoir été réalisé au préalable afin d'obtenir un fichier BAM correctement indéxé.
@@ -81,8 +81,8 @@ max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit reten
 min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
 ```{r conversion-pooldata}
 #Infos sur les pops
-pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05', 'Pop06', 'Pop07', 'Pop08', 'Pop09', 'Pop10', 'Pop11', 'Pop12', 'Pop13'))
-psizes <- as.numeric(c('150', '180', '124', '114', '160', '184', '194', '74', '80', '54', '180', '72', '84')) 
+pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05'))
+psizes <- as.numeric(c('150', '180', '124', '114', '160', '184')) 
 #conversion du .vcf
 GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "chr1-9.vcf.gz", sep=""), poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
@@ -319,7 +319,7 @@ write.table(V.bed, file=paste(path_res, "overlap.bed", sep=""), quote = FALSE, s
 ```
 
 
-
+## MEMO PERSONNEL ##
 #L'intersect se fait avec le BED contre un fichier GFF comme un transcriptome par exemple.
 
 --- script begins here ---
