@@ -13,8 +13,7 @@ output:
     dev: jpeg
   pdf_document:
     toc: yes
-    toc_float: yes
-    toc_depth: 2
+    toc_depth: '2'
 editor_options:
   chunk_output_type: inline
 ---
@@ -26,18 +25,19 @@ La dernière version du logiciel BayPass sera téléchargée depuis l’adresse 
 Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 ##installation des packages
 L'utilisation de ce pipeline nécessite l'installation au préalable des packages ci-dessous, il appartient à l'utilisateur de les installer sur son système.
-install.packages(c("poolfstat"))
-install.packages(c("RColorBrewer"))
-install.packages(c("BiocManager"))
-BiocManager::install("mixOmics")
-install.packages(c("mvtnorm"))
-install.packages(c("geigen"))
-install.packages(c("corrplot"))
-install.packages(c("ape"))
-install.packages(c("VennDiagram"))
-install.packages(c("gridExtra"))
-install.packages(c("nVennR"))
-install.packages(c("tidyverse"))
+
+install.packages(c("poolfstat"))  
+install.packages(c("RColorBrewer"))  
+install.packages(c("BiocManager"))  
+BiocManager::install("mixOmics")  
+install.packages(c("mvtnorm"))  
+install.packages(c("geigen"))  
+install.packages(c("corrplot"))  
+install.packages(c("ape"))  
+install.packages(c("VennDiagram"))  
+install.packages(c("gridExtra"))  
+install.packages(c("nVennR"))  
+install.packages(c("tidyverse"))  
 
 ##chargement des librairies
 ```{r load-Packages, message=FALSE, warning=FALSE}
@@ -81,8 +81,8 @@ max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit reten
 min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
 ```{r conversion-pooldata}
 #Infos sur les pops
-pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05'))
-psizes <- as.numeric(c('150', '180', '124', '114', '160', '184')) 
+pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05','Pop06', 'Pop07', 'Pop08', 'Pop09', 'Pop10','Pop11', 'Pop12', 'Pop13'))
+psizes <- as.numeric(c('150', '180', '124', '114', '160', '184','150', '180', '124', '114', '160', '184','150')) 
 #conversion du .vcf
 GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "chr1-9.vcf.gz", sep=""), poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
@@ -130,8 +130,8 @@ Le premier fichier ecotype.txt identifie les covariables écologiques de chaque 
 Le deuxième fichier contraste.txt identifie l’appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste. L’exemple suivant donne la structure d’un fichier pour 3 analyses de contraste : 
 
 1	1	-1	-1	-1
-1	0	0	-1	-1
-0	1	-1	-1	0
+1	0	 0	-1	-1
+0	1	-1	-1	 0
 
 1ere ligne = pop 1 et 2 VS pop 3, 4 et 5
 2e ligne = pop 1 VS pop 4 et 5
@@ -150,7 +150,7 @@ for i in {1..100}; do sed -n "$i~100p" genobaypass > genobaypass.sub$i; done
 for i in {1..100}; do sed -n "$i~100p" snpdet > snpdet.sub$i; done
 
 IMPORTANT: pour 25 000 SNP et 12 populations, une analyse (1contraste, 3 covariables) avec 1 CPU dure environ 8H, si on augmente le nombre de contraste à 8, le temps de calcul passe à environ 10H ce qui est nettement plus rentable que de relancer 8 fois l’analyse.
-Si on alloue 4 CPU on pourrait espérer un traitement 4 fois plus rapide des données, mais en fait le gain n’est que de 3 fois  , du coup on perd 25 à 30% de temps d’occupation CPU. Si on monte à 8 CPU, l’analyse est 5 fois plus rapide mais consomme au final 50 à 60% de ressources CPU en plus par rapport à un traitement mono processeur. A noter que la consommation de mémoire vive est négligeable, il n’y a pas de gain à espérer à allouer des gigaoctets de mémoire.
+Si on alloue 8 CPU, l’analyse est 5 fois plus rapide mais pas 8 donc une partie (30 à 40%) du temps total CPU est perdue. A noter que la consommation de mémoire vive est négligeable, il n’y a pas de gain à espérer à allouer des gigaoctets de mémoire.
 
 La stratégie la plus rentable est donc d’inclure dans une même analyse un maximum de combinaison de contraste/covariables, de découper en sous jeux de données de 25 000 à 50 000 SNP et d’allouer 1 CPU à chacun. Il n’est pas aberrant de faire un test sur une fraction des données totale et d’extrapoler pour avoir une idée du coût en temps et en ressources. 
 
@@ -193,7 +193,7 @@ cor.mat=cov2cor(omegaB)
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(16)
 cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on last "~hat(Omega))
 ```
-Si les répliquats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats, un exemple de script est disponible à l'adresse suivante:
+Si les réplicats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats, un exemple de script est disponible à l'adresse suivante:
 https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
 
 Si l'analyse a été découpée en plusieurs chromosome on peut concaténer simplement en créant un nouveau fichier complet avec entêtes à partir du chr1, puis on concatène à la suite les autres fichiers sans l'entête:
@@ -245,6 +245,7 @@ List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des 
 }
 ```
 La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc. Enfin on affiche un plot de la corrélation entre les deux matrice Ω, le seuil calculé pour la statistique XtX et pour toutes les combinaisons de contraste C2. Le calcul d'un seuil pour le les Bayes Factors n'est pas pertinent.
+
 #Analyses des résultats
 L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
 ```{r Fusion-&-plot, fig.width=20, fig.height=20}
@@ -254,22 +255,22 @@ C2.res.C1=read.table(paste(path_out, "Poolseq.contrast-C1.merged.sorted", sep=""
 C2.res.C2=read.table(paste(path_out, "Poolseq.contrast-C2.merged.sorted", sep=""),h=T)
 C2.res.C3=read.table(paste(path_out, "Poolseq.contrast-C3.merged.sorted", sep=""),h=T)
 
-# Fusion des résultats XtX/C2/BF par chr puis position
+# Fusion des résultats XtX/C2-N°1/BF-N°1 par chr puis position
 Joined.res = merge(x=XtX.res,y=merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
-#Définition des seuils
+#Définition des seuils ou copie des seuils POD
 thresh.XtX=quantile(XtX.res$M_XtX, probs=0.99)
 thresh.C2=quantile(C2.res.C1$M_C2, probs=0.99)
 thresh.BF<-c(15)
 
-#Manhattan plot C2 simple
+#Manhattan plot simple des valeurs de C2 
 Manplot.C2 = ggplot(data=Joined.res, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
 Manplot.C2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
-#Manhattan plot XtX sous 2 conditions: XtX>seuil & BF>seuil
+#Manhattan plot sous 2 conditions: XtX>seuil & BF>seuil
 Manplot.thresh = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & BF.dB.>thresh.BF), aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
 Manplot.thresh + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 
 #Exporte les données filtrées sous conditions
-write.table(Manplot.thresh$data, row.names = FALSE, file=paste(path_res, "C2_VS_pos_CTI.txt", sep=""), quote = FALSE, sep = "\t")
+write.table(Manplot.thresh$data, row.names = FALSE, file=paste(path_res, "XtX-BF_VS_pos.txt", sep=""), quote = FALSE, sep = "\t")
 #créé et exporte un fichier au format bed
 list.tmp <- paste(Manplot.thresh$data[,1], Manplot.thresh$data[,2]-1, Manplot.thresh$data[,2])
 List.bed<-separate(plyr::ldply(list.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
@@ -295,53 +296,25 @@ List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
 List.SNP2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
 List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
 #Diagramme de Venn
-vd <- venn.diagram(x=list("Pop01" = List.SNP1, "pop02" = List.SNP2, "pop03" = List.SNP3), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd <- venn.diagram(x=list("Contraste01" = List.SNP1, "Contraste02" = List.SNP2, "Contraste03" = List.SNP3), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
 grid.newpage()
 grid.draw(vd)
 ```
 
 #Extraire les listes de chaque intersecte du diagramme:
-```{r}
-myV <- plotVenn(list("pop01" = List.SNP1, "pop02" = List.SNP2, "pop03" = List.SNP3))
+```{r List-Venn}
+myV <- plotVenn(list("Contraste01" = List.SNP1, "Contraste02" = List.SNP2, "Contraste03" = List.SNP3))
 myV <- plyr::ldply(listVennRegions(myV), cbind)
 write.table(myV, file=paste(path_res, "All_overlap.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
 #récupère la liste des intersectes
 myV %>% distinct(myV[,1])
 ```
 #Convertir les liste de SNP dans un intersecte en fichier bed
-```{r}
+```{r Bed-Venn}
 #subset en fonction de l'intersecte que l'on veut
-tmp<-subset(myV,myV[,1] == "1, 1, 1 (pop01, pop02, pop03)")
+tmp<-subset(myV,myV[,1] == "1, 1, 1 (Contraste01, Contraste02, Contraste03)")
 V.tmp<-separate(plyr::ldply(paste(tmp[,2]), cbind), col = "1",  sep = "_", into = c("chr", "pos"))
 V.bed <- plyr::ldply(paste(V.tmp[,1], as.numeric(V.tmp[,2])-1, V.tmp[,2]), cbind)
 V.bed<-mutate(separate(V.bed, col = "1",  sep = " ", into = c("chr", "start", "end")))
-write.table(V.bed, file=paste(path_res, "overlap.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+write.table(V.bed, file=paste(path_res, "overlap_3_contrastes.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
 ```
-
-
-## MEMO PERSONNEL ##
-#L'intersect se fait avec le BED contre un fichier GFF comme un transcriptome par exemple.
-
---- script begins here ---
-#!/bin/bash
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=2G        
-#SBATCH --time=4:00:00
-
-module load bioinfo/bedtools-2.27.1
-bedtools intersect -wb -a GWAS_Full.bed -b Transcriptome.gtf > GWAS_Full.intersect
-module purge
-
---- script ends here ---
-
-On obtient:
-chr1    314013    314014    chr1    StringTie   transcript    314014  314014  1000    -   .   gene_id "MSTRG.34"; transcript_id "MSTRG.34.2";
-chr1    576413    576414    chr1    StringTie   transcript    576414  576414  1000    +   .   gene_id "MSTRG.52"; transcript_id "MSTRG.52.1";
-chr1    576413    576414    chr1    StringTie   transcript    576414  576414  1000    +   .   gene_id "MSTRG.53"; transcript_id "MSTRG.53.1";
-
-# récupérer une liste des transcript ID de la colonne 15
-awk '{print $15}' GWAS_Full.intersect | sed -e 's/"\|;//g' - | sort -u - > cds.list
-
-# extraire les séquences correspondantes à cette liste depuis un fasta transcript:
-Très léger, ça passe en frontal:
-module load bioinfo/seqtk-1.3; seqtk subseq ~/work/Pipe_RNAseq/Transcriptome_GTF/Merged/Cpom_Full_2021_transcripts.fasta cds.list > cds.fas
