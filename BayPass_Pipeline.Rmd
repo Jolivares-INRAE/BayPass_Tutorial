@@ -57,10 +57,10 @@ library(tidyverse)
 Chaque utilisateur définira une arborescence de travail avec plusieurs dossiers contenant respectivement les fichiers vcf, les entrées BayPass, les sorties BayPass, les sorties POD et enfin un dossier recueillant les différents résultats (plots, liste de SNP...)
 ```{r work-space}
 path_vcf <- "C:/BayPass_pipeline/vcf/"
-path_input <- "C:/BayPass_pipeline/Input/"
-path_out <- "C:/BayPass_pipeline/Output/"
-path_POD <- "C:/BayPass_pipeline/POD/"
-path_res <- "C:/BayPass_pipeline/Resultats/"
+path_input <- "C:/BayPass_pipeline/Input/13pops/chr1"
+path_out <- "C:/BayPass_pipeline/Output/13pops/chr1"
+path_POD <- "C:/BayPass_pipeline/POD/13pops/chr1"
+path_res <- "C:/BayPass_pipeline/Resultats/13pops/chr1"
 ```
 ##Obtention d'un fichier VCF
 L'analyse qualité et l'alignement sur le génome de référence devront avoir été réalisé au préalable afin d'obtenir un fichier BAM correctement indéxé.
@@ -81,10 +81,12 @@ max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit reten
 min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
 ```{r conversion-pooldata}
 #Infos sur les pops
-pnames <- as.character(c('Pop01', 'Pop02', 'Pop03', 'Pop04', 'Pop05','Pop06', 'Pop07', 'Pop08', 'Pop09', 'Pop10','Pop11', 'Pop12', 'Pop13'))
-psizes <- as.numeric(c('150', '180', '124', '114', '160', '184','150', '180', '124', '114', '160', '184','150')) 
+pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', '85-3-4-S', 'IT-ID3-S', '17-47-002-R', '17-53-006-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', 'IT-ID1-R'))
+psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72')) #ploydie autosome/chr2-28
+psizes_Z <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72')) #ploydie Z/chr1
+psizes_W <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72')) #ploydie W/chr29
 #conversion du .vcf
-GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "chr1-9.vcf.gz", sep=""), poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "Pool13pops_chr1-varscan.vcf", sep=""), poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 ```
 #Analyses préliminaires
 A partir de cet objet pooldata on faire une première analyse des Fst.
@@ -105,7 +107,7 @@ cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Genome 
 ##Calcul et plot des Fst en fenêtre glissante:
 ```{r plot-sliding-Fst, fig.width=20, fig.height=10}
 #calcul des Fst avec une fenêtre glissante de 10 SNP ("sliding.window.size")
-Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 10)
+Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
 #conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
 #plot en ligne. (le seuil indique la Fst globale estimée à l'échelle du génome).
@@ -168,7 +170,7 @@ Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec
 Avant de regrouper les résultats, il faut valider l'homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l'indice sera faible plus les matrices donc les analyses seront comparables.
 ```{r validation-matrice-omega, fig.width=10, fig.height=10}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-prefix <- "Poolseq.sub"
+prefix <- "GWAS-13pops-chr1_C8.sub"
 #liste et compte les matrices Ω du répertoire "path"
 listMatrix <- list.files(path_out, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
@@ -206,7 +208,7 @@ etc...
 Cette évaluation se fait sur les p.values du fichier "XtX.merged.sorted":
 ```{r Distribution-XtX}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-xtx.sorted=read.table(paste(path_out,"Poolseq.xtx.merged.sorted", sep=""),h=T)
+xtx.sorted=read.table(paste(path_out,"GWAS-13pops-chr1_C8.xtx.merged.sorted", sep=""),h=T)
 hist(10**(-1*xtx.sorted$XtX_log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
 ```
@@ -227,18 +229,18 @@ Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copie
 Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
 ```{r Thresholds}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-POD.omega=as.matrix(read.table(paste(path_POD, "Poolseq.POD_mat_omega.out", sep="")))
+POD.omega=as.matrix(read.table(paste(path_POD, "GWAS-13pops-chr1.POD_mat_omega.out", sep="")))
 plot(POD.omega,omegaB) ; abline(a=0,b=1)
 FMD.POD <- fmd.dist(POD.omega,omegaB)
 cat("Distance FMD =", FMD.POD, "\n")
 #Seuil XtX top 1%
-POD.XtX=read.table(paste(path_POD, "Poolseq.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
+POD.XtX=read.table(paste(path_POD, "GWAS-13pops-chr1.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
 thresh.XtX=quantile(POD.XtX,probs=0.99)
 cat("Seuil XtX =", thresh.XtX, "(Max=", max(POD.XtX) ,")", "\n")
 #Seuil C2 top 1%, pour chaque combinaison de contraste (3 dans l'exemple)
 List.tresh.C2<-c()
-for (j in 1:3) {
-POD.C2.j=read.table(paste(path_POD, "Poolseq.POD_C2_",j,".summary_contrast.out", sep=""),h=T)$M_C2
+for (j in 1:8) {
+POD.C2.j=read.table(paste(path_POD, "GWAS-13pops-chr1.POD_C2_",j,".out", sep=""),h=T)$M_C2
 thresh.C2.j=quantile(POD.C2.j,probs=0.99)
 cat("Seuil C2-Contrast", j," =", thresh.C2.j, "(Max=", max(POD.C2.j) ,")", "\n")
 List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des seuils
@@ -253,7 +255,7 @@ XtX.res=read.table(paste(path_out, "Poolseq.xtx.merged.sorted", sep=""),h=T)
 BF.res.Cov1=read.table(paste(path_out, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
 C2.res.C1=read.table(paste(path_out, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
 C2.res.C2=read.table(paste(path_out, "Poolseq.contrast-C2.merged.sorted", sep=""),h=T)
-C2.res.C3=read.table(paste(path_out, "Poolseq.contrast-C3.merged.sorted", sep=""),h=T)
+C2.res.C8=read.table(paste(path_out, "Poolseq.contrast-C8.merged.sorted", sep=""),h=T)
 
 # Fusion des résultats XtX/C2-N°1/BF-N°1 par chr puis position
 Joined.res = merge(x=XtX.res,y=merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
