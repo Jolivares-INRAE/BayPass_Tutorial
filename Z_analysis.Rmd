@@ -1,0 +1,117 @@
+---
+title: "Z_analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##chargement des librairies
+```{r load-Packages, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyverse)
+```
+##Définition d'un espace de travail
+Chaque utilisateur définira une arborescence de travail avec plusieurs dossiers contenant respectivement les fichiers vcf, les entrées BayPass, les sorties BayPass, les sorties POD et enfin un dossier recueillant les différents résultats (plots, liste de SNP...)
+```{r work-space}
+path_Tables <- "C:/BayPass_pipeline/Resultats/Z_analysis/"
+path_res <- "C:/BayPass_pipeline/Resultats/Z_analysis/Resultats/"
+```
+##Importe les fichiers de profondeur moyenne en fenètre glissante
+```{r Import_coverage-Full}
+SVF1.f.cov=read.table(paste(path_Tables, "SVF1_full_50K.SlidingCoverage", sep=""),h=T)
+SVM1.f.cov=read.table(paste(path_Tables, "SVM1_full_50K.SlidingCoverage", sep=""),h=T)
+SVF2.f.cov=read.table(paste(path_Tables, "SVF2_full_50K.SlidingCoverage", sep=""),h=T)
+SVM2.f.cov=read.table(paste(path_Tables, "SVM2_full_50K.SlidingCoverage", sep=""),h=T)
+SVF3.f.cov=read.table(paste(path_Tables, "SVF3_50K.SlidingCoverage", sep=""),h=T)
+SVM3.f.cov=read.table(paste(path_Tables, "SVM3_50K.SlidingCoverage", sep=""),h=T)
+```
+## Calcul des ratios
+Calcule le ratio profondeur moyenne de chaque fenêtre / profondeur moyenne des autosomes pour les ♂ et ♀
+Calcule le ration p♂/p♀ => si 1 = région autosomale(diploide), si 2 région sexuelle (haploide)
+
+```{r Calcul-coverage}
+SVF1.f.cov <- SVF1.f.cov %>% mutate(pSVF1 = Mean_Depth/34.20) #pondère la profondeur par la profondeur moyenne des autosomes
+SVM1.f.cov <- SVM1.f.cov %>% mutate(pSVM1 = Mean_Depth/38.10)
+SV1.f.j <- left_join(SVF1.f.cov,SVM1.f.cov, by = c("chr", "End_Bin"))
+#SV1.f.merge <- merge(x=SVM1.f.cov,y=SVF1.f.cov, by=c("chr","End_Bin"))
+SV1.f.j <- SV1.f.j %>% mutate(pRatio = pSVM1/pSVF1) #calcule le ratio ♂/♀ => 1= autosomal, 2=sexuel
+SV1.f.j <- SV1.f.j  %>% filter(!is.infinite(pRatio)) %>% filter(!is.na(pRatio)) %>% filter(pRatio > 0) #supprime les valeurs à 0 ou #NA
+
+SVF2.f.cov <- SVF2.f.cov %>% mutate(pSVF2 = Mean_Depth/34.50) #pondère la profondeur par la profondeur moyenne des autosomes
+SVM2.f.cov <- SVM2.f.cov %>% mutate(pSVM2 = Mean_Depth/38.60)
+SV2.f.j <- left_join(SVF2.f.cov,SVM2.f.cov, by = c("chr", "End_Bin"))
+SV2.f.j <- SV2.f.j %>% mutate(pRatio = pSVM2/pSVF2) #calcule le ratio ♂/♀ => 1= autosomal, 2=sexuel
+SV2.f.j <- SV2.f.j  %>% filter(!is.infinite(pRatio)) %>% filter(!is.na(pRatio)) %>% filter(pRatio > 0)#supprime les valeurs à 0 ou #NA
+
+SVF3.f.cov <- SVF3.f.cov %>% mutate(pSVF3 = Mean_Depth/38.24) #pondère la profondeur par la profondeur moyenne des autosomes
+SVM3.f.cov <- SVM3.f.cov %>% mutate(pSVM3 = Mean_Depth/32.91)
+SV3.f.j <- left_join(SVF3.f.cov,SVM3.f.cov, by = c("chr", "End_Bin"))
+SV3.f.j <- SV3.f.j %>% mutate(pRatio = pSVM3/pSVF3) #calcule le ratio ♂/♀ => 1= autosomal, 2=sexuel
+SV3.f.j <- SV3.f.j %>% filter(!is.infinite(pRatio)) %>% filter(!is.na(pRatio)) %>% filter(pRatio > 0) #supprime les valeurs à 0 ou #NA
+
+```
+## des ratios pour tout le génome
+Représentation en ligne = + facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Représentation en grille = + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+```{r Plot, fig.width=20, fig.height=10}
+SVF1.f.Depth.plot= ggplot(data=SV1.f.j, aes(x=End_Bin, y=pSVF1)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVF1 Windowed relative depth", subtitle = paste("Treshold Line = 0.5 \n Mean pSVF1 =", mean(SV1.f.j$pSVF1))) + geom_hline(yintercept=0.5)#+ ylim(0, 10)
+SVF1.f.Depth.plot
+SVM1.f.Depth.plot= ggplot(data=SV1.f.j, aes(x=End_Bin, y=pSVM1)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVM1 Windowed relative depth", subtitle = paste("Treshold Line = 1 \n Mean pSVF1 =", mean(SV1.f.j$pSVM1))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SVM1.f.Depth.plot
+SV1.f.j.plot= ggplot(data=SV1.f.j, aes(x=End_Bin, y=(pRatio))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="pMale / pFemale windowed ratio", subtitle = paste("Treshold Line = 1 \n Mean pRatio =", mean(SV1.f.j$pRatio))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SV1.f.j.plot
+
+SVF2.f.Depth.plot= ggplot(data=SV2.f.j, aes(x=End_Bin, y=pSVF2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVF2 Windowed relative depth", subtitle = paste("Treshold Line = 0.5 \n Mean pSVF2 =", mean(SV2.f.j$pSVF2))) + geom_hline(yintercept=0.5)#+ ylim(0, 10)
+SVF2.f.Depth.plot
+SVM2.f.Depth.plot= ggplot(data=SV2.f.j, aes(x=End_Bin, y=pSVM2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVM2 Windowed relative depth", subtitle = paste("Treshold Line = 1 \n Mean pSVF2 =", mean(SV2.f.j$pSVM2))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SVM2.f.Depth.plot
+SV2.f.j.plot= ggplot(data=SV2.f.j, aes(x=End_Bin, y=(pRatio))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="pMale / pFemale windowed ratio", subtitle = paste("Treshold Line = 1 \n Mean pRatio =", mean(SV2.f.j$pRatio))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SV2.f.j.plot
+
+SVF3.f.Depth.plot= ggplot(data=SV3.f.j, aes(x=End_Bin, y=pSVF3)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVF3 Windowed relative depth", subtitle = paste("Treshold Line = 0.5 \n Mean pSVF3 =", mean(SV3.f.j$pSVF3))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SVF3.f.Depth.plot
+SVM3.f.Depth.plot= ggplot(data=SV3.f.j, aes(x=End_Bin, y=pSVM3)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVM3 Windowed relative depth", subtitle = paste("Treshold Line = 1 \n Mean pSVF3 =", mean(SV3.f.j$pSVM3))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SVM3.f.Depth.plot
+SV3.f.j.plot= ggplot(data=SV3.f.j, aes(x=End_Bin, y=(pRatio))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="pMale / pFemale windowed ratio", subtitle = paste("Treshold Line = 1 \n Mean pRatio =", mean(SV3.f.j$pRatio))) + geom_hline(yintercept=1)#+ ylim(0, 10)
+SV3.f.j.plot
+```
+## des ratios pour un chromosome choisi
+Représentation en ligne = + facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Représentation en grille = + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+```{r Plot, fig.width=10, fig.height=5}
+sub.1=subset(SV1.f.j, chr== "chr29")
+sub.2=subset(SV2.f.j, chr== "chr29")
+sub.3=subset(SV3.f.j, chr== "chr29")
+
+SVF1.chr.plot= ggplot(data=sub.1, aes(x=End_Bin, y=(pSVF1))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="SVF1 Windowed relative depth", subtitle = paste("Treshold Line = 0.5 \n Mean pSVF1 =", mean(sub.1$pSVF1))) + geom_hline(yintercept=0.5)#+ ylim(0, 6)
+SVF1.chr.plot
+SVM1.chr.plot= ggplot(data=sub.1, aes(x=End_Bin, y=(pSVM1))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVM1 Windowed relative depth", subtitle = paste("Treshold Line = 1 \n Mean pSVM1 =", mean(sub.1$pSVM1))) + geom_hline(yintercept=1)#+ ylim(0, 6)
+SVM1.chr.plot
+SV1.chr.plot= ggplot(data=sub.1, aes(x=End_Bin, y=(pRatio))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="pMale1 / pFemale1 windowed ratio", subtitle = paste("Treshold Line = 1 \n Mean pRatio =", mean(sub.1$pRatio))) + geom_hline(yintercept=1)#+ ylim(0, 6)
+SV1.chr.plot
+
+SVF2.chr.plot= ggplot(data=sub.2, aes(x=End_Bin, y=(pSVF2))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="SVF2 Windowed relative depth", subtitle = paste("Treshold Line = 0.5 \n Mean pSVF2 =", mean(sub.2$pSVF2))) + geom_hline(yintercept=0.5)#+ ylim(0, 6)
+SVF2.chr.plot
+SVM2.chr.plot= ggplot(data=sub.2, aes(x=End_Bin, y=(pSVM2))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVM2 Windowed relative depth", subtitle = paste("Treshold Line = 1 \n Mean pSVM2 =", mean(sub.2$pSVM2))) + geom_hline(yintercept=1)#+ ylim(0, 6)
+SVM2.chr.plot
+SV2.chr.plot= ggplot(data=sub.2, aes(x=End_Bin, y=(pRatio))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="pMale2 / pFemale2 windowed ratio", subtitle = paste("Treshold Line = 1 \n Mean pRatio =", mean(sub.2$pRatio))) + geom_hline(yintercept=1)#+ ylim(0, 6)
+SV2.chr.plot
+
+SVF3.chr.plot= ggplot(data=sub.3, aes(x=End_Bin, y=(pSVF3))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="SVF3 Windowed relative depth", subtitle = paste("Treshold Line = 0.5 \n Mean pSVF3 =", mean(sub.3$pSVF3))) + geom_hline(yintercept=0.5)#+ ylim(0, 6)
+SVF3.chr.plot
+SVM3.chr.plot= ggplot(data=sub.3, aes(x=End_Bin, y=(pSVM3))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title = "SVM3 Windowed relative depth", subtitle = paste("Treshold Line = 1 \n Mean pSVM3 =", mean(sub.3$pSVM3))) + geom_hline(yintercept=1)#+ ylim(0, 6)
+SVM3.chr.plot
+SV3.chr.plot= ggplot(data=sub.3, aes(x=End_Bin, y=(pRatio))) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + labs(title ="pMale3 / pFemale3 windowed ratio", subtitle = paste("Treshold Line = 1 \n Mean pRatio =", mean(sub.3$pRatio))) + geom_hline(yintercept=1)#+ ylim(0, 6)
+SV3.chr.plot
+```
+
+
+```{r Import_diversity}
+SVF1.pi=read.table(paste(path_Tables, "SVF1_PI_Sliding50K.windowed.pi", sep=""),h=T)
+```
+```{r Calcul_diversity}
+SVF1.pi <- SVF1.pi %>% mutate(Percentage_Diversity = PI*100)
+
+```
