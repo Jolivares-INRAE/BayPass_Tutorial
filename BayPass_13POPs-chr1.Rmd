@@ -57,10 +57,10 @@ library(tidyverse)
 Chaque utilisateur définira une arborescence de travail avec plusieurs dossiers contenant respectivement les fichiers vcf, les entrées BayPass, les sorties BayPass, les sorties POD et enfin un dossier recueillant les différents résultats (plots, liste de SNP...)
 ```{r work-space}
 path_vcf <- "C:/BayPass_pipeline/vcf/"
-path_input <- "C:/BayPass_pipeline/Input/13pops/chr1"
-path_out <- "C:/BayPass_pipeline/Output/13pops/chr1"
-path_POD <- "C:/BayPass_pipeline/POD/13pops/chr1"
-path_res <- "C:/BayPass_pipeline/Resultats/13pops/chr1"
+path_input <- "C:/BayPass_pipeline/Input/13pops/chr1/"
+path_out <- "C:/BayPass_pipeline/Output/13pops/chr1/"
+path_POD <- "C:/BayPass_pipeline/POD/13pops/"
+path_res <- "C:/BayPass_pipeline/Resultats/13pops/chr1/"
 ```
 ##Obtention d'un fichier VCF
 L'analyse qualité et l'alignement sur le génome de référence devront avoir été réalisé au préalable afin d'obtenir un fichier BAM correctement indéxé.
@@ -82,11 +82,15 @@ min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soi
 ```{r conversion-pooldata}
 #Infos sur les pops
 pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', '85-3-4-S', 'IT-ID3-S', '17-47-002-R', '17-53-006-R', '30-1-R', '44-1-R', '44-2-R', '44-3-R', 'IT-ID1-R'))
-psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72')) #ploydie autosome/chr2-28
+#psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72')) #ploydie autosome/chr2-28
 psizes_Z <- as.numeric(c('120', '135', '16', '86', '135', '30','135', '120', '150', '60', '63', '42', '53')) #ploydie Z/chr1
-psizes_W <- as.numeric(c('60', '90', '16', '56', '90', '28','90', '80', '100', '28', '34', '20', '38')) #ploydie W/chr29
+#psizes_W <- as.numeric(c('30', '45', '8', '28', '45', '14','45', '40', '50', '14', '17', '10', '19')) #ploydie W/chr29
 #conversion du .vcf
-GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "Pool13pops_chr1-varscan.vcf", sep=""), poolsizes = psizes, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.01, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "Wilde_13pops_chr1-varscan.vcf.gz", sep=""), poolsizes = psizes_Z, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+#conversion d'un .sync (PoPoolation)
+#GWAS.pooldata <- popsync2pooldata(sync.file = paste(path_vcf, "13pops_chr1.sync.gz", sep=""), poolsizes = psizes_W, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, noindel = FALSE, nlines.per.readblock = 1e+06, nthreads = 8)
+#élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)
+GWAS.pooldata<-pooldata.subset(GWAS.pooldata, cov.qthres.per.pool = c(0,0.99))
 ```
 #Analyses préliminaires
 A partir de cet objet pooldata on faire une première analyse des Fst.
@@ -170,7 +174,7 @@ Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec
 Avant de regrouper les résultats, il faut valider l'homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l'indice sera faible plus les matrices donc les analyses seront comparables.
 ```{r validation-matrice-omega, fig.width=10, fig.height=10}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-prefix <- "GWAS-13pops-chr1_C8.sub"
+prefix <- "13pops-chr1_STD-2000.sub"
 #liste et compte les matrices Ω du répertoire "path"
 listMatrix <- list.files(path_out, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
@@ -184,9 +188,6 @@ omegaB=as.matrix(read.table(paste(path_out, prefix, j,"_mat_omega.out", sep=""))
 FMD <- fmd.dist(omegaA, omegaB)
 ListFMD <- c(ListFMD,FMD)
 }
-#calcule la moyenne et la sd de toutes les distances FMD
-cat("FMD mean =", mean(ListFMD), "\n")
-cat("FMD sd =" , sd(ListFMD), "\n")
 
 #heatmap de la dernière matrice Ω.
 colnames(omegaB) <-c(pnames)
@@ -194,6 +195,13 @@ rownames(omegaB) <-c(pnames)
 cor.mat=cov2cor(omegaB)
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(16)
 cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on last "~hat(Omega))
+#SVD de la dernière matrice Ω.
+SVD_omega<-plot.omega(omega=omegaB, pop.names=pnames, main = expression("Singular Value Decomposition of last " * ~hat(Omega)), pos=3)
+SVD_omega
+
+#calcule la moyenne et la sd de toutes les distances FMD
+cat("FMD mean =", mean(ListFMD), "\n")
+cat("FMD sd =" , sd(ListFMD), "\n")
 ```
 Si les réplicats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats, un exemple de script est disponible à l'adresse suivante:
 https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
@@ -208,8 +216,8 @@ etc...
 Cette évaluation se fait sur les p.values du fichier "XtX.merged.sorted":
 ```{r Distribution-XtX}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-xtx.sorted=read.table(paste(path_out,"GWAS-13pops-chr1_C8.xtx.merged.sorted", sep=""),h=T)
-hist(10**(-1*xtx.sorted$XtX_log10.1.pval.),freq=F,breaks=50)
+xtx.sorted=read.table(paste(path_out,"13pops-chr1-Core.xtx.merged.sorted", sep=""),h=T)
+hist(10**(-1*xtx.sorted$log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
 ```
 Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
@@ -251,43 +259,63 @@ La matrice Ω POD est comparée à la matrice Ω initialement calculée (omega
 #Analyses des résultats
 L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
 ```{r Import}
-XtX.res=read.table(paste(path_out, "GWAS-13pops-chr1_C8.xtx.merged.sorted", sep=""),h=T)
-BF.res.Cov1=read.table(paste(path_out, "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
-C2.res.C1=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C1.merged.sorted", sep=""),h=T)
-C2.res.C2=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C2.merged.sorted", sep=""),h=T)
-C2.res.C3=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C3.merged.sorted", sep=""),h=T)
-C2.res.C4=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C4.merged.sorted", sep=""),h=T)
-C2.res.C5=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C5.merged.sorted", sep=""),h=T)
-C2.res.C6=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C6.merged.sorted", sep=""),h=T)
-C2.res.C7=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C7.merged.sorted", sep=""),h=T)
-C2.res.C8=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C8.merged.sorted", sep=""),h=T)
-C2.res.C9=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C9.merged.sorted", sep=""),h=T)
-C2.res.C10=read.table(paste(path_out, "GWAS-13pops-chr1.contrast-C10.merged.sorted", sep=""),h=T)
+XtX.res=read.table(paste(path_out, "13pops-chr1-Aux-5001.xtx", sep=""),h=T)
+BF.res.Cov1=read.table(paste(path_out, "13pops-chr1.Aux-5001.Betai-Cov1", sep=""),h=T)
+C2.res.C1=read.table(paste(path_out, "13pops_chr1_AuxM-5001.contrast-C1", sep=""),h=T)
+#C2.res.C2=read.table(paste(path_out, "13pops_chr1_AuxM-Prior.contrast-C2", sep=""),h=T)
 
 # Fusion des résultats XtX/C2-N°1/BF-N°1 par chr puis position
-Joined.res = merge(x=XtX.res,y=merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
+
+Joined.res1 = merge(x=XtX.res,y=merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
+#Joined.res2 = merge(x=XtX.res,y=merge(x=C2.res.C2,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
+
 #Définition des seuils ou copie des seuils POD
-thresh.XtX=quantile(XtX.res$M_XtX, probs=0.95)
-thresh.C2=quantile(C2.res.C1$M_C2, probs=0.95)
-thresh.BF<-c(15)
+
+cat("Seuil 5% XtX =", quantile(XtX.res$M_XtX, probs=0.95), "(Max=", max(XtX.res$M_XtX) ,")", "\n")
+cat("Seuil 1% XtX =", quantile(XtX.res$M_XtX, probs=0.99), "(Max=", max(XtX.res$M_XtX) ,")", "\n")
+cat("Seuil 5% C2-1 =", quantile(C2.res.C1$M_C2, probs=0.95), "(Max=", max(C2.res.C1$M_C2) ,")", "\n")
+cat("Seuil 1% C2-1 =", quantile(C2.res.C1$M_C2, probs=0.99), "(Max=", max(C2.res.C1$M_C2) ,")", "\n")
+cat("Seuil 5% BF-1 =", quantile(BF.res.Cov1$BF.dB., probs=0.95), "(Max=", max(BF.res.Cov1$BF.dB.) ,")", "\n")
+cat("Seuil 1% BF-1 =", quantile(BF.res.Cov1$BF.dB., probs=0.99), "(Max=", max(BF.res.Cov1$BF.dB.) ,")", "\n")
+
 ```
 
-```{r plot, fig.width=20, fig.height=20}
-#Manhattan plot simple des valeurs de C2 
-Manplot.C2 = ggplot(data=Joined.res, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-Manplot.C2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
-#Manhattan plot sous 2 conditions: XtX>seuil & BF>seuil
-#Manplot.thresh = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & M_C2>thresh.C2), aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-#Manplot.thresh + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
-```
+```{r plot, fig.width=20, fig.height=10}
 
-```{r Export}
-#Exporte les données filtrées sous conditions
-write.table(Manplot.thresh$data, row.names = FALSE, file=paste(path_res, "XtX-C2_VS_pos.txt", sep=""), quote = FALSE, sep = "\t")
-#créé et exporte un fichier au format bed
-list.tmp <- paste(Manplot.thresh$data[,1], Manplot.thresh$data[,2]-1, Manplot.thresh$data[,2])
-List.bed<-separate(plyr::ldply(list.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
-#write.table(List.bed, row.names = FALSE, file=paste(path_res, "List_Outliers.bed", sep=""), quote = FALSE, sep = "\t")
+thresh.XtX=quantile(XtX.res$M_XtX, probs=0.99)
+thresh.C2=quantile(C2.res.C1$M_C2, probs=0.99)
+thresh.BF<-c(20)
+
+Slide_Cov1=read.table(paste(path_out, "13pops-chr1-Aux-5001.Betai-Cov1.20Ksliding20", sep=""),h=T)
+Slide_XtX=read.table(paste(path_out, "13pops-chr1-Aux-5001.xtx.20Ksliding21", sep=""),h=T)
+Slide_C2=read.table(paste(path_out, "13pops_chr1_AuxM-5001.contrast-C1.20Ksliding3", sep=""),h=T)
+
+#Manhattan plot simple des valeurs de XtX 
+Manplot.resXtX = ggplot(data=Joined.res1, aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + ggtitle("position VerSus XtX (Seuil = top 1%)")
+Manplot.resXtX + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.XtX)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+#plot de la fenêtre glissante Aux Model XtX.
+Manplot.Slide2 = ggplot(data=Slide_XtX, aes(x=Start, y=XtX)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + ggtitle("sliding 50K window versus XtX >15 AuxModel")
+Manplot.Slide2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#Manhattan plot simple des valeurs de contrastes C2
+Manplot.resC1 = ggplot(data=Joined.res1, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + ggtitle("position VerSus contrast1 (Seuil = top 1%)")
+Manplot.resC1 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+#plot de la fenêtre glissante Aux Model Contraste
+Manplot.Slide3 = ggplot(data=Slide_C2, aes(x=Start, y=C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + ggtitle("sliding 50K window versus C2 >10 AuxModel")
+Manplot.Slide3 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#plot des BF Aux Model
+Manplot.resBF1 = ggplot(data=Joined.res1, aes(x=pos, y=BF.dB.)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + ggtitle("position versus BF1 (Seuil = 20)")
+Manplot.resBF1 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.BF)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+#plot de la fenêtre glissante Aux Model BF.
+Manplot.Slide1 = ggplot(data=Slide_Cov1, aes(x=Start, y=BF)) + geom_point(aes(color=chr), alpha=0.8, size=1.5) + ggtitle("sliding 50K window versus BF >20 AuxModel")
+Manplot.Slide1 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#Manhattan plot sous 3 conditions: XtX>seuil & C2>seuil & BF>seuil
+Manplot.thresh1 = ggplot(data=subset(Joined.res1, M_XtX>thresh.XtX & M_C2>thresh.C2 & BF.dB.>thresh.BF), aes(x=pos, y=BF.dB.)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)+ ggtitle("position versus Top 1% XtX & top 1% C2 & BF1 > 20") 
+Manplot.thresh1 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#write.table(Joined.res1, file=paste(path_res, "Chr1_XtX_BF_C2_maf005.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
 ```
 Le premier graphique est un Manhattan plot des valeurs de C2 le long des chromosomes disposés en lignes (facet_grid). Pour une disposition en grille il faudra utiliser l'option "facet_wrap": facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom")).
 Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
@@ -295,35 +323,76 @@ Le deuxième graphique est un Manhattan plot selon 2 conditions: toutes les posi
 Enfin on peut exporter dans un fichier les données qui ont servies à établir le deuxième graphique.
 
 #Comparaison par diagramme de Venn:
-```{r venn}
+```{r Listes}
 #Merge des résultats par chr et pos
-XtX_C2_Join1 = merge(x=XtX.res,y=C2.res.C2, by=c("chr","pos"))
-XtX_C2_Join2 = merge(x=XtX.res,y=C2.res.C4, by=c("chr","pos"))
-XtX_C2_Join3 = merge(x=XtX.res,y=C2.res.C3, by=c("chr","pos"))
-XtX_C2_Join4 = merge(x=XtX.res,y=C2.res.C7, by=c("chr","pos"))
+#XtX_C2_Join1 = merge(x=XtX.res,y=C2.res.C1, by=c("chr","pos"))
+#XtX_C2_Join2 = merge(x=XtX.res,y=C2.res.C2, by=c("chr","pos"))
+#XtX_BF_Join1 = merge(x=XtX.res,y=BF.res.Cov1, by=c("chr","pos"))
+#XtX_BF_Join2 = merge(x=XtX.res,y=BF.res.Cov2, by=c("chr","pos"))
+
+#C2_BF_Join1 = merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos"))
+#C2_BF_Join2 = merge(x=C2.res.C1,y=BF.res.Cov2, by=c("chr","pos"))
+#C2_BF_Join3 = merge(x=C2.res.C2,y=BF.res.Cov1, by=c("chr","pos"))
+#C2_BF_Join4 = merge(x=C2.res.C2,y=BF.res.Cov2, by=c("chr","pos"))
+
 #Filtrage selon conditions
-Datmp1 = subset(XtX_C2_Join1, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp2 = subset(XtX_C2_Join2, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp3 = subset(XtX_C2_Join3, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp4 = subset(XtX_C2_Join4, M_XtX> thresh.XtX & M_C2>thresh.C2)
-#Datmp3 <-read.table("C:/BayPass_pipeline/Resultats/Souches/chr1/candidats_2021-Top5.txt")
+thresh.BF2<-c(10)
+Datmp1 = subset(Joined.res1, M_XtX> thresh.XtX )
+Datmp2 = subset(Joined.res1, M_C2>thresh.C2)
+Datmp3 = subset(Joined.res1, BF.dB.>thresh.BF2)
+#Datmp4 = subset(XtX_BF_Join2, M_XtX> thresh.XtX & BF.dB.>thresh.BF2)
+#Datmp5 = subset(C2_BF_Join1, M_C2>thresh.C2 & BF.dB.>thresh.BF2)
+#Datmp6 = subset(C2_BF_Join2, M_C2>thresh.C2 & BF.dB.>thresh.BF2)
+#Datmp7 = subset(C2_BF_Join3, M_C2>thresh.C2 & BF.dB.>thresh.BF2)
+#Datmp8 = subset(C2_BF_Join4, M_C2>thresh.C2 & BF.dB.>thresh.BF2)
+#Datmp9 = subset(BF.res.Cov1, BF.dB.>7.5)
+#Datmp10 = subset(BF.res.Cov1, BF.dB.>15)
+#Datmp11 = subset(BF.res.Cov2, BF.dB.>7.5)
+#Datmp12 = subset(BF.res.Cov2, BF.dB.>15)
+
 #Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
 List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
 List.SNP2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
 List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
-List.SNP4<-paste(Datmp4[,1], "_", Datmp4[,2], sep="")
+#List.SNP4<-paste(Datmp4[,1], "_", Datmp4[,2], sep="")
+#List.SNP5<-paste(Datmp5[,1], "_", Datmp5[,2], sep="")
+#List.SNP6<-paste(Datmp6[,1], "_", Datmp6[,2], sep="")
+#List.SNP7<-paste(Datmp7[,1], "_", Datmp7[,2], sep="")
+#List.SNP8<-paste(Datmp8[,1], "_", Datmp8[,2], sep="")
+#List.SNP9<-paste(Datmp9[,1], "_", Datmp9[,2], sep="") #BF1 7.5
+#List.SNP10<-paste(Datmp10[,1], "_", Datmp10[,2], sep="") #BF1 15
+#List.SNP11<-paste(Datmp11[,1], "_", Datmp11[,2], sep="") #BF2 7.5
+#List.SNP12<-paste(Datmp12[,1], "_", Datmp12[,2], sep="") #BF2 15
 
+```
+
+```{r Export}
+#Exporte les données filtrées sous conditions
+#write.table(Manplot.thresh$data, row.names = FALSE, file=paste(path_res, "XtX-C2_VS_pos.txt", sep=""), quote = FALSE, sep = "\t")
+#créé et exporte un fichier au format bed
+list.tmp <- paste(Datmp3[,1], Datmp3[,2]-1, Datmp3[,2])
+List.bed<-separate(plyr::ldply(list.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
+write.table(List.bed, row.names = FALSE, file=paste(path_res, "List_Outliers_BF10.bed", sep=""), quote = FALSE, sep = "\t")
+```
+
+```{r venn}
 #Diagramme de Venn
-vd <- venn.diagram(x=list("47-2R" = List.SNP1, "30-1R" = List.SNP2, "53-6R" = List.SNP3, "44-3R" = List.SNP4), fill = brewer.pal(4, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+#cat.col = c("darkgreen", "black", "darkblue")
+vd0 <- venn.diagram(x=list("XtX top1%" = List.SNP1, "C2 top 1%" = List.SNP2, "BF >50" = List.SNP3), fill = c("blue", "green", "red"), cat.col = c("blue", "green", "red"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+#vd1 <- venn.diagram(x=list("XtX_C1" = List.SNP1, "XtX_C2" = List.SNP2), fill = c("blue", "green"), cat.col = c("blue", "green"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+#vd2 <- venn.diagram(x=list("XtX_BF1" = List.SNP3, "XtX_BF2" = List.SNP4, "." = List.SNP4), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+##vd3 <- venn.diagram(x=list("C1_BF1" = List.SNP5, "C1_BF2" = List.SNP6, "." = List.SNP6), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+#vd4 <- venn.diagram(x=list("C2_BF1" = List.SNP7, "C2_BF2" = List.SNP8, "." = List.SNP8), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
 grid.newpage()
-grid.draw(vd)
+grid.draw(vd0)
+
 ```
 
 #Extraire les listes de chaque intersecte du diagramme:
 ```{r List-Venn}
-myV <- plotVenn(list("France" = List.SNP1, "Italie" = List.SNP2, "RGV" = List.SNP3, "13pops" = List.SNP4))
+myV <- plotVenn(list("XtX_BF1" = List.SNP3, "XtX_BF2" = List.SNP4))
 myV <- plyr::ldply(listVennRegions(myV), cbind)
-write.table(myV, file=paste(path_res, "All_overlap.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+write.table(myV, file=paste(path_res, "Seed2001_Overlap_XtX_BF.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
 #récupère la liste des intersectes
 myV %>% distinct(myV[,1])
 ```
@@ -335,4 +404,91 @@ V.tmp<-separate(plyr::ldply(paste(tmp[,2]), cbind), col = "1",  sep = "_", into 
 V.bed <- plyr::ldply(paste(V.tmp[,1], as.numeric(V.tmp[,2])-1, V.tmp[,2]), cbind)
 V.bed<-mutate(separate(V.bed, col = "1",  sep = " ", into = c("chr", "start", "end")))
 write.table(V.bed, file=paste(path_res, "overlap_3_contrastes.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+```
+#L'intersect se fait avec le BED contre un fichier GFF/GTF comme un transcriptome par exemple.
+
+Très léger, ça passe en frontal:
+
+module load bioinfo/bedtools-2.27.1
+bedtools intersect -wb -a overlap.bed -b /home/midier/work/RNA_Reads/Merged/RNAseq_merged.gtf > overlap.intersect
+#Même chose le GFF3 Gensas.
+bedtools intersect -wb -a RY-3rep_overlap.bed -b Annotations_Gensas.gff3 > RY-3rep_Gensas.intersect
+
+
+On obtient:
+chr1    314013    314014    chr1    StringTie   transcript 314014
+314014  1000    -   .   gene_id "MSTRG.34"; transcript_id "MSTRG.34.2";
+chr1    576413    576414    chr1    StringTie   transcript 576414
+576414  1000    +   .   gene_id "MSTRG.52"; transcript_id "MSTRG.52.1";
+chr1    576413    576414    chr1    StringTie   transcript 576414
+576414  1000    +   .   gene_id "MSTRG.53"; transcript_id "MSTRG.53.1";
+
+# récupérer une liste des genes ID de la colonne 13 en gardant l'ordre initial (plus facile pour s'y retrouver)
+#recupère la colonne 13 | enlèbve les " et ; | garde une seule valeur en cas de doublon (sans tri) > enregistre
+awk '{print $13}' overlap.intersect | sed -e 's/"\|;//g' - | awk '!a[$0]++' -  > overlap.gene.list
+
+# récupérer une liste des transcript ID de la colonne 15 en gardant l'ordre initial (plus facile pour s'y retrouver)
+#recupère la colonne 15 | enlèbve les " et ; | garde une seule valeur en cas de doublon (sans tri) > enregistre
+awk '{print $15}' overlap.intersect | sed -e 's/"\|;//g' - | awk '!a[$0]++' -  > overlap.transcript.list
+
+# extraire les séquences correspondantes à cette liste depuis un fasta
+
+module load bioinfo/seqtk-1.3
+seqtk subseq ~/work/Pipe_RNAseq/Transcriptome_GTF/Merged/Cpom_Full_2021_transcripts.fasta cds.list > cds.fas
+#Comparaison entre RUN
+```{r}
+seed2001.Cov1=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-2001-31274562/", "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
+seed2001.Cov2=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-2001-31274562/", "GWAS-13pops-chr1.Betai-Cov2.merged.sorted", sep=""),h=T)
+seed5001.Cov1=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-5001-31250906/", "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
+seed5001.Cov2=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-5001-31250906/", "GWAS-13pops-chr1.Betai-Cov2.merged.sorted", sep=""),h=T)
+seed8001.Cov1=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-8001-31430093/", "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
+seed8001.Cov2=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-8001-31430093/", "GWAS-13pops-chr1.Betai-Cov2.merged.sorted", sep=""),h=T)
+Datmp13 = subset(seed2001.Cov1, BF.dB.>7.5)
+Datmp14 = subset(seed2001.Cov1, BF.dB.>15)
+Datmp15 = subset(seed2001.Cov2, BF.dB.>7.5)
+Datmp16 = subset(seed2001.Cov2, BF.dB.>15)
+Datmp17 = subset(seed5001.Cov1, BF.dB.>7.5)
+Datmp18 = subset(seed5001.Cov1, BF.dB.>15)
+Datmp19 = subset(seed5001.Cov2, BF.dB.>7.5)
+Datmp20 = subset(seed5001.Cov2, BF.dB.>15)
+Datmp21 = subset(seed8001.Cov1, BF.dB.>7.5)
+Datmp22 = subset(seed8001.Cov1, BF.dB.>15)
+Datmp23 = subset(seed8001.Cov2, BF.dB.>7.5)
+Datmp24 = subset(seed8001.Cov2, BF.dB.>15)
+Datmp25 = subset(C2_BF_Join1, M_C2>thresh.C2)
+Datmp26 = subset(C2_BF_Join1, BF.dB.>15)
+Datmp27 = subset(C2_BF_Join2, BF.dB.>15)
+Datmp28 = subset(C2_BF_Join1, BF.dB.>7.5)
+Datmp29 = subset(C2_BF_Join2, BF.dB.>7.5)
+
+
+List.SNP13<-paste(Datmp13[,1], "_", Datmp13[,2], sep="") #2001-BF1 7.5
+List.SNP14<-paste(Datmp14[,1], "_", Datmp14[,2], sep="") #2001-BF1 15
+List.SNP15<-paste(Datmp13[,1], "_", Datmp15[,2], sep="") #2001-BF2 7.5
+List.SNP16<-paste(Datmp14[,1], "_", Datmp16[,2], sep="") #2001-BF2 15
+List.SNP17<-paste(Datmp17[,1], "_", Datmp17[,2], sep="") #5001-BF1 7.5
+List.SNP18<-paste(Datmp18[,1], "_", Datmp18[,2], sep="") #5001-BF1 15
+List.SNP19<-paste(Datmp19[,1], "_", Datmp19[,2], sep="") #5001-BF2 7.5
+List.SNP20<-paste(Datmp20[,1], "_", Datmp20[,2], sep="") #5001-BF2 15
+List.SNP21<-paste(Datmp21[,1], "_", Datmp21[,2], sep="") #8001-BF1 7.5
+List.SNP22<-paste(Datmp22[,1], "_", Datmp22[,2], sep="") #8001-BF1 15
+List.SNP23<-paste(Datmp23[,1], "_", Datmp23[,2], sep="") #8001-BF2 7.5
+List.SNP24<-paste(Datmp24[,1], "_", Datmp24[,2], sep="") #8001-BF2 15
+List.SNP25<-paste(Datmp25[,1], "_", Datmp25[,2], sep="") #C2 top5%
+List.SNP26<-paste(Datmp26[,1], "_", Datmp26[,2], sep="") #BF1 > 15
+List.SNP27<-paste(Datmp26[,1], "_", Datmp27[,2], sep="") #BF2 > 15
+List.SNP28<-paste(Datmp28[,1], "_", Datmp28[,2], sep="") #BF1 > 7.5
+List.SNP29<-paste(Datmp29[,1], "_", Datmp29[,2], sep="") #BF2 > 7.5
+```
+
+```{r venn}
+#Diagramme de Venn
+#cat.col = c("darkgreen", "black", "darkblue")
+vd5 <- venn.diagram(x=list("2001-Cov1" = List.SNP14, "5001-Cov1" = List.SNP18, "8001-Cov1" = List.SNP22), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd6 <- venn.diagram(x=list("2001-Cov2" = List.SNP16, "5001-Cov2" = List.SNP20, "8001-Cov2" = List.SNP24), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd7 <- venn.diagram(x=list("2001-Cov2" = List.SNP15, "5001-Cov2" = List.SNP19, "8001-Cov2" = List.SNP23), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd8 <- venn.diagram(x=list("2001-Cov1" = List.SNP13, "5001-Cov1" = List.SNP17, "8001-Cov1" = List.SNP21), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+grid.newpage()
+grid.draw(vd8)
+
 ```
