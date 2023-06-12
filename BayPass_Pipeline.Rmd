@@ -58,9 +58,9 @@ Chaque utilisateur définira une arborescence de travail avec plusieurs dossiers
 ```{r work-space}
 path_vcf <- "C:/BayPass_pipeline/vcf/"
 path_input <- "C:/BayPass_pipeline/Input/13pops/chr1"
-path_out <- "C:/BayPass_pipeline/Output/13pops/chr1"
-path_POD <- "C:/BayPass_pipeline/POD/13pops/chr1"
-path_res <- "C:/BayPass_pipeline/Resultats/13pops/chr1"
+path_out <- "C:/BayPass_pipeline/Output/"
+path_POD <- "C:/BayPass_pipeline/POD/13pops/chr1/"
+path_res <- "C:/BayPass_pipeline/Resultats/13pops/chr1/"
 ```
 ##Obtention d'un fichier VCF
 L'analyse qualité et l'alignement sur le génome de référence devront avoir été réalisé au préalable afin d'obtenir un fichier BAM correctement indéxé.
@@ -250,33 +250,40 @@ La matrice Ω POD est comparée à la matrice Ω initialement calculée (omega
 
 #Analyses des résultats
 L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
-```{r Fusion-&-plot, fig.width=20, fig.height=20}
-XtX.res=read.table(paste(path_out, "Poolseq.xtx.merged.sorted", sep=""),h=T)
-BF.res.Cov1=read.table(paste(path_out, "Poolseq.Betai-Cov1.merged.sorted", sep=""),h=T)
-C2.res.C1=read.table(paste(path_out, "Poolseq.contrast-C1.merged.sorted", sep=""),h=T)
-C2.res.C2=read.table(paste(path_out, "Poolseq.contrast-C2.merged.sorted", sep=""),h=T)
-C2.res.C8=read.table(paste(path_out, "Poolseq.contrast-C8.merged.sorted", sep=""),h=T)
+```{r Fusion-&-plot, fig.width=10, fig.height=10}
 
-# Fusion des résultats XtX/C2-N°1/BF-N°1 par chr puis position
-Joined.res = merge(x=XtX.res,y=merge(x=C2.res.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos"))
-#Définition des seuils ou copie des seuils POD
-thresh.XtX=quantile(XtX.res$M_XtX, probs=0.99)
-thresh.C2=quantile(C2.res.C1$M_C2, probs=0.99)
+BF.res.Cov1=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov1", sep=""),h=T)
+
 thresh.BF<-c(15)
 
-#Manhattan plot simple des valeurs de C2 
-Manplot.C2 = ggplot(data=Joined.res, aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-Manplot.C2 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.C2)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
-#Manhattan plot sous 2 conditions: XtX>seuil & BF>seuil
-Manplot.thresh = ggplot(data=subset(Joined.res, M_XtX> thresh.XtX & BF.dB.>thresh.BF), aes(x=pos, y=M_C2)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)
-Manplot.thresh + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Manplot.B = ggplot(data=BF.res.Cov1, aes(x=BF.dB., y=eBPis)) +
+  geom_point(aes(color=chr), alpha=0.8, size=1.5)+ scale_x_continuous() + scale_y_continuous()
+Manplot.B + geom_hline(yintercept=quantile(BF.res.Cov1$Beta_is, probs=0.99))+
+  geom_hline(yintercept=quantile(BF.res.Cov1$eBPis, probs=0.99))+
+  geom_vline(xintercept=quantile(BF.res.Cov1$BF.dB., probs=0.99), color="blue")+
+  geom_vline(xintercept=15, color="green")+
+  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 
-#Exporte les données filtrées sous conditions
-write.table(Manplot.thresh$data, row.names = FALSE, file=paste(path_res, "XtX-BF_VS_pos.txt", sep=""), quote = FALSE, sep = "\t")
-#créé et exporte un fichier au format bed
-list.tmp <- paste(Manplot.thresh$data[,1], Manplot.thresh$data[,2]-1, Manplot.thresh$data[,2])
-List.bed<-separate(plyr::ldply(list.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
-write.table(List.bed, row.names = FALSE, file=paste(path_res, "List_Outliers.bed", sep=""), quote = FALSE, sep = "\t")
+Manplot.A = ggplot(data=BF.res.Cov1, aes(x=pos, y=BF.dB.)) + geom_point(color="grey", alpha=0.8, size=0.5)+
+  geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$Beta_is >= quantile(BF.res.Cov1$Beta_is, probs=0.99)|BF.res.Cov1$Beta_is <= quantile(BF.res.Cov1$Beta_is, probs=0.01)), color="blue", alpha=0.8, size=1.5)+
+  geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$BF.dB.>=15), color="yellow", alpha=0.8, size=1)+
+  geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$BF.dB.>=15 & pos>53530000 & pos<53540000), color="black", alpha=0.8, size=1.5)+
+  geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$BF.dB.>=15 & pos>53580000 & pos<53600000), color="red", alpha=0.8, size=1.5)+
+  geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$BF.dB.>=15 & pos>53605000 & pos<53615000), color="green", alpha=0.8, size=1.5)
+Manplot.A + scale_x_continuous() + scale_y_continuous() + geom_hline(yintercept=quantile(BF.res.Cov1$BF.dB., probs=0.99))+ 
+facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+Manplot.C = ggplot(data=BF.res.Cov1, aes(x=eBPis, y=Beta_is)) + geom_point(color="blue", alpha=0.8, size=0.5)+ geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$BF.dB.>15), color="red", alpha=0.8, size=1.5)
+Manplot.C + scale_x_continuous() + scale_y_continuous() + geom_hline(yintercept=quantile(BF.res.Cov1$Beta_is, probs=0.99))+ geom_hline(yintercept=quantile(BF.res.Cov1$Beta_is, probs=0.01))+ geom_vline(xintercept=quantile(BF.res.Cov1$eBPis, probs=0.99))+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+Manplot.D = ggplot(data=BF.res.Cov1, aes(x=Beta_is, y=BF.dB.)) + geom_point(color="blue", alpha=0.8, size=0.5)+ geom_point(data=subset(BF.res.Cov1, BF.res.Cov1$BF.dB.>15 & BF.res.Cov1$Beta_is >= quantile(BF.res.Cov1$Beta_is, probs=0.99) | BF.res.Cov1$BF.dB.>15 & BF.res.Cov1$Beta_is <= quantile(BF.res.Cov1$Beta_is, probs=0.01)), color="red", alpha=0.8, size=1.5)
+Manplot.D + scale_x_continuous() + scale_y_continuous() +
+  geom_hline(yintercept=15)+
+  # geom_vline(xintercept=quantile(BF.res.Cov1$Beta_is, probs=0.01))+
+  # geom_vline(xintercept=quantile(BF.res.Cov1$Beta_is, probs=0.99))+
+  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+
 ```
 Le premier graphique est un Manhattan plot des valeurs de C2 le long des chromosomes disposés en lignes (facet_grid). Pour une disposition en grille il faudra utiliser l'option "facet_wrap": facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom")).
 Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
@@ -284,39 +291,117 @@ Le deuxième graphique est un Manhattan plot selon 2 conditions: toutes les posi
 Enfin on peut exporter dans un fichier les données qui ont servies à établir le deuxième graphique.
 
 #Comparaison par diagramme de Venn:
-```{r venn}
-#Merge des résultats par chr et pos
-XtX_C2_Join1 = merge(x=XtX.res,y=C2.res.C1, by=c("chr","pos"))
-XtX_C2_Join2 = merge(x=XtX.res,y=C2.res.C2, by=c("chr","pos"))
-XtX_C2_Join3 = merge(x=XtX.res,y=C2.res.C3, by=c("chr","pos"))
+```{r venn, fig.width=20, fig.height=10}
+Pops13_M<-read.table(paste0(path_out, "13pops_cov-M-chr1-28_Top1.txt"),h=T)
+Pops13_V<-read.table(paste0(path_out, "13pops_cov-V-chr1-28_Top1.txt"),h=T)
+Pops13_R<-read.table(paste0(path_out, "13pops_cov-R-chr1-28_Top1.txt"),h=T)
+
+
+Manplot.MV = ggplot(NULL, aes(x=pos, y=BF.dB.)) + geom_point(data=Pops13_M, color="blue", alpha=0.8, size=0.5)+ geom_point(data=Pops13_V, color="red", alpha=0.8, size=0.5)+ ggtitle("Bleu = M Rouge =V")
+Manplot.MV + scale_x_continuous() + scale_y_continuous() +
+  geom_hline(yintercept=15)+
+   facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+
+Manplot.MV = ggplot(NULL, aes(x=pos, y=BF.dB.)) + geom_point(data=subset(Pops13_M, BF.dB.>= 15), color="blue", alpha=0.8, size=0.5)+ geom_point(data=subset(Pops13_V, BF.dB.>= 15), color="red", alpha=0.8, size=0.5)+ ggtitle("Bleu = M Rouge =V")
+Manplot.MV + scale_x_continuous() + scale_y_continuous() +
+  geom_hline(yintercept=15)+
+   facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+
 #Filtrage selon conditions
-Datmp1 = subset(XtX_C2_Join1, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp2 = subset(XtX_C2_Join2, M_XtX> thresh.XtX & M_C2>thresh.C2)
-Datmp3 = subset(XtX_C2_Join3, M_XtX> thresh.XtX & M_C2>thresh.C2)
+Datmp1 = subset(Pops13_M, BF.dB.>= 15)
+Datmp2 = subset(Pops13_V, BF.dB.>= 15)
+Datmp3 = subset(Pops13_R, BF.dB.>= 15)
+Datmp4 = subset(Pops13_M, BF.dB.>= 15 & chr=="chr1")
+Datmp5 = subset(Pops13_V, BF.dB.>= 15 & chr=="chr1")
 #Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
 List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
 List.SNP2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
 List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
+List.SNP4<-paste(Pops13_M[,1], "_", Pops13_M[,2], sep="")
+List.SNP5<-paste(Pops13_V[,1], "_", Pops13_V[,2], sep="")
+List.SNP6<-paste(Pops13_R[,1], "_", Pops13_R[,2], sep="")
+List.SNP7<-cbind(paste(Datmp1[,1], "_", Datmp1[,2], sep=""),Datmp1[,28])# M avec BF
+List.SNP8<-cbind(paste(Datmp2[,1], "_", Datmp2[,2], sep=""),Datmp2[,28])# V avec BF
+
+List.SNP9<-paste(Datmp4[,1], "_", Datmp4[,2], sep="")
+List.SNP10<-paste(Datmp5[,1], "_", Datmp5[,2], sep="")
+
 #Diagramme de Venn
-vd <- venn.diagram(x=list("Contraste01" = List.SNP1, "Contraste02" = List.SNP2, "Contraste03" = List.SNP3), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd <- venn.diagram(x=list("M-BF15" = List.SNP7[,1], "V-BF15" = List.SNP8[,1], "R-BF15" = List.SNP1), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL, main = "Intersect BF>=15 chr 1-28 ")
 grid.newpage()
 grid.draw(vd)
+
+vd2 <- venn.diagram(x=list("M-BF15" = List.SNP1, "V-BF15" = List.SNP2, " " = List.SNP1), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL, main = "Intersect BF>=15 chr 1-28 ")
+grid.newpage()
+grid.draw(vd2)
+
+vd1 <- venn.diagram(x=list("M-chr1" = List.SNP9, "V-chr1" = List.SNP10, " " = List.SNP9), fill = brewer.pal(3, "Set3"), cat.cex = 1.5, fontface = "bold", filename = NULL, main = "Intersect BF15 chr 1 ")
+grid.newpage()
+grid.draw(vd1)
 ```
 
 #Extraire les listes de chaque intersecte du diagramme:
 ```{r List-Venn}
-myV <- plotVenn(list("Contraste01" = List.SNP1, "Contraste02" = List.SNP2, "Contraste03" = List.SNP3))
+myV <- plotVenn(list("M-BF15" = List.SNP1, "V-BF15" = List.SNP2))
 myV <- plyr::ldply(listVennRegions(myV), cbind)
-write.table(myV, file=paste(path_res, "All_overlap.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+#write.table(myV, file=paste(path_res, "All_overlap.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
 #récupère la liste des intersectes
 myV %>% distinct(myV[,1])
 ```
 #Convertir les liste de SNP dans un intersecte en fichier bed
-```{r Bed-Venn}
+```{r Bed-Venn, fig.width=20, fig.height=10}
 #subset en fonction de l'intersecte que l'on veut
-tmp<-subset(myV,myV[,1] == "1, 1, 1 (Contraste01, Contraste02, Contraste03)")
+tmp<-subset(myV,myV[,1] == "0, 1 (V-BF15)")
 V.tmp<-separate(plyr::ldply(paste(tmp[,2]), cbind), col = "1",  sep = "_", into = c("chr", "pos"))
 V.bed <- plyr::ldply(paste(V.tmp[,1], as.numeric(V.tmp[,2])-1, V.tmp[,2]), cbind)
 V.bed<-mutate(separate(V.bed, col = "1",  sep = " ", into = c("chr", "start", "end")))
-write.table(V.bed, file=paste(path_res, "overlap_3_contrastes.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+Unique_V<-V.bed
+write.table(test, file=paste(path_out, "test.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+
+#Extraction des BF pour plot
+test<-  Overlap_MV %>%
+  mutate_at(c("end"), as.integer)%>%
+  rename(pos=end) %>%
+  select(chr,pos)%>%
+  left_join(Datmp1, by=c("chr","pos"))
+
+Manplot.Ov = ggplot(test, aes(x=pos, y=BF.dB.)) + geom_point(color="blue", alpha=0.8, size=1)+ ggtitle("Overlap M / V = 95 snp")
+Manplot.Ov + scale_x_continuous() + scale_y_continuous() +
+  facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+
+testM<-  Unique_M %>%
+  mutate_at(c("end"), as.integer)%>%
+  rename(pos=end) %>%
+  select(chr,pos)%>%
+  left_join(Datmp1, by=c("chr","pos"))
+
+Manplot.M = ggplot(testM, aes(x=pos, y=BF.dB.)) + geom_point(color="blue", alpha=0.8, size=1)+ ggtitle("Unique M / V = 95 snp")
+Manplot.M + scale_x_continuous() + scale_y_continuous() +
+  facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+
+testV<-  Unique_V %>%
+  mutate_at(c("end"), as.integer)%>%
+  rename(pos=end) %>%
+  select(chr,pos)%>%
+  left_join(Datmp2, by=c("chr","pos"))
+
+Manplot.V = ggplot(testV, aes(x=pos, y=BF.dB.)) + geom_point(color="blue", alpha=0.8, size=1)+ ggtitle("Unique M / V = 95 snp")
+Manplot.V + scale_x_continuous() + scale_y_continuous() +
+  facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+
+Manplot.MV2 = ggplot(NULL, aes(x=pos, y=BF.dB.)) + geom_point(data=testM, color="blue", alpha=0.8, size=1)+ geom_point(data=test, color="red", alpha=0.8, size=1.5)+ geom_point(data=testV, color="green", alpha=0.8, size=0.8)+ ggtitle("Bleu = M Rouge =V")
+Manplot.MV2 + scale_x_continuous() + scale_y_continuous() +
+  geom_hline(yintercept=15)+
+   facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+
+Slide_Over<-read.table(paste0(path_out, "overlap_MV.sliding"),h=T)
+Slide_M<-read.table(paste0(path_out, "Unique_M.sliding"),h=T)
+Slide_V<-read.table(paste0(path_out, "Unique_V.sliding"),h=T)
+
+Man.slide = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_M, color="blue", alpha=0.8, size=1)+ geom_point(data=Slide_Over, color="red", alpha=0.8, size=1.5)+ geom_point(data=Slide_V, color="green", alpha=0.8, size=0.8)+ ggtitle("Bleu = M Rouge =Overlap, Vert =V")
+Man.slide + scale_x_continuous() + scale_y_continuous() + facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom"))
+Man.slide = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_M, color="blue", alpha=0.8, size=1)+ geom_point(data=Slide_Over, color="red", alpha=0.8, size=1.5)+ geom_point(data=Slide_V, color="green", alpha=0.8, size=0.8)+ ggtitle("Bleu = M Rouge =Overlap, Vert =V")
+Man.slide + scale_x_continuous() + scale_y_continuous() + facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
 ```
+

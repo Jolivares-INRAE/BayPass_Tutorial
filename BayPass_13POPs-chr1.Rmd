@@ -86,7 +86,7 @@ pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', 
 psizes_Z <- as.numeric(c('120', '135', '16', '86', '135', '30','135', '120', '150', '60', '63', '42', '53')) #ploydie Z/chr1
 #psizes_W <- as.numeric(c('30', '45', '8', '28', '45', '14','45', '40', '50', '14', '17', '10', '19')) #ploydie W/chr29
 #conversion du .vcf
-GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "Wilde_13pops_chr1-varscan.vcf.gz", sep=""), poolsizes = psizes_Z, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "13pops-GATK-chr1-corrected.vcf.gz", sep=""), poolsizes = psizes_Z, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 #conversion d'un .sync (PoPoolation)
 #GWAS.pooldata <- popsync2pooldata(sync.file = paste(path_vcf, "13pops_chr1.sync.gz", sep=""), poolsizes = psizes_W, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, noindel = FALSE, nlines.per.readblock = 1e+06, nthreads = 8)
 #élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)
@@ -174,7 +174,7 @@ Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec
 Avant de regrouper les résultats, il faut valider l'homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l'indice sera faible plus les matrices donc les analyses seront comparables.
 ```{r validation-matrice-omega, fig.width=10, fig.height=10}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-prefix <- "13pops-chr1_STD-2000.sub"
+prefix <- "13pops_chr1_GATK.sub"
 #liste et compte les matrices Ω du répertoire "path"
 listMatrix <- list.files(path_out, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
@@ -216,7 +216,7 @@ etc...
 Cette évaluation se fait sur les p.values du fichier "XtX.merged.sorted":
 ```{r Distribution-XtX}
 source("C:/BayPass_pipeline/utils/baypass_utils.R")
-xtx.sorted=read.table(paste(path_out,"13pops-chr1-Core.xtx.merged.sorted", sep=""),h=T)
+xtx.sorted=read.table(paste(path_out,"13pops-chr1-Core.GATK.xtx.sorted", sep=""),h=T)
 hist(10**(-1*xtx.sorted$log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
 ```
