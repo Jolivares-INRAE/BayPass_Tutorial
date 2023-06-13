@@ -11,3 +11,9 @@ Additional resources:
 The **bookdown** book: https://bookdown.org/yihui/bookdown/
 
 The **bookdown** package reference site: https://pkgs.rstudio.com/bookdown
+```{r}
+library("bookdown")
+library("tinytex")
+library("rmarkdown")
+library("bibtex")
+```

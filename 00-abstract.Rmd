@@ -1,0 +1,19 @@
+# Résumé {-}
+
+Ce tutoriel détaille d’une part la manière de générer les fichiers d’entrées du logiciel BayPass à partir de données de séquençage en pool, d’autre part le paramétrage optimal du logiciel BayPass et en fin propose une méthode d’exploreration des résultats d’analyses produits. Un pipeline d'analyse mixant des packages sous Rstudio et des lignes de commandes Linux, est décrit afin de guider pas à pas l’utilisateur tout au long du processus depuis les données brutes jusqu’à la liste finale de loci/variants candidats.
+Ce tutoriel est à destination des étudiants et des bioinformaticiens débutants. 
+
+### mots clefs {-}
+
+Logiciel BayPass, séquençage en pool, GWAS, études d'associations pangénomiques, Rstudio.
+
+## Abstract {-}
+
+This tutorial describes how to generate BayPass software input files from pooled sequencing data, how to optimise BayPass software settings and how to explore the analysis results produced. An analysis pipeline combining Rstudio packages and Linux command lines is described in order to guide the user step by step through the process from the raw data to the final list of candidate loci/variants.
+This tutorial is aimed at students and novice bioinformaticians.
+
+Translated with www.DeepL.com/Translator (free version)
+
+### Keywords {-}
+
+BayPass software, pooled sequencing, GWAS, genome-wide association study, Rstudio
