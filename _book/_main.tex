@@ -36,7 +36,7 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\usepackage[margin=2cm]{geometry}
+\usepackage[left=3cm,right=3cm,top=1cm,bottom=2cm]{geometry}
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -114,14 +114,14 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={BayPass 2.3: tutoriel adapté au séquençage en pool},
+  pdftitle={BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool},
   pdfauthor={Jérôme OLIVARES},
   hidelinks,
   pdfcreator={LaTeX via pandoc}}
 
-\title{BayPass 2.3: tutoriel adapté au séquençage en pool}
+\title{BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool}
 \author{Jérôme OLIVARES\footnote{INRAE, UR-1115 PSH, 228 route de l'aérodrome, 84914 Avignon, France}}
-\date{2023-06-14}
+\date{2023-06-17}
 
 \usepackage{amsthm}
 \newtheorem{theorem}{Theorem}[chapter]
@@ -160,131 +160,100 @@ Ce tutoriel est à destination des étudiants et des bioinformaticiens débutant
 
 Logiciel BayPass, séquençage en pool, GWAS, études d'associations pangénomiques, Rstudio.
 
-\hypertarget{abstract}{%
-\section*{Abstract}\label{abstract}}
-\addcontentsline{toc}{section}{Abstract}
+\hypertarget{pruxe9requis}{%
+\section*{prérequis}\label{pruxe9requis}}
+\addcontentsline{toc}{section}{prérequis}
 
-This tutorial describes how to generate BayPass software input files from pooled sequencing data, how to optimise BayPass software settings and how to explore the analysis results produced. An analysis pipeline combining Rstudio packages and Linux command lines is described in order to guide the user step by step through the process from the raw data to the final list of candidate loci/variants.
-This tutorial is aimed at students and novice bioinformaticians.
+Les commandes décrites dans cet article ont été regroupées dans un fichier au format « R markdown » (Rmd) « Poolseq\_pipeline.Rmd » librement téléchargeable à l'adresse : \url{https://github.com/Jolivares-INRAE/Download}. Ce tutoriel est conçu pour décrire pas à pas les différentes étapes du fichier Rmd et permettre à l'utilisateur de les exécuter en parallèle.
+L'utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d'écrire et lancer des scripts sur un cluster de calcul.
+Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l'environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d'une utilisation dans un autre environnement logiciel, l'utilisateur devra probablement effectuer des adaptations du code.
+Bien que l'essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l'adresse \url{http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html} et décompressée dans un répertoire local par l'utilisateur.
+Dans tous les codes qui suivent l'expression « \textasciitilde/path/ » sera à remplacer par les chemins personnels de l'utilisateur.
+Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 
-Translated with www.DeepL.com/Translator (free version)
+\hypertarget{ruxe9sumuxe9-1}{%
+\chapter*{Résumé}\label{ruxe9sumuxe9-1}}
+\addcontentsline{toc}{chapter}{Résumé}
 
-\hypertarget{keywords}{%
-\subsection*{Keywords}\label{keywords}}
-\addcontentsline{toc}{subsection}{Keywords}
+Ce tutoriel détaille d'une part la manière de générer les fichiers d'entrées du logiciel BayPass à partir de données de séquençage en pool, d'autre part le paramétrage optimal du logiciel BayPass et en fin propose une méthode d'exploreration des résultats d'analyses produits. Un pipeline d'analyse mixant des packages sous Rstudio et des lignes de commandes Linux, est décrit afin de guider pas à pas l'utilisateur tout au long du processus depuis les données brutes jusqu'à la liste finale de loci/variants candidats.
+Ce tutoriel est à destination des étudiants et des bioinformaticiens débutants.
 
-BayPass software, pooled sequencing, GWAS, genome-wide association study, Rstudio
+\hypertarget{mots-clefs-1}{%
+\subsection*{mots clefs}\label{mots-clefs-1}}
+\addcontentsline{toc}{subsection}{mots clefs}
+
+Logiciel BayPass, séquençage en pool, GWAS, études d'associations pangénomiques, Rstudio.
+
+\hypertarget{pruxe9requis-1}{%
+\section*{prérequis}\label{pruxe9requis-1}}
+\addcontentsline{toc}{section}{prérequis}
+
+Les commandes décrites dans cet article ont été regroupées dans un fichier au format « R markdown » (Rmd) « Poolseq\_pipeline.Rmd » librement téléchargeable à l'adresse : \url{https://github.com/Jolivares-INRAE/Download}. Ce tutoriel est conçu pour décrire pas à pas les différentes étapes du fichier Rmd et permettre à l'utilisateur de les exécuter en parallèle.
+L'utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d'écrire et lancer des scripts sur un cluster de calcul.
+Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l'environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d'une utilisation dans un autre environnement logiciel, l'utilisateur devra probablement effectuer des adaptations du code.
+Bien que l'essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l'adresse \url{http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html} et décompressée dans un répertoire local par l'utilisateur.
+Dans tous les codes qui suivent l'expression « \textasciitilde/path/ » sera à remplacer par les chemins personnels de l'utilisateur.
+Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 
 \hypertarget{introduction}{%
-\chapter*{introduction}\label{introduction}}
-\addcontentsline{toc}{chapter}{introduction}
+\chapter*{Introduction}\label{introduction}}
+\addcontentsline{toc}{chapter}{Introduction}
 
 Dans un contexte agronomique actuel de réduction de l'utilisation des pesticides ou de réchauffement climatique, analyser et comprendre les bases génétiques de l'adaptation des organismes aux méthodes de luttes qui leurs sont opposées ou à l'évolution de leur environnement est un enjeu majeur des recherches de ces dernières années.
 
-Les études d'associations pangénomiques (GWAS en anglais pour genome-wide association study) adossées aux techniques de séquençage haut débit (NGS) permettant le séquençage de génome complet, sont un outil de choix pour ce type d'analyse. L'étude au niveau populationnel demandant le séquençage d'un grand nombre d'individus, les couts d'analyses étaient initialement très élevés et ces études étaient souvent réservées aux organismes dit ``modèles'', humain en tête. Néanmoins il a été démontré depuis, que le séquençage en pool d'individus c'est-à-dire en mélangeant de manière équimolaire l'ADN d'un grand nombre d'individus (50 à 100) issus d'une même population permettait non seulement de réduire drastiquement les couts puisqu'on ne réalise qu'un seul séquençage mais aussi que la découverte des points de mutations (SNP) et l'estimation de leur fréquence allélique étaient souvent plus efficaces et précises \citep{futschik_next_2010}. Parmi les logiciels à même d'analyser ces fréquences alléliques on compte Baypass \citep{gautier_genome-wide_2015} qui évalue par une approche baysienne, la différenciation des SNP en liaison avec une covariable environnementale en tenant compte de la structure et de la parenté entre les populations en estimant la covariance (Ω) des fréquences alléliques. Baypass 2.3 a la particularité supplémentaire de pouvoir calculer un contraste des fréquences d'allèles SNP entre deux groupes de populations spécifiés par un caractère binaire ; sensible ou résistant par exemple.
+Les études d'associations pangénomiques (GWAS en anglais pour genome-wide association study) adossées aux techniques de séquençage haut débit (NGS) permettant le séquençage de génome complet, sont un outil de choix pour ce type d'analyse. L'étude au niveau populationnel demandant le séquençage d'un grand nombre d'individus, les couts d'analyses étaient initialement très élevés et ces études étaient souvent réservées aux organismes dit ``modèles'', humain en tête. Néanmoins il a été démontré depuis, que le séquençage en pool d'individus (poolseq) c'est-à-dire en mélangeant de manière équimolaire l'ADN d'un grand nombre d'individus (50 à 100) issus d'une même population permettait non seulement de réduire drastiquement les couts puisqu'on ne réalise qu'un seul séquençage mais aussi que la découverte des points de mutations (SNP) et l'estimation de leur fréquence allélique étaient souvent plus efficaces et précises \citep{futschik_next_2010}. Parmi les logiciels à même d'analyser ces fréquences alléliques on compte Baypass \citep{gautier_genome-wide_2015} qui évalue par une approche baysienne, la différenciation des SNP en liaison avec une covariable environnementale en tenant compte de la structure et de la parenté entre les populations en estimant la covariance (Ω) des fréquences alléliques. Baypass 2.3 a la particularité supplémentaire de pouvoir calculer un contraste des fréquences alléliques entre deux groupes de populations caractérisés par un caractère binaire, sensible ou résistant par exemple.
 
-La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A notre connaissance un seul tutoriel est disponible sur le web \citep{nielsen_pool-seq_2020} et décrit de manière plus détaillée la préparation des données brute et l'analyse en mode « poolseq » de Baypass 2.3., mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n'en va pas forcément de même pour bon nombre d'agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d'une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d'éclairer les points qui sont habituellement peu explicités car considérés comme évident et se veut, au final, le plus proche possible de la citation de Talleyrand : « Si cela va sans le dire, cela ira encore mieux en le disant ».
+La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A ma connaissance un seul tutoriel est disponible sur le web \citep{nielsen_pool-seq_2020} et décrit de manière plus détaillée la préparation des données brutes et l'analyse en mode « poolseq » de Baypass, mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n'en va pas forcément de même pour bon nombre d'agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d'une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d'éclairer les points qui sont habituellement peu explicités car considérés comme évident et se veut, au final, le plus proche possible de la citation de Talleyrand : « Si cela va sans le dire, cela ira encore mieux en le disant ».
 
-\hypertarget{cross}{%
-\chapter{Cross-references}\label{cross}}
+\hypertarget{pruxe9sentation-du-logiciel-baypass-2.3}{%
+\chapter*{Présentation du logiciel BayPass 2.3}\label{pruxe9sentation-du-logiciel-baypass-2.3}}
+\addcontentsline{toc}{chapter}{Présentation du logiciel BayPass 2.3}
 
-Cross-references make it easier for your readers to find and link to elements in your book.
+Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à l'identification de marqueurs génétiques soumis à la sélection et/ou associés à des covariables spécifiques à la population (variables environnementales, phénotypiques, quantitatives, catégorielles\ldots). Par une approche baysienne il évalue une \textbf{matrice Ω} de covariance des fréquences alléliques des populations résultant de leur histoire démographique. Deux manières d'estimer ces fréquences alléliques sont disponibles soit en se basant sur les génotypes référence/mutant des individus analysés soit, lorsque l'on active le « pool-seq mode », ces fréquences alléliques sont calculées en regard de la profondeur de séquençage (reads count) et pondérées par le nombre d'individus qui ont contribué à cette profondeur. C'est cette seconde approche que nous considérerons dans cet ouvrage.
 
-\hypertarget{chapters-and-sub-chapters}{%
-\section{Chapters and sub-chapters}\label{chapters-and-sub-chapters}}
+BayPass propose 3 modèles statistiques d'analyse :
 
-There are two steps to cross-reference any heading:
+\hypertarget{le-core-model}{%
+\subsubsection*{Le Core Model}\label{le-core-model}}
+\addcontentsline{toc}{subsubsection}{Le Core Model}
 
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Label the heading: \texttt{\#\ Hello\ world\ \{\#nice-label\}}.
+C'est le modèle de base, il permet de calculer la matrice de covariance Ω et d'attribuer une statistique de différenciation XtX à chaque SNP, et ainsi de scanner le génome pour identifier les régions génomiques différenciées entre les populations.Le XtX est une statistique analogue au Fst mais tient compte de la co-évolution des populations grace à la matrice Ω.
 
-  \begin{itemize}
-  \tightlist
-  \item
-    Leave the label off if you like the automated heading generated based on your heading title: for example, \texttt{\#\ Hello\ world} = \texttt{\#\ Hello\ world\ \{\#hello-world\}}.
-  \item
-    To label an un-numbered heading, use: \texttt{\#\ Hello\ world\ \{-\#nice-label\}} or \texttt{\{\#\ Hello\ world\ .unnumbered\}}.
-  \end{itemize}
-\item
-  Next, reference the labeled heading anywhere in the text using \texttt{\textbackslash{}@ref(nice-label)}; for example, please see Chapter \ref{cross}.
+\hypertarget{le-standard-model}{%
+\subsubsection*{Le Standard Model}\label{le-standard-model}}
+\addcontentsline{toc}{subsubsection}{Le Standard Model}
 
-  \begin{itemize}
-  \tightlist
-  \item
-    If you prefer text as the link instead of a numbered reference use: \protect\hyperlink{cross}{any text you want can go here}.
-  \end{itemize}
-\end{enumerate}
+Ce modèle, permet, l'orsque l'on fournit une ou plusieurs covariables (environnementales, phénotypiques\ldots), de calculer un facteur de Bayes, ou Bayes factor en anglais, (BF) pour chaque marqueur génétique représentant la force d'association avec une covariable. C'est un modèle tout en un qui intègre le calcul des XtX et de la matrice Ω, il est adapté au faible nombre de population (\textless{} 15).
 
-\hypertarget{captioned-figures-and-tables}{%
-\section{Captioned figures and tables}\label{captioned-figures-and-tables}}
+\hypertarget{lauxiliairy-model}{%
+\subsubsection*{L'Auxiliairy Model}\label{lauxiliairy-model}}
+\addcontentsline{toc}{subsubsection}{L'Auxiliairy Model}
 
-Figures and tables \emph{with captions} can also be cross-referenced from elsewhere in your book using \texttt{\textbackslash{}@ref(fig:chunk-label)} and \texttt{\textbackslash{}@ref(tab:chunk-label)}, respectively.
+Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (\textgreater{} 15), En contrepartie il nécessite que l'on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.
 
-See Figure \ref{fig:nice-fig}.
+Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d'altitude\ldots), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit\ldots), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{par}\NormalTok{(}\AttributeTok{mar =} \FunctionTok{c}\NormalTok{(}\DecValTok{4}\NormalTok{, }\DecValTok{4}\NormalTok{, .}\DecValTok{1}\NormalTok{, .}\DecValTok{1}\NormalTok{))}
-\FunctionTok{plot}\NormalTok{(pressure, }\AttributeTok{type =} \StringTok{\textquotesingle{}b\textquotesingle{}}\NormalTok{, }\AttributeTok{pch =} \DecValTok{19}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
+\hypertarget{pruxe9sentation-guxe9nuxe9rale-de-lanalyse}{%
+\section*{Présentation générale de l'analyse :}\label{pruxe9sentation-guxe9nuxe9rale-de-lanalyse}}
+\addcontentsline{toc}{section}{Présentation générale de l'analyse :}
 
-\begin{figure}
+La figure 1 est une vision simplifiée des différentes étapes nécessaire à l'analyses de données poolseq. Ces étapes se déroulent soit dans l'environnement Linux du cluster de calcul soit sur un ordinateur local sous Rstudio.
+La première étape part d'un fichier d'alignement au format « .bam » et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « .vcf » de tous les points de mutations ou SNP qui sont autant de marqueurs génétiques à analyser. Ce fichier .vcf sert d'entrée au package « PoolFstat » qui va permettre de générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d'entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l'homogénéité des résultats entre eux est analysée sous Rstudio et si tout est bon, les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d'intérêts.
 
-{\centering \includegraphics[width=0.8\linewidth]{_main_files/figure-latex/nice-fig-1} 
+\includegraphics{C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg}
 
-}
+\hypertarget{section}{%
+\chapter*{}\label{section}}
+\addcontentsline{toc}{chapter}{}
 
-\caption{Here is a nice figure!}\label{fig:nice-fig}
-\end{figure}
+\hypertarget{pruxe9sentation-guxe9nuxe9rale-de-lanalyse-1}{%
+\section*{Présentation générale de l'analyse :}\label{pruxe9sentation-guxe9nuxe9rale-de-lanalyse-1}}
+\addcontentsline{toc}{section}{Présentation générale de l'analyse :}
 
-Don't miss Table \ref{tab:nice-tab}.
+La figure 1 est une vision simplifiée des différentes étapes nécessaire à l'analyses de données poolseq. Ces étapes se déroulent soit dans l'environnement Linux du cluster de calcul soit sur un ordinateur local sous Rstudio.
+La première étape part d'un fichier d'alignement au format « .bam » et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « .vcf » de tous les points de mutations ou SNP qui sont autant de marqueurs génétiques à analyser. Ce fichier .vcf sert d'entrée au package « PoolFstat » qui va permettre de générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d'entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l'homogénéité des résultats entre eux est analysée sous Rstudio et si tout est bon, les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d'intérêts.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}
-  \FunctionTok{head}\NormalTok{(pressure, }\DecValTok{10}\NormalTok{), }\AttributeTok{caption =} \StringTok{\textquotesingle{}Here is a nice table!\textquotesingle{}}\NormalTok{,}
-  \AttributeTok{booktabs =} \ConstantTok{TRUE}
-\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{table}
-
-\caption{\label{tab:nice-tab}Here is a nice table!}
-\centering
-\begin{tabular}[t]{rr}
-\toprule
-temperature & pressure\\
-\midrule
-0 & 0.0002\\
-20 & 0.0012\\
-40 & 0.0060\\
-60 & 0.0300\\
-80 & 0.0900\\
-\addlinespace
-100 & 0.2700\\
-120 & 0.7500\\
-140 & 1.8500\\
-160 & 4.2000\\
-180 & 8.8000\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\hypertarget{parts}{%
-\chapter{Parts}\label{parts}}
-
-You can add parts to organize one or more book chapters together. Parts can be inserted at the top of an .Rmd file, before the first-level chapter heading in that same file.
-
-Add a numbered part: \texttt{\#\ (PART)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
-
-Add an unnumbered part: \texttt{\#\ (PART\textbackslash{}*)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
-
-Add an appendix as a special kind of un-numbered part: \texttt{\#\ (APPENDIX)\ Other\ stuff\ \{-\}} (followed by \texttt{\#\ A\ chapter}). Chapters in an appendix are prepended with letters instead of numbers.
+\includegraphics{C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg}
 
 \hypertarget{footnotes-and-citations}{%
 \chapter{Footnotes and citations}\label{footnotes-and-citations}}
@@ -371,6 +340,28 @@ Or use:
 \end{Highlighting}
 \end{Shaded}
 
+\hypertarget{baypass-2.3-pruxe9sentation.}{%
+\chapter{BayPass 2.3 : présentation.}\label{baypass-2.3-pruxe9sentation.}}
+
+Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à l'identification de marqueurs génétiques soumis à la sélection et/ou associés à des covariables spécifiques à la population (variables environnementales, phénotypiques, quantitatives, catégorielles\ldots). Par une approche baysienne il évalue une matrice Ω de covariance des fréquences alléliques des populations résultant de leur histoire démographique. Deux manières d'estimer ces fréquences alléliques sont disponibles soit en se basant sur les génotypes référence/mutant des individus analysés soit, lorsque l'on active le « pool-seq mode », ces fréquences alléliques sont calculées en regard de la profondeur de séquençage (reads count) et pondérées par le nombre d'individus qui ont contribué à cette profondeur. C'est cette seconde approche que nous considérerons dans cet article.
+
+BayPass propose 3 modèles statistiques d'analyse :
+\#\#\# Le Core Model, est le modèle de base, il permet de calculer la matrice de covariance Ω et d'attribuer une statistique de différenciation XtX à chaque SNP, et ainsi de scanner le génome pour identifier les régions différenciées sans autres informations.
+\#\#\# Le Standard Model, permet, l'orsque l'on fournit une ou plusieurs covariables (environnementales, phénotypiques\ldots), de calculer en plus une statistique BF (Bayes Factor) pour chaque marqueur génétique et chaque covariable. C'est un modèle tout en un qui intègre le calcul des XtX et de la matrice Ω, il est adapté au faible nombre de population (\textless{} 815).
+\#\#\# L'Auxiliairy Model, a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (\textgreater{} 815)., En contrepartie ce modèle nécessite que l'on fournisse une matrice Ω déjà calculé par une analyse Core Model, il recalcule alors les XtX et la statistique B.
+
+Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d'altitude\ldots), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit\ldots), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques entre 2 groupes de populations.
+
+\hypertarget{parts}{%
+\chapter{Parts}\label{parts}}
+
+You can add parts to organize one or more book chapters together. Parts can be inserted at the top of an .Rmd file, before the first-level chapter heading in that same file.
+
+Add a numbered part: \texttt{\#\ (PART)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
+
+Add an unnumbered part: \texttt{\#\ (PART\textbackslash{}*)\ Act\ one\ \{-\}} (followed by \texttt{\#\ A\ chapter})
+
+Add an appendix as a special kind of un-numbered part: \texttt{\#\ (APPENDIX)\ Other\ stuff\ \{-\}} (followed by \texttt{\#\ A\ chapter}). Chapters in an appendix are prepended with letters instead of numbers.
 
   \bibliography{BayPass.bib}
 

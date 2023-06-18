@@ -7,13 +7,11 @@ Ce tutoriel est à destination des étudiants et des bioinformaticiens débutant
 
 Logiciel BayPass, séquençage en pool, GWAS, études d'associations pangénomiques, Rstudio.
 
-## Abstract {-}
+## prérequis {-}
 
-This tutorial describes how to generate BayPass software input files from pooled sequencing data, how to optimise BayPass software settings and how to explore the analysis results produced. An analysis pipeline combining Rstudio packages and Linux command lines is described in order to guide the user step by step through the process from the raw data to the final list of candidate loci/variants.
-This tutorial is aimed at students and novice bioinformaticians.
-
-Translated with www.DeepL.com/Translator (free version)
-
-### Keywords {-}
-
-BayPass software, pooled sequencing, GWAS, genome-wide association study, Rstudio
+Les commandes décrites dans cet article ont été regroupées dans un fichier au format « R markdown » (Rmd) « Poolseq_pipeline.Rmd » librement téléchargeable à l’adresse : https://github.com/Jolivares-INRAE/Download. Ce tutoriel est conçu pour décrire pas à pas les différentes étapes du fichier Rmd et permettre à l’utilisateur de les exécuter en parallèle.
+L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul. 
+Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l’environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
+Bien que l’essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur. 
+Dans tous les codes qui suivent l’expression « ~/path/ » sera à remplacer par les chemins personnels de l'utilisateur.
+Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.

@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.6.12)  14 JUN 2023 01:52
+This is XeTeX, Version 3.141592653-2.6-0.999995 (TeX Live 2023) (preloaded format=xelatex 2023.6.12)  17 JUN 2023 01:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -705,15 +705,15 @@ LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
 * modes: twoside 
-* h-part:(L,W,R)=(56.9055pt, 500.484pt, 56.9055pt)
-* v-part:(T,H,B)=(56.9055pt, 681.15898pt, 56.9055pt)
+* h-part:(L,W,R)=(85.35826pt, 443.57848pt, 85.35826pt)
+* v-part:(T,H,B)=(28.45274pt, 709.61174pt, 56.9055pt)
 * \paperwidth=614.295pt
 * \paperheight=794.96999pt
-* \textwidth=500.484pt
-* \textheight=681.15898pt
-* \oddsidemargin=-15.36449pt
-* \evensidemargin=-15.36449pt
-* \topmargin=-45.43198pt
+* \textwidth=443.57848pt
+* \textheight=709.61174pt
+* \oddsidemargin=13.08827pt
+* \evensidemargin=13.08827pt
+* \topmargin=-73.88474pt
 * \headheight=12.0pt
 * \headsep=18.06749pt
 * \topskip=10.0pt
@@ -802,51 +802,61 @@ LaTeX Font Info:    Font shape `TU/latinmodern-math.otf(3)/m/n' will be
 
 ] [4
 
-]
-Chapter 1.
-
-Underfull \hbox (badness 2111) in paragraph at lines 209--210
-[]\TU/lmr/m/n/10 To label an un-numbered heading, use: \TU/lmtt/m/n/10 # Hello world {-#nice-label} \TU/lmr/m/n/10 or \TU/lmtt/m/n/10 {# Hello world
- []
-
-
-Overfull \hbox (20.4827pt too wide) in paragraph at lines 224--225
-\TU/lmr/m/n/10 Figures and tables \TU/lmr/m/it/10 with captions \TU/lmr/m/n/10 can also be cross-referenced from elsewhere in your book using \TU/lmtt/m/n/10 \@ref(fig:chunk-label)
- []
-
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 230.
-File: _main_files/figure-latex/nice-fig-1.pdf Graphic file (type pdf)
-<use _main_files/figure-latex/nice-fig-1.pdf>
-[5
-
-] [6]
-Chapter 2.
-[7
+] [5
 
 ]
-Chapter 3.
+Underfull \hbox (badness 1132) in paragraph at lines 212--213
+\TU/lmr/m/n/10 Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à
+ []
 
-Package natbib Warning: Citation `R-bookdown' on page 8 undefined on input line 302.
+[6
 
-
-Package natbib Warning: Citation `xie2015' on page 8 undefined on input line 302.
-
+]
+File: C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg Graphic file (type bmp)
+<C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg>
+[7]
+File: C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg Graphic file (type bmp)
+<C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg>
 [8
 
 ]
-Chapter 4.
+Chapter 1.
+
+Package natbib Warning: Citation `R-bookdown' on page 9 undefined on input line 271.
+
+
+Package natbib Warning: Citation `xie2015' on page 9 undefined on input line 271.
+
 [9
 
 ]
+Chapter 2.
+[10
+
+]
+Chapter 3.
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 339.
+[11
+
+]
+Chapter 4.
+
+Underfull \hbox (badness 1132) in paragraph at lines 346--347
+\TU/lmr/m/n/10 Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à
+ []
+
+[12
+
+]
 Chapter 5.
-(./_main.bbl [10
+(./_main.bbl [13
 
 ])
 
 Package natbib Warning: There were undefined citations.
 
-[11
+[14
 
 ] (./_main.aux)
  ***********
@@ -854,15 +864,15 @@ LaTeX2e <2023-06-01>
 L3 programming layer <2023-06-05>
  ***********
 Package rerunfilecheck Info: File `_main.out' has not changed.
-(rerunfilecheck)             Checksum: D686EB81BBD4AC55595E4DEE6C39BB79;2182.
+(rerunfilecheck)             Checksum: 26A597E8A14CA88BD9D009EFA9A9C84A;2844.
  ) 
 Here is how much of TeX's memory you used:
- 17939 strings out of 478386
- 325461 string characters out of 5839031
- 1856384 words of memory out of 5000000
- 38093 multiletter control sequences out of 15000+600000
+ 17936 strings out of 478386
+ 325638 string characters out of 5839031
+ 1859384 words of memory out of 5000000
+ 38089 multiletter control sequences out of 15000+600000
  520855 words of font info for 100 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 90i,11n,120p,1554b,503s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,11n,120p,1563b,499s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on _main.pdf (11 pages).
+Output written on _main.pdf (14 pages).
