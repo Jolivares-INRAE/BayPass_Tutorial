@@ -65,6 +65,28 @@ set in the _output.yml file.</p>" />
   
   div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 </style>
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
@@ -123,6 +145,17 @@ set in the _output.yml file.</p>" />
 La première étape part d’un fichier d’alignement au format « .bam » et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « .vcf » de tous les points de mutations ou SNP qui sont autant de marqueurs génétiques à analyser. Ce fichier .vcf sert d’entrée au package « PoolFstat » qui va permettre de générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio et si tout est bon, les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts.</p>
 <p><img src="images/Analyse.jpg" /></p>
 
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div class="csl-entry">
+Futschik, Andreas, and Christian Schlötterer. 2010. <span>“The <span>Next</span> <span>Generation</span> of <span>Molecular</span> <span>Markers</span> <span>From</span> <span>Massively</span> <span>Parallel</span> <span>Sequencing</span> of <span>Pooled</span> <span>DNA</span> <span>Samples</span>.”</span> <em>Genetics</em> 186 (1): 207–18. <a href="https://doi.org/10.1534/genetics.110.114397">https://doi.org/10.1534/genetics.110.114397</a>.
+</div>
+<div class="csl-entry">
+Gautier, Mathieu. 2015. <span>“Genome-<span>Wide</span> <span>Scan</span> for <span>Adaptive</span> <span>Divergence</span> and <span>Association</span> with <span>Population</span>-<span>Specific</span> <span>Covariates</span>.”</span> <em>Genetics</em> 201 (4): 1555–79. <a href="https://doi.org/10.1534/genetics.115.181453">https://doi.org/10.1534/genetics.115.181453</a>.
+</div>
+<div class="csl-entry">
+Nielsen, Erica S. 2020. <span>“Pool-<span>Seq</span> <span>Analyses</span>: <span>PoolFstat</span> &amp; <span>BayPass</span>.”</span> <a href="https://esnielsen.github.io/post/pool-seq-analyses-poolfstat-baypass/">https://esnielsen.github.io/post/pool-seq-analyses-poolfstat-baypass/</a>.
+</div>
+</div>
 </div>
 </div>
 
