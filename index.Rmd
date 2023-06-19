@@ -7,15 +7,16 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: book
 classoption: openany
+urlcolor: blue
 bibliography: BayPass.bib
 geometry: "left=3cm,right=3cm,top=1cm,bottom=2cm"
-# url: your book url like https://bookdown.org/yihui/bookdown
+url: https://jolivares-inrae.github.io/BayPass_Tutorial/
 cover-image: "C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png"
 description: |
   This is a minimal example of using the bookdown package to write a book.
   The HTML output format for this example is bookdown::gitbook,
   set in the _output.yml file.
-link-citations: yes
+link-citations: no
 github-repo: https://github.com/Jolivares-INRAE/BayPass_Tutorial
 ---
 # Résumé {-}
@@ -46,5 +47,5 @@ bookdown::serve_book()
 # automatically create a bib database for R packages
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
-), 'BayPass.bib')
+), 'packages.bib')
 ```
