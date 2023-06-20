@@ -4,13 +4,13 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Page not found | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
+  <title>BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Page not found | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta property="og:title" content="BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
   <meta property="og:image" content="https://jolivares-inrae.github.io/BayPass_Tutorial/C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png" />
   <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
@@ -19,7 +19,7 @@ set in the _output.yml file.</p>" />
   <meta name="github-repo" content="https://github.com/Jolivares-INRAE/BayPass_Tutorial" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Page not found | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta name="twitter:title" content="BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   
   <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
@@ -37,7 +37,7 @@ set in the _output.yml file.</p>" />
   
   
 
-
+<link rel="next" href="introduction.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -101,10 +101,10 @@ div.csl-indent {
       <nav role="navigation">
 
 <ul class="summary">
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Résumé</a>
+<li class="chapter" data-level="" data-path="résumé.html"><a href="résumé.html"><i class="fa fa-check"></i>Résumé</a>
 <ul>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#mots-clefs"><i class="fa fa-check"></i>mots clefs</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#prérequis"><i class="fa fa-check"></i>prérequis</a></li>
+<li class="chapter" data-level="" data-path="résumé.html"><a href="résumé.html#mots-clefs"><i class="fa fa-check"></i>mots clefs</a></li>
+<li class="chapter" data-level="" data-path="résumé.html"><a href="résumé.html#prérequis"><i class="fa fa-check"></i>prérequis</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i>Introduction</a></li>
 <li class="chapter" data-level="" data-path="présentation-du-logiciel-baypass-2.html"><a href="présentation-du-logiciel-baypass-2.html"><i class="fa fa-check"></i>Présentation du logiciel BayPass 2.3</a>
@@ -128,11 +128,35 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="page-not-found" class="section level1">
-<h1>Page not found</h1>
-<p>The page you requested cannot be found (perhaps it was moved or renamed).</p>
-<p>You may want to try searching to find the page's new location, or use
-the table of contents to find the page you are looking for.</p>
+<div id="header">
+<h1 class="title">BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</h1>
+<p class="author"><em>Jérôme OLIVARES<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></em></p>
+<p class="date"><em>2023-06-21</em></p>
+</div>
+<div id="résumé" class="section level1 unnumbered hasAnchor">
+<h1>Résumé<a href="résumé.html#résumé" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Ce tutoriel détaille d’une part la manière de générer les fichiers d’entrées du logiciel BayPass à partir de données de séquençage en pool, d’autre part le paramétrage optimal du logiciel BayPass et en fin propose une méthode d’exploreration des résultats d’analyses produits. Un pipeline d’analyse mixant des packages sous Rstudio et des lignes de commandes Linux, est décrit afin de guider pas à pas l’utilisateur tout au long du processus depuis les données brutes jusqu’à la liste finale de loci/variants candidats.
+Ce tutoriel est à destination des étudiants et des bioinformaticiens débutants.</p>
+<div id="mots-clefs" class="section level3 unnumbered hasAnchor">
+<h3>mots clefs<a href="résumé.html#mots-clefs" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Logiciel BayPass, séquençage en pool, GWAS, études d’associations pangénomiques, Rstudio.</p>
+</div>
+<div id="prérequis" class="section level2 unnumbered hasAnchor">
+<h2>prérequis<a href="résumé.html#prérequis" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Les commandes décrites dans cet article ont été regroupées dans un fichier au format « R markdown » (Rmd) « Poolseq_pipeline.Rmd » librement téléchargeable à l’adresse : <a href="https://github.com/Jolivares-INRAE/Download" class="uri">https://github.com/Jolivares-INRAE/Download</a>. Ce tutoriel est conçu pour décrire pas à pas les différentes étapes du fichier Rmd et permettre à l’utilisateur de les exécuter en parallèle.
+L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul.
+Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l’environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
+Bien que l’essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l’adresse <a href="http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html" class="uri">http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html</a> et décompressée dans un répertoire local par l’utilisateur.
+Dans tous les codes qui suivent l’expression « ~/path/ » sera à remplacer par les chemins personnels de l’utilisateur.
+Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.</p>
+
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol start="1">
+<li id="fn1"><p>INRAE, UR-1115 PSH, 228 route de l’aérodrome, 84914 Avignon, France<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
 </div>
             </section>
 
@@ -140,7 +164,7 @@ the table of contents to find the page you are looking for.</p>
         </div>
       </div>
 
-
+<a href="introduction.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -171,7 +195,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/%s",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/00-abstract.Rmd",
 "text": "Edit"
 },
 "history": {

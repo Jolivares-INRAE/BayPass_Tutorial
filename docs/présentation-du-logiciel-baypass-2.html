@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-06-19" />
+<meta name="date" content="2023-06-21" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -37,7 +37,7 @@ set in the _output.yml file.</p>" />
   
   
 <link rel="prev" href="introduction.html"/>
-<link rel="next" href="section.html"/>
+
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -106,19 +106,10 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#mots-clefs"><i class="fa fa-check"></i>mots clefs</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#prérequis"><i class="fa fa-check"></i>prérequis</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="résumé-1.html"><a href="résumé-1.html"><i class="fa fa-check"></i>Résumé</a>
-<ul>
-<li class="chapter" data-level="" data-path="résumé-1.html"><a href="résumé-1.html#mots-clefs-1"><i class="fa fa-check"></i>mots clefs</a></li>
-<li class="chapter" data-level="" data-path="résumé-1.html"><a href="résumé-1.html#prérequis-1"><i class="fa fa-check"></i>prérequis</a></li>
-</ul></li>
 <li class="chapter" data-level="" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i>Introduction</a></li>
 <li class="chapter" data-level="" data-path="présentation-du-logiciel-baypass-2.html"><a href="présentation-du-logiciel-baypass-2.html"><i class="fa fa-check"></i>Présentation du logiciel BayPass 2.3</a>
 <ul>
 <li class="chapter" data-level="" data-path="présentation-du-logiciel-baypass-2.html"><a href="présentation-du-logiciel-baypass-2.html#présentation-générale-de-lanalyse"><i class="fa fa-check"></i>Présentation générale de l’analyse :</a></li>
-</ul></li>
-<li><a href="section.html#section" id="toc-section"></a>
-<ul>
-<li class="chapter" data-level="" data-path="section.html"><a href="section.html"><i class="fa fa-check"></i>Présentation générale de l’analyse :</a></li>
 </ul></li>
 </ul>
 
@@ -160,15 +151,32 @@ div.csl-indent {
 La première étape part d’un fichier d’alignement au format « .bam » et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « .vcf » de tous les points de mutations ou SNP qui sont autant de marqueurs génétiques à analyser. Ce fichier .vcf sert d’entrée au package « PoolFstat » qui va permettre de générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio et si tout est bon, les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts.</p>
 <p><img src="images/Analyse.jpg" /></p>
 
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div class="csl-entry">
+Futschik, Andreas, and Christian Schlötterer. 2010. <span>“The <span>Next</span> <span>Generation</span> of <span>Molecular</span> <span>Markers</span> <span>From</span> <span>Massively</span> <span>Parallel</span> <span>Sequencing</span> of <span>Pooled</span> <span>DNA</span> <span>Samples</span>.”</span> <em>Genetics</em> 186 (1): 207–18. <a href="https://doi.org/10.1534/genetics.110.114397">https://doi.org/10.1534/genetics.110.114397</a>.
+</div>
+<div class="csl-entry">
+Gautier, Mathieu. 2015. <span>“Genome-<span>Wide</span> <span>Scan</span> for <span>Adaptive</span> <span>Divergence</span> and <span>Association</span> with <span>Population</span>-<span>Specific</span> <span>Covariates</span>.”</span> <em>Genetics</em> 201 (4): 1555–79. <a href="https://doi.org/10.1534/genetics.115.181453">https://doi.org/10.1534/genetics.115.181453</a>.
+</div>
+<div class="csl-entry">
+Nielsen, Erica S. 2020. <span>“Pool-<span>Seq</span> <span>Analyses</span>: <span>PoolFstat</span> &amp; <span>BayPass</span>.”</span> <a href="https://esnielsen.github.io/post/pool-seq-analyses-poolfstat-baypass/">https://esnielsen.github.io/post/pool-seq-analyses-poolfstat-baypass/</a>.
 </div>
 </div>
+</div>
+</div>
+
+
+
+
+
+
             </section>
 
           </div>
         </div>
       </div>
-<a href="introduction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="section.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="introduction.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
