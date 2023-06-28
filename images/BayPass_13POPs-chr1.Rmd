@@ -1,0 +1,814 @@
+
+---
+title: "BayPass Pipeline"
+author: "Jérôme OLIVARES"
+date: "Septembre 2021"
+output:
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    df_print: paged
+  github_document:
+    fig_width: 15
+    fig_height: 10
+    dev: jpeg
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+editor_options:
+  chunk_output_type: inline
+---
+
+#Prérequis:
+L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul. Les commandes décrites dans ce document ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec tous les packages nécessaires à jour.
+Les lignes de commandes et scripts sous Linux ont été développés dans l’environnement bash et SLURM du cluster de calcul de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
+La dernière version du logiciel BayPass sera téléchargée depuis l’adresse http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html et décompressée dans un répertoire local par l’utilisateur.
+Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
+##installation des packages
+L'utilisation de ce pipeline nécessite l'installation au préalable des packages ci-dessous, il appartient à l'utilisateur de les installer sur son système.
+
+install.packages(c("poolfstat"))  
+install.packages(c("RColorBrewer"))  
+install.packages(c("BiocManager"))  
+BiocManager::install("mixOmics")  
+install.packages(c("mvtnorm"))  
+install.packages(c("geigen"))  
+install.packages(c("corrplot"))  
+install.packages(c("ape"))  
+install.packages(c("VennDiagram"))  
+install.packages(c("gridExtra"))  
+install.packages(c("nVennR"))  
+install.packages(c("tidyverse"))  
+
+##chargement des librairies
+```{r load-Packages, message=FALSE, warning=FALSE}
+library(poolfstat)
+library(RColorBrewer)
+library(mixOmics) #"cim" pour heatmap
+#library(mvtnorm)
+library(geigen) #pour l'analyse des matrice Omega
+library(corrplot)
+#library(ape)
+library(VennDiagram)
+#library(gridExtra)
+library(nVennR)
+library(tidyverse)
+library('vcfR')
+```
+##Définition d'un espace de travail
+Chaque utilisateur définira une arborescence de travail avec plusieurs dossiers contenant respectivement les fichiers vcf, les entrées BayPass, les sorties BayPass, les sorties POD et enfin un dossier recueillant les différents résultats (plots, liste de SNP...)
+```{r work-space}
+path_vcf <- "C:/BayPass_pipeline/vcf/"
+path_input <- "C:/BayPass_pipeline/Input/13pops/chr1/"
+path_out <- "C:/BayPass_pipeline/Output/13pops/chr1/"
+path_POD <- "C:/BayPass_pipeline/Output/13pops/chr1/POD/"
+path_res <- "C:/BayPass_pipeline/Resultats/13pops/chr1/"
+```
+##Obtention d'un fichier VCF
+L'analyse qualité et l'alignement sur le génome de référence devront avoir été réalisé au préalable afin d'obtenir un fichier BAM correctement indéxé.
+L’utilisation des Samtools et de Varscan est recommandé pour le variant calling, avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible. 
+Un exemple de script est disponible à l'adresse suivante:
+https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
+
+IMPORTANT : 
+Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
+
+#conversion du fichier VCF en objet pooldata
+Lister le nom des populations dans le même ordre que celui du fichier .vcf dans un objet "pnames".
+Lister les tailles haploïdes de chaque population (2x nbr individus pour les diploïdes) dans un objet "psizes"
+Le fichier doit être ".vcf" ou compressé au format gzip ".vcf.gz"
+min.rc =  minimum de reads qu'un allèle doit avoir (dans tous les pools) pour être retenu 
+min.cov.per.pool = minimum de reads autorisées par pool pour que SNP soit retenu.
+max.cov.per.pool = maximum de reads autorisées par pool pour que SNP soit retenu.
+min.maf = fréquence allélique minimale (sur tous les pools) pour qu'un SNP soit retenu
+```{r conversion-pooldata}
+#Infos sur les pops
+pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', '85-3-4-S', 'IT-ID3-S', '17-47-002-R', '17-53-006-R', '19-30-1-R', '44-1-R', '44-2-R', '44-3-R', 'IT-ID1-R'))
+#psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72')) #ploydie autosome/chr2-28
+psizes_Z <- as.numeric(c('120', '135', '16', '86', '135', '30','135', '120', '150', '60', '63', '42', '53')) #ploydie Z/chr1
+#psizes_W <- as.numeric(c('30', '45', '8', '28', '45', '14','45', '40', '50', '14', '17', '10', '19')) #ploydie W/chr29
+#conversion du .vcf
+GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "Wild13pops_chr1-varscan.vcf.gz", sep=""), poolsizes = psizes_Z, poolnames = pnames, min.cov.per.pool = 4, min.rc = 0, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+#conversion d'un .sync (PoPoolation)
+#GWAS.pooldata <- popsync2pooldata(sync.file = paste(path_vcf, "13pops_chr1.sync.gz", sep=""), poolsizes = psizes_W, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, noindel = FALSE, nlines.per.readblock = 1e+06, nthreads = 8)
+#élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)
+GWAS.pooldata<-pooldata.subset(GWAS.pooldata, cov.qthres.per.pool = c(0,0.99), verbose = TRUE)
+```
+#Analyses préliminaires
+A partir de cet objet pooldata on faire une première analyse des Fst.
+Des outils sont décrits et exemplifiés dans la vignette de PoolFstat : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf)
+On peut analyser ces Fst entre les populations deux à deux (pairwise) afin de déterminer et visualiser les différentiations génétiques entre populations.
+On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
+
+##Calcul et heatmap des Fst entre population (pairwise):
+```{r heatmap-PW-fst, fig.width=10, fig.height=10}
+#Calcul des pairwise Fst 
+PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.05, output.snp.values = FALSE)
+#conversion en matrice de distance
+df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
+df
+#heatmap
+cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(25)
+cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Chr1 wide Pairwise FST heatmap between populations")
+```
+##Calcul et plot des Fst en fenêtre glissante:
+```{r plot-sliding-Fst, fig.width=20, fig.height=10}
+#calcul des Fst avec une fenêtre glissante de 10 SNP ("sliding.window.size")
+Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 500)
+#conversion en objet data frame
+df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
+#plot en ligne. (le seuil indique la Fst globale estimée à l'échelle du génome).
+Fst.plot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) + geom_point(aes(color=Chr), alpha=0.8, size=1.5)
+Fst.plot + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) + geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) +  facet_grid(~Chr, scales = 'free_x', space = 'free_x', switch = 'x')+
+facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom"))
+```
+#Conversion du pooldata en fichiers d'entrées pour BayPass
+```{r Input-BayPass}
+pooldata2genobaypass(GWAS.pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = "thinning")
+geno_file<-read_delim(paste(path_input, "genobaypass", sep=""), delim=" ", col_names = FALSE)
+geno_1<-select(geno_file, 1:12,13,14)#47-2
+geno_2<-select(geno_file, 1:12,15,16)#53-6
+geno_3<-select(geno_file, 1:12,17,18)#30-1
+geno_4<-select(geno_file, 1:12,19,20)#44-1
+geno_5<-select(geno_file, 1:12,21,22)#44-2
+geno_6<-select(geno_file, 1:12,23,24)#44-3
+geno_7<-select(geno_file, 1:12,25,26)#IT-R
+
+write_delim(geno_1, paste(path_input, "13pops_47-2", sep=""), delim=" ", col_names=FALSE )
+write_delim(geno_2, paste(path_input, "13pops_53-6", sep=""), delim=" ", col_names=FALSE )
+write_delim(geno_3, paste(path_input, "13pops_30-1", sep=""), delim=" ", col_names=FALSE )
+write_delim(geno_4, paste(path_input, "13pops_44-1", sep=""), delim=" ", col_names=FALSE )
+write_delim(geno_5, paste(path_input, "13pops_44-2", sep=""), delim=" ", col_names=FALSE )
+write_delim(geno_6, paste(path_input, "13pops_44-3", sep=""), delim=" ", col_names=FALSE )
+write_delim(geno_7, paste(path_input, "13pops_IT-R", sep=""), delim=" ", col_names=FALSE )
+
+```
+On récupère un fichier genobaypass qui contient les données brutes de génotypage, un fichier snpdet qui contient la liste des positions correspondantes et un fichier poolsize, qui est une copie de l'objet psizes.
+
+#Design de l’analyse BayPass
+Deux fichiers de paramétrages au format texte/tabulation doivent être créés :
+Le premier fichier ecotype.txt identifie les covariables écologiques de chaque population, avec une covariable par ligne et autant de lignes que nécessaire. Seules sont acceptées les valeurs numériques de préférence en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des noms de villes pourront être remplacées par une latitude ou une longitude. L’exemple suivant donne la structure d’un fichier pour 3 covariables (latitude/longitude/année) et 5 populations :
+
+4.75	0.53	0.27	-0.86	-0.61
+43.90	44.37	44.29	47.36	47.86
+2019	2017	2017	2017	2018
+
+Le deuxième fichier contraste.txt identifie l’appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste. L’exemple suivant donne la structure d’un fichier pour 3 analyses de contraste : 
+
+1	1	-1	-1	-1
+1	0	 0	-1	-1
+0	1	-1	-1	 0
+
+1ere ligne = pop 1 et 2 VS pop 3, 4 et 5
+2e ligne = pop 1 VS pop 4 et 5
+3e ligne = pop 2 VS pop 3 et 4.
+
+Ces fichiers seront aussi transférés sur le cluster de calcul.
+
+IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) il est très fortement conseillé de multiplier les analyses de contraste ou de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d’entre elles. 
+
+#Copie, subdivision des données et temps de calculs
+Copier les fichiers genobaypass, snpdet, poolsize et les fichiers contraste.txt et ecotype.txt sur le cluster de calcul. Afin d’éviter d’éventuels problèmes de format les fichiers .txt sont passé à la commande dos2unix
+La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec la commande sed.
+Exemple pour 100 sous jeux:
+
+for i in {1..100}; do sed -n "$i~100p" genobaypass > genobaypass.sub$i; done
+for i in {1..100}; do sed -n "$i~100p" snpdet > snpdet.sub$i; done
+
+IMPORTANT: pour 25 000 SNP et 12 populations, une analyse (1contraste, 3 covariables) avec 1 CPU dure environ 8H, si on augmente le nombre de contraste à 8, le temps de calcul passe à environ 10H ce qui est nettement plus rentable que de relancer 8 fois l’analyse.
+Si on alloue 8 CPU, l’analyse est 5 fois plus rapide mais pas 8 donc une partie (30 à 40%) du temps total CPU est perdue. A noter que la consommation de mémoire vive est négligeable, il n’y a pas de gain à espérer à allouer des gigaoctets de mémoire.
+
+La stratégie la plus rentable est donc d’inclure dans une même analyse un maximum de combinaison de contraste/covariables, de découper en sous jeux de données de 25 000 à 50 000 SNP et d’allouer 1 CPU à chacun. Il n’est pas aberrant de faire un test sur une fraction des données totale et d’extrapoler pour avoir une idée du coût en temps et en ressources. 
+
+#Baypass : l’analyse poolseq
+La commande est la même pour les différents modèles employés par BayPass, ce sont les fichiers optionnels qui définissent le modèle : pas de fichiers pour le core model, l'option -efile pour le covariate model et l'option poolsize pour activer le mode Pool-Seq.
+Un exemple de script d'analyse de type Pool-Seq, parallélisée sur 25 CPU est disponible à l'adresse suivante:
+https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
+
+Il est recommandé dans le cadre d’une analyse Pool-Seq d’utiliser et fixer le paramètre -d0yij à 1/5e de la valeur la plus faible du poolsize. (voir page 22 et 39 du manuel de BayPass).
+Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.
+
+#Regroupement et validation des résultats
+Chaque sous jeux de données analysés va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l'analyse (crash, disque plein…) conduisant à des fichiers incomplets.
+
+Avant de regrouper les résultats, il faut valider l'homogénéité des analyses en comparant les matrices Ω entre elles par un indice de distance FMD, plus l'indice sera faible plus les matrices donc les analyses seront comparables.
+```{r validation-matrice-omega, fig.width=8, fig.height=6}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+prefix <- "13pops-chr1_STD7K_3cov.sub"
+#prefix <- "13pops-chr1_RUN"
+#liste et compte les matrices Ω du répertoire "path"
+path_Omega <- "C:/BayPass_pipeline/Output/13pops/chr1/Omega7K/"
+listMatrix <- list.files(path_Omega, pattern="mat_omega.out")
+nMatrix<-length(listMatrix)
+cat("Nbr matrix files =", nMatrix, "\n")
+
+#boucle sur toutes les matrices, calcule les distances FMD en pairwise et stocke le résultat
+ListFMD<-c()
+for (i in 1:nMatrix) for (j in 1:nMatrix) if(i!=j) {
+omegaA=as.matrix(read.table(paste(path_Omega, prefix, i,"_mat_omega.out", sep="")))
+omegaB=as.matrix(read.table(paste(path_Omega, prefix, j,"_mat_omega.out", sep="")))
+FMD <- fmd.dist(omegaA, omegaB)
+ListFMD <- c(ListFMD,FMD)
+}
+
+#heatmap de la dernière matrice Ω.
+colnames(omegaB) <-c(pnames)
+rownames(omegaB) <-c(pnames)
+cor.mat=cov2cor(omegaB)
+cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(16)
+cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on last "~hat(Omega))
+#SVD de la dernière matrice Ω.
+SVD_omega<-plot.omega(omega=omegaB, pop.names=pnames, main = expression("Singular Value Decomposition of last " * ~hat(Omega)), pos=3)
+SVD_omega
+
+pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', '85-3-4-S', 'IT-ID3-S', '17-47-002-R', '17-53-006-R', '19-30-1-R', '44-1-R', '44-2-R', '44-3-R', 'IT-ID1-R'))
+pheno <- as.character(c('Susceptible',   'Susceptible',  'Susceptible', 'Susceptible', 'Susceptible', 'Susceptible', 'Resistant', 'Resistant', 'Resistant', 'Resistant', 'Resistant','Resistant','Resistant'))
+geo <- as.character(c('SE',   'SE',  'SO', 'NO',   'NO',  'IT', 'SO',   'NO',  'SE','NO','NO','NO','IT'))
+nomsU<- as.character(c(' ',   'SE-S-02',  ' ', '',   ' ',  ' ', ' ',   ' ',  ' ',' ',' ',' ',' '))
+nomsL<- as.character(c(' ',   ' ',  ' ', 'NO-S-02',   ' ',  'IT-S-01', 'SO-R-01',   'NO-R-04',  'SE-R-01','NO-R-01','NO-R-02','NO-R-03','IT-R-01'))
+nomsR<- as.character(c('SE-S-01',   ' ',  'SO-S-01', ' ',   'NO-S-01',  ' ', ' ',   ' ',  ' ',' ',' ',' ',' '))
+#noms<- as.character(c('SE-01-S',   'SE-02-S',  'SO-01-S', 'NO-02-S',   'NO-01-S',  'IT-01-S', 'SO-01-R',   'NO-04-R',  'SE-01-R','NO-01-R','NO-02-R','NO-03-R','IT-01-R'))
+noms_bis<- as.character(c("01",   "02",  "01", "02",  "01", "01", "01", "04", "01", "01", "02", "03", "01"))
+pos<- as.character(c('R',   'T',  'R', 'T',   'R',  'T', 'R',   'R',  'T','R','R','R','R'))
+col_geo<- c("#ffc100",   "#ffc100",  "#69ff27", "#00b0f0", "#00b0f0", "#7030a0", "#69ff27", "#00b0f0",  "#ffc100","#00b0f0","#00b0f0","#00b0f0","#7030a0")
+# convertit en data.frame
+tab_SVD <- data.frame(sample.id = pnames,
+    phenotype = factor(pheno),
+    region = factor(geo),
+    #noms = factor(noms),
+    #noms_bis = factor(noms_bis),
+    nomsUp = factor(nomsU),
+    nomsLeft = factor(nomsL),
+    nomsRight = factor(nomsR),
+    colPop=col_geo,
+    pos = factor(pos),
+    PC = SVD_omega$PC,    # the first eigenvector
+    eig = SVD_omega$eig,    # the second eigenvector
+    VAR = SVD_omega$pcent.var,    # variance proportion for each principal component
+    stringsAsFactors = FALSE)
+
+ggplot_pca = ggplot(data=tab_SVD, aes(x=PC.1, y=PC.2,shape=phenotype)) +
+  geom_point(aes(color= region), alpha=1, size=20)+scale_shape_manual(values = c('Susceptible'=79, 'Resistant'=16))+
+  ggtitle(paste0("Singular Value Decomposition of the covariance (",expression("\U03A9"),") matrix for Z chromosome"))+
+  scale_colour_manual(name = "region",labels = c("IT", "NO", "SE", "SO"), values = c("#7030a0", "#00b0f0", "#ffc100","#69ff27" ),guide = guide_legend(override.aes = list(pch=126)))
+ggplot_pca + scale_x_continuous() + scale_y_continuous() +
+  xlab(paste("PC1 (",round(tab_SVD$VAR[1], 2), "%)" , sep="")) +
+  ylab(paste("PC2 (", round(tab_SVD$VAR[2], 2), "%)" , sep="")) +
+  geom_text(aes(label = noms_bis),size=8)+theme(axis.title.x = element_text(size =15, face = "bold"))+
+  theme(axis.title.y = element_text(size =15, face = "bold"))
+
+
+ggplot_pca = ggplot(data=tab_SVD, aes(x=PC.1, y=PC.2, shape=phenotype)) +
+  geom_point(aes(color= region),alpha=1, size=10)+scale_shape_manual(values = c('Susceptible'=79, 'Resistant'=16))+
+  ggtitle(paste0("Singular Value Decomposition of the covariance (",expression("\U03A9"),") matrix for Z chromosome"))+
+  scale_colour_manual(name = "region",labels = c("IT", "NO", "SE", "SO"), values = c("#7030a0", "#00b0f0", "#ffc100","#69ff27" ),guide = guide_legend(override.aes = list(pch=126)))
+ggplot_pca + scale_x_continuous() + scale_y_continuous() + xlab(paste("PC1 (",round(tab_SVD$VAR[1], 2), "%)" , sep="")) +
+  ylab(paste("PC2 (", round(tab_SVD$VAR[2], 2), "%)" , sep="")) +
+  geom_text(aes(label = nomsLeft), nudge_x = -0.04,fontface = 'bold')+
+  geom_text(aes(label = nomsUp), nudge_y = 0.04,fontface = 'bold')+
+  geom_text(aes(label = nomsRight), nudge_x = 0.04,fontface = 'bold')+
+  theme(axis.title.x = element_text(size =15, face = "bold"))+theme(axis.title.y = element_text(size =15, face = "bold"))
+
+#calcule la moyenne et la sd de toutes les distances FMD
+cat("FMD mean =", mean(ListFMD), "\n")
+cat("FMD sd =" , sd(ListFMD), "\n")
+```
+Si les réplicats sont homogènes on merge les résultats xtx, C2, Betai pour tous les répliquats, un exemple de script est disponible à l'adresse suivante:
+https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline
+
+Si l'analyse a été découpée en plusieurs chromosome on peut concaténer simplement en créant un nouveau fichier complet avec entêtes à partir du chr1, puis on concatène à la suite les autres fichiers sans l'entête:
+cat Poolseq-chr1.Results.sorted > Poolseq-complet.results 
+cat Poolseq-chr2.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results 
+cat Poolseq-chr3.Results.sorted |  grep -v "MRK" - >> Poolseq-complet.results 
+etc...
+
+#Evaluation de la distribution des p.values des XtX
+Cette évaluation se fait sur les p.values du fichier "XtX.merged.sorted":
+```{r Distribution-XtX}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+XtX.chr1_5K=read.table(paste(path_out,"13pops-chr1_STD5K_3cov.XtX", sep=""),h=T)
+hist(10**(-1*XtX.chr1_5K$log10.1.pval.),freq=F,breaks=50)
+abline(h=1)
+cat("Seuil 5% XtX =", quantile(XtX.chr1_5K$M_XtX, probs=0.95), "(Max=", max(XtX.chr1_5K$M_XtX) ,")", "\n")
+cat("Seuil 1% XtX =", quantile(XtX.chr1_5K$M_XtX, probs=0.99), "(Max=", max(XtX.chr1_5K$M_XtX) ,")", "\n")
+
+XtX.chr1_3K=read.table(paste(path_out,"13pops-chr1_STD3K_3cov.XtX", sep=""),h=T)
+hist(10**(-1*XtX.chr1_3K$log10.1.pval.),freq=F,breaks=50)
+abline(h=1)
+cat("Seuil 5% XtX =", quantile(XtX.chr1_3K$M_XtX, probs=0.95), "(Max=", max(XtX.chr1_3K$M_XtX) ,")", "\n")
+cat("Seuil 1% XtX =", quantile(XtX.chr1_3K$M_XtX, probs=0.99), "(Max=", max(XtX.chr1_3K$M_XtX) ,")", "\n")
+
+XtX.chr1_7K=read.table(paste(path_out,"13pops-chr1_STD7K_3cov.XtX", sep=""),h=T)
+hist(10**(-1*XtX.chr1_7K$log10.1.pval.),freq=F,breaks=50)
+abline(h=1)
+cat("Seuil 5% XtX =", quantile(XtX.chr1_7K$M_XtX, probs=0.95), "(Max=", max(XtX.chr1_7K$M_XtX) ,")", "\n")
+cat("Seuil 1% XtX =", quantile(XtX.chr1_7K$M_XtX, probs=0.99), "(Max=", max(XtX.chr1_7K$M_XtX) ,")", "\n")
+
+#Manplot.XtX = ggplot(data=XtX.res, aes(x=pos, y=M_XtX)) + geom_point(aes(color=chr), alpha=0.8, size=3) + ggtitle("Plot XtX versus position")
+#Manplot.XtX + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+```
+Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
+http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
+Si cette distribution n’est pas normale il est souhaitable de calibrer nos statistiques avec un jeu de données simulées.
+
+#Analyses des résultats
+L'analyse est faite avec les seuils calculés précédemment, si ce calcul n'a pas été fait il faudra définir ces seuil "manuellement".
+```{r Import,fig.width=10, fig.height=10}
+
+XtX.chr1.med<-XtX.chr1_3K%>%
+  left_join(XtX.chr1_5K, by=c("chr","pos"))%>%
+  left_join(XtX.chr1_7K, by=c("chr","pos"))%>%
+  select(chr,pos,M_XtX, M_XtX.x, M_XtX.y)
+XtX.chr1.med<- XtX.chr1.med %>% mutate(XtX_median = apply(XtX.chr1.med[,3:5], 1, median))
+
+BF.chr1_5K.Cov1=read.table(paste(path_out, "13pops-chr1_STD5K_Betai.Cov1", sep=""),h=T)
+#BF.res.Cov2=read.table(paste(path_out, "13pops-chr1_STD5K_Betai.Cov2", sep=""),h=T)
+#BF.res.Cov3=read.table(paste(path_out, "13pops-chr1_STD5K_Betai.Cov3", sep=""),h=T)
+BF.chr1_3K.Cov1=read.table(paste(path_out, "13pops-chr1_STD3K_Betai.Cov1", sep=""),h=T)
+BF.chr1_7K.Cov1=read.table(paste(path_out, "13pops-chr1_STD7K_Betai.Cov1", sep=""),h=T)
+
+BF.chr1.med.Cov1<-BF.chr1_3K.Cov1%>%
+  left_join(BF.chr1_5K.Cov1, by=c("chr","pos"))%>%
+  left_join(BF.chr1_7K.Cov1, by=c("chr","pos"))%>%
+  select(chr,pos,BF.dB., BF.dB..x, BF.dB..y)
+BF.chr1.med.Cov1<- BF.chr1.med.Cov1 %>% mutate(BF_median = apply(BF.chr1.med.Cov1[,3:5], 1, median))
+
+eBPis.chr1.med.Cov1<-BF.chr1_3K.Cov1%>%
+  left_join(BF.chr1_5K.Cov1, by=c("chr","pos"))%>%
+  left_join(BF.chr1_7K.Cov1, by=c("chr","pos"))%>%
+  select(chr,pos,eBPis, eBPis.x, eBPis.y)
+eBPis.chr1.med.Cov1<- eBPis.chr1.med.Cov1 %>% mutate(eBPis_median = apply(eBPis.chr1.med.Cov1[,3:5], 1, median))
+
+C2.chr1.C1_3K=read.table(paste0(path_out, "13pops_chr1_STD3K.contrast-C1"),h=T)
+C2.chr1.C1_5K=read.table(paste0(path_out, "13pops_chr1_STD5K.contrast-C1"),h=T)
+C2.chr1.C1_7K=read.table(paste0(path_out, "13pops_chr1_STD7K.contrast-C1"),h=T)
+
+C2.chr1.med<-C2.chr1.C1_3K%>%
+  left_join(C2.chr1.C1_5K, by=c("chr","pos"))%>%
+  left_join(C2.chr1.C1_7K, by=c("chr","pos"))%>%
+  select(chr,pos,M_C2, M_C2.x, M_C2.y)
+C2.chr1.med<- C2.chr1.med %>% mutate(C2_median = apply(C2.chr1.med[,3:5], 1, median))
+
+Median.chr1.Cov1.res<-XtX.chr1.med%>%
+  left_join(C2.chr1.med, by=c("chr","pos"))%>%
+  left_join(BF.chr1.med.Cov1, by=c("chr","pos"))%>%
+  left_join(eBPis.chr1.med.Cov1,by=c("chr","pos"))%>%
+  select(chr,pos,XtX_median,C2_median,BF_median,eBPis_median)
+# Fusion des résultats XtX/C2-N°1/BF-N°1 par chr puis position
+
+#Joined.res1 = merge(x=XtX.res,y=BF.res.Cov1, by=c("chr","pos"))
+Join.chr1.res1 = merge(x=XtX.chr1,y=merge(x=C2.chr1.C1,y=BF.res.Cov1, by=c("chr","pos")), by=c("chr","pos")) #M
+Join.chr1.res2 = merge(x=XtX.chr1,y=merge(x=C2.chr1.C1,y=BF.res.Cov2, by=c("chr","pos")), by=c("chr","pos")) #V15
+Join.chr1.res3 = merge(x=XtX.chr1,y=merge(x=C2.chr1.C1,y=BF.res.Cov3, by=c("chr","pos")), by=c("chr","pos")) #R5
+#Joined.res3 = merge(x=XtX.res,y=merge(x=C2.res.C3,y=BF.res.Cov3, by=c("chr","pos")), by=c("chr","pos"))
+Join.auto.res1 = merge(x=XtX.auto,y=merge(x=C2.auto.C1,y=BF.auto.Cov1, by=c("chr","pos")), by=c("chr","pos")) #M
+Join.auto.res2 = merge(x=XtX.auto,y=merge(x=C2.auto.C1,y=BF.auto.Cov2, by=c("chr","pos")), by=c("chr","pos")) #V15
+Join.auto.res3 = merge(x=XtX.auto,y=merge(x=C2.auto.C1,y=BF.auto.Cov3, by=c("chr","pos")), by=c("chr","pos")) #R5
+
+Full_M.res<-rbind(Join.chr1.res1,Join.auto.res1)%>%
+  mutate(N = str_sub(chr, 4, -1)) %>%
+  mutate_at(c(32), as.numeric)
+
+Full_V15.res<-rbind(Join.chr1.res2,Join.auto.res2)%>%
+  mutate(N = str_sub(chr, 4, -1)) %>%
+  mutate_at(c(32), as.numeric)
+
+Full_R5.res<-rbind(Join.chr1.res3,Join.auto.res3)%>%
+  mutate(N = str_sub(chr, 4, -1))%>%
+  mutate_at(c(32), as.numeric)
+
+#Définition des seuils ou copie des seuils POD
+
+cat("Seuil 1% XtX =", quantile(XtX.chr1$M_XtX, probs=0.99), "(Max=", max(XtX.chr1$M_XtX) ,")", "\n")
+cat("Seuil 1% C2-STD-M =", quantile(C2.chr1.C1$M_C2, probs=0.95), "(Max=", max(C2.chr1.C1$M_C2) ,")", "\n")
+#cat("Seuil 1% C2-STD-V =", quantile(C2.res.C2$M_C2, probs=0.99), "(Max=", max(C2.res.C2$M_C2) ,")", "\n")
+#cat("Seuil 1% C2-STD-R =", quantile(C2.res.C3$M_C2, probs=0.99), "(Max=", max(C2.res.C3$M_C2) ,")", "\n")
+cat("Seuil 1% BF-STD-M =", quantile(BF.res.Cov1$BF.dB., probs=0.99), "(Max=", max(BF.res.Cov1$BF.dB.) ,")", "\n")
+cat("Seuil 5% BF-STD-M =", quantile(BF.res.Cov1$BF.dB., probs=0.95), "(Max=", max(BF.res.Cov1$BF.dB.) ,")", "\n")
+cat("Seuil 1% BF-STD-V15 =", quantile(BF.res.Cov2$BF.dB., probs=0.99), "(Max=", max(BF.res.Cov2$BF.dB.) ,")", "\n")
+cat("Seuil 1% BF-STD-R5 =", quantile(BF.res.Cov3$BF.dB., probs=0.99), "(Max=", max(BF.res.Cov3$BF.dB.) ,")", "\n")
+
+Manplot.res.chr1 = ggplot(BF.res.Cov1, aes(x=eBPis, y=BF.dB.)) + geom_point( color="blue", alpha=0.8, size=1)+
+  ggtitle("XtX versus BF Phenotype V15 (Seuil = Top 1% XtX & BF 15)")
+Manplot.res.chr1 
+Manplot.res.A = ggplot(BF.auto.Cov1, aes(x=eBPis, y=BF.dB.)) + geom_point( color="blue", alpha=0.8, size=1)+
+  ggtitle("XtX versus BF Phenotype V15 (Seuil = Top 1% XtX & BF 15)")
+Manplot.res.A 
+Manplot.res.A = ggplot(NULL, aes(x=eBPis, y=BF.dB.)) + geom_point(data=BF.res.Cov1, color="red", alpha=0.8, size=1.5)+ geom_point(data=BF.auto.Cov1, color="blue", alpha=0.8, size=1)
+  ggtitle("eBPis versus BF ")
+Manplot.res.A 
+
+#plot des BF vs XtX STD Model => M
+Manplot.res.M = ggplot(NULL, aes(x=M_XtX, y=BF.dB.)) +
+  geom_point(data=subset(Full_M.res, M_XtX >= quantile(Full_M.res$M_XtX, probs=0.99) | BF.dB. >=15), color="red", alpha=0.8, size=1)+
+  geom_point(data=subset(Full_M.res, M_XtX < quantile(Full_M.res$M_XtX, probs=0.99) | BF.dB. <15), color="blue",alpha=0.8, size=1)+
+  ggtitle("XtX versus BF Phenotype M (Seuil = Top 1% XtX & BF 15)")
+Manplot.res.M + geom_hline(yintercept=15)+
+  geom_vline(xintercept=quantile(Full_M.res$M_XtX, probs=0.99))
+
+Manplot.res.V = ggplot(NULL, aes(x=M_XtX, y=BF.dB.)) +
+  geom_point(data=subset(Full_V15.res, M_XtX >= quantile(Full_V15.res$M_XtX, probs=0.99) | BF.dB. >=15), color="red", alpha=0.8, size=1)+
+  geom_point(data=subset(Full_V15.res, M_XtX < quantile(Full_V15.res$M_XtX, probs=0.99) | BF.dB. <15), color="darkgreen",alpha=0.8, size=1)+
+  ggtitle("XtX versus BF Phenotype V15 (Seuil = Top 1% XtX & BF 15)")
+Manplot.res.V + geom_hline(yintercept=15)+
+  geom_vline(xintercept=quantile(Full_V15.res$M_XtX, probs=0.99))
+
+```
+
+```{r plot, fig.width=20, fig.height=10}
+#Plot simple
+
+Manplot.resBFM = ggplot(NULL, aes(x=pos, y=BF.dB.)) + geom_point(data=Full_M.res, col='blue', alpha=0.8, size=1)+ geom_point(data=subset(Full_M.res, chr=="chr1" & pos>53570000 & pos<53600000), col='red', alpha=0.8, size=1.5) + ggtitle("position versus BF M STD Model (Seuil = 15, Rouge = TP61F)")
+Manplot.resBFM + scale_x_continuous() + scale_y_continuous() +
+  theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+
+  geom_hline(yintercept=15)+ facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+Manplot.resBFV = ggplot(NULL, aes(x=pos, y=BF.dB.)) + geom_point(data=Full_V15.res, col='darkgreen', alpha=0.8, size=1)+ geom_point(data=subset(Full_V15.res, chr=="chr1" & pos>53570000 & pos<53600000), col='red', alpha=0.8, size=1.5) + ggtitle("position versus BF V STD Model (Seuil = 15, Rouge = TP61F)")
+Manplot.resBFV + scale_x_continuous() + scale_y_continuous() +
+  theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+
+  geom_hline(yintercept=15)+ facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+
+
+#Plot en fenêtres glissantes M
+Slide_chr1M_top1=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov1.slidingTop1", sep=""),h=T)
+Slide_autoM=read.table("C:/BayPass_pipeline/Output/13pops/autosomes/13pops-auto_STD_Betai.Cov1.slidingTop1",h=T)
+Slide_M_top1<-rbind(Slide_chr1M_top1,Slide_autoM)%>%
+  mutate(N = str_sub(chr, 4, -1))%>%
+  mutate_at(c(2:5), as.numeric)
+
+Slide_chr1M_15=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov1.sliding15", sep=""),h=T)
+Slide_autoM_15=read.table("C:/BayPass_pipeline/Output/13pops/autosomes/13pops-auto_STD_Betai.Cov1.sliding15",h=T)
+Slide_M_15<-rbind(Slide_chr1M_15,Slide_autoM_15)%>%
+  mutate(N = str_sub(chr, 4, -1))%>%
+  mutate_at(c(2:5), as.numeric)
+
+Manplot.Slide1 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_M_top1, col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_M_top1, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ ggtitle("sliding 50K window BF Top 1% M (Rouge = TP61F) ")
+Manplot.Slide1 + facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+Manplot.Slide2 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_M_15, col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_M_15, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5) + ggtitle("sliding 50K window BF>15 M (Rouge = TP61F) ")
+Manplot.Slide2 + facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+#Plot en fenêtres glissantes V
+Slide_chr1V_top1=read.table(paste0(path_out, "13pops-chr1_STD_Betai.Cov2.slidingTop1"),h=T)
+Slide_autoV_top1=read.table("C:/BayPass_pipeline/Output/13pops/autosomes/13pops-auto_STD_Betai.Cov2.slidingTop1",h=T)
+Slide_V_top1<-rbind(Slide_chr1V_top1,Slide_autoV_top1)%>%
+  mutate(N = str_sub(chr, 4, -1))%>%
+  mutate_at(c(2:5), as.numeric)
+
+Slide_chr1V_15=read.table(paste0(path_out, "13pops-chr1_STD_Betai.Cov2.sliding15"),h=T)
+Slide_autoV_15=read.table("C:/BayPass_pipeline/Output/13pops/autosomes/13pops-auto_STD_Betai.Cov2.sliding15",h=T)
+Slide_V_15<-rbind(Slide_chr1V_15,Slide_autoV_15)%>%
+  mutate(N = str_sub(chr, 4, -1))%>%
+  mutate_at(c(2:5), as.numeric)
+
+Manplot.Slide3 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_V_top1, col='darkgreen', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_V_top1, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ ggtitle("sliding 50K window BF Top 1% V15 (Rouge = TP61F) ")
+Manplot.Slide3 + facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+Manplot.Slide4 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_V_15, col='darkgreen', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_V_15, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5) + ggtitle("sliding 50K window BF>15 V15 (Rouge = TP61F) ")
+Manplot.Slide4 + facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+
+#Superposition M/V15
+Manplot.Slide5 = ggplot(NULL, aes(x=Start, y=BF)) +
+  geom_point(data=Slide_V_15, col='blue', alpha=0.8, size=1.5)+
+  geom_point(data=Slide_M_15, col='darkgreen', alpha=0.8, size=1.5)+
+  geom_point(data=subset(Slide_V_15, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5) + ggtitle("sliding 50K window BF>15 M & V15 (Rouge = TP61F) ")
+Manplot.Slide5 + facet_wrap(~N, scales = 'free_x', strip.position =c("bottom"))
+
+# Slide_Cov3=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov3.slidingTop1", sep=""),h=T)
+
+Slide_V_15=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov2.sliding15", sep=""),h=T)
+# Slide_Cov6=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov3.sliding15", sep=""),h=T)
+# Slide_C1=read.table(paste(path_out, "13pops-chr1_STD.contrast-C1.slidingTop1", sep=""),h=T)
+Slide_Cov7=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov1.sliding10KBF15", sep=""),h=T)
+Slide_Cov8=read.table(paste(path_out, "13pops-chr1_STD_Betai.Cov1.sliding10KTop1", sep=""),h=T)
+# Slide_Cov10=read.table(paste(path_out, "Souches_MultiSample_chr1.FBayes-RGVSVRD-10e6.sliding50K", sep=""),h=T)
+# Slide_Cov11=read.table(paste(path_out, "Souches_MultiSample_chr1.FBayes-RGVSVRD-10e6.sliding10K", sep=""),h=T)
+# Slide_Cov12=read.table(paste(path_out, "Souches_MultiSample_chr1.FBayes-RAZRGV_SVRD-10e6.sliding50K", sep=""),h=T)
+# Slide_Cov13=read.table(paste(path_out, "Souches_MultiSample_chr1.FBayes-RAZRGV_SVRD-10e6.sliding10K", sep=""),h=T)
+Slide_Cov14=read.table(paste(path_out, "13pops-chr1_full_STD_Betai.Cov1.sliding15", sep=""),h=T)
+Slide_Cov15=read.table(paste(path_out, "13pops-chr1_full_STD_Betai.Cov1.slidingTop1", sep=""),h=T)
+# Slide_Cov16=read.table(paste(path_out, "13_pops_full_genome.sliding15", sep=""),h=T)
+# Slide_SV21=read.table(paste("C:/BayPass_pipeline/Output/Souches/chr1/", "souches2021_chr1.xtx-top1.sliding", sep=""),h=T)
+
+
+
+
+#Sliding windows
+Manplot.Slide1 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_M_top1, col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_M_top1, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ ggtitle("sliding 50K window BF Top 1% M (Rouge = TP61F) ")
+Manplot.Slide1 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~N,scales = 'free_x', space = 'free_x', switch = 'x')#+ expand_limits(y=125)
+
+Manplot.Slide2 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_M_15, col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov4, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5) + ggtitle("sliding 50K window BF>15 M (Rouge = TP61F) ")
+Manplot.Slide2 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~N,scales = 'free_x', space = 'free_x', switch = 'x')
+
+Manplot.Slide9 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_Cov8, col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov8, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5) + geom_point(data=subset(Slide_Cov8, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5)+ ggtitle("sliding 10K window BF1 M Top1% STD Model (Rouge = TRP61F / vert = HotSpot) ")
+Manplot.Slide9 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+Manplot.Slide8 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_Cov7, col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov7, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ geom_point(data=subset(Slide_Cov7, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5) + ggtitle("sliding 10K window BF1 M >15 STD Model (Rouge = TRP61F / vert = HotSpot) ")
+Manplot.Slide8 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+
+# Manplot.Slide7 = ggplot(data=Slide_C1, aes(x=Start, y=C2)) + geom_point(col='blue', alpha=0.8, size=1.5) + ggtitle("sliding 50K window C2 M Top 1%")
+# Manplot.Slide7 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+# 
+# #plot des BF STD Model => V15
+# Manplot.resBF2 = ggplot(data=BF.res.Cov2, aes(x=pos, y=BF.dB.)) + geom_point(col='darkgreen', alpha=0.8, size=1.5) + ggtitle("position versus BF1 V15 Std Model (Seuil = 15)")
+# Manplot.resBF2 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.BF)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+# 
+# Manplot.Slide2 = ggplot(data=Slide_Cov2, aes(x=Start, y=BF)) + geom_point(col='darkgreen', alpha=0.8, size=1.5) + ggtitle("sliding 50K window BF1 V15 Top1% STD Model")
+# Manplot.Slide2 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')#+ expand_limits(y=125)
+# 
+# Manplot.Slide5 = ggplot(data=Slide_Cov5, aes(x=Start, y=BF)) + geom_point(col='darkgreen', alpha=0.8, size=1.5) + ggtitle("sliding 50K window BF1 V15 >15 STD Model")
+# Manplot.Slide5 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+# 
+# #plot des BF STD Model => R5
+# Manplot.resBF3 = ggplot(data=BF.res.Cov3, aes(x=pos, y=BF.dB.)) + geom_point(col='red', alpha=0.8, size=1.5) + ggtitle("position versus BF1 R5 Aux/Bis Model (Seuil = 15)")
+# Manplot.resBF3 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ geom_hline(yintercept=thresh.BF)+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+# 
+# Manplot.Slide3 = ggplot(data=Slide_Cov3, aes(x=Start, y=BF)) + geom_point(col='red', alpha=0.8, size=1.5) + ggtitle("sliding 50K window BF1 R5 Top1% STD Model")
+# Manplot.Slide3 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')#+ expand_limits(y=125)
+# 
+# Manplot.Slide6 = ggplot(data=Slide_Cov6, aes(x=Start, y=BF)) + geom_point(col='red', alpha=0.8, size=1.5) + ggtitle("sliding 50K window BF1 R5 >15 STD Model")
+# Manplot.Slide6 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+Manplot.Slide2021 = ggplot(data=Slide_SV21, aes(x=Start, y=P)) + geom_point(col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_SV21, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ geom_point(data=subset(Slide_SV21, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5) + ggtitle("sliding 50K window RGV2021/SV2021 XtX Top1%")
+Manplot.Slide2021 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+#sur Plink souches
+
+
+Manplot.Slide10 = ggplot(data=Slide_Cov10, aes(x=Start, y=P)) + geom_point(col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov10, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ geom_point(data=subset(Slide_Cov10, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5) + ggtitle("sliding 50K window Plink 10e-6 RGV versus SV-RD")
+Manplot.Slide10 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Manplot.Slide11 = ggplot(data=Slide_Cov11, aes(x=Start, y=P)) + geom_point(col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov11, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ geom_point(data=subset(Slide_Cov11, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5) + ggtitle("sliding 10K window Plink 10e-6  RGV versus SV-RD")
+Manplot.Slide11 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+Manplot.Slide12 = ggplot(data=Slide_Cov12, aes(x=Start, y=P)) + geom_point(col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov12, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ geom_point(data=subset(Slide_Cov12, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5) + ggtitle("sliding 50K window Plink 10e-6 RAZRGV versus SV-RD")
+Manplot.Slide12 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Manplot.Slide13 = ggplot(data=Slide_Cov13, aes(x=Start, y=P)) + geom_point(col='blue', alpha=0.8, size=1.5)+ geom_point(data=subset(Slide_Cov13, Start>53570000 & Start<53600000), col='red', alpha=0.8, size=2.5)+ geom_point(data=subset(Slide_Cov13, Start>53600000 & Start<53615000), col='green', alpha=0.8, size=2.5) + ggtitle("sliding 10K window Plink 10e-6  RAZRGV versus SV-RD")
+Manplot.Slide13 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+# 
+# biplot.Slide1 = ggplot(NULL, aes(x=Start, y=BF)) + geom_point(data=Slide_Cov15, col="blue", alpha=0.8, size=1) + geom_point(data=Slide_Cov1, col="red", alpha=0.8, size=1) + ggtitle("sliding 50K window Top1% BF Bleu= full data, Rouge= no missing data")
+# biplot.Slide1 + scale_x_continuous(n.breaks = 58, labels = scales::comma) + scale_y_continuous() + theme(axis.title.x=element_blank(),  axis.ticks.x=element_blank(), axis.text.x = element_text(angle = 90, vjust = 0.8))+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+# 
+# Manplot.full = ggplot(data=Slide_Cov16, aes(x=Start, y=BF)) + geom_point(aes(color=chr), alpha=0.8, size=1) + ggtitle("sliding 50K window BF M >15 STD Model")
+# Manplot.full + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_text(angle = 90, vjust = 0.8), axis.ticks.x=element_blank())+ facet_wrap(~chr, scales = 'free_x', strip.position =c("bottom"))#+ expand_limits(y=125)
+
+#Manhattan plot sous 2 conditions: C2>seuil & BF>seuil
+#biplot.thresh1 = ggplot(data=subset(Joined.res1,M_C2>thresh.C2 & BF.dB.>thresh.BF), aes(x=pos, y=BF.dB.)) + geom_point(aes(color=chr), alpha=0.8, size=1.5)+ ggtitle("position versus top 1% C2 & BF > 15  M") 
+#biplot.thresh1 + scale_x_continuous() + scale_y_continuous() + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+ facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+
+#write.table(Joined.res1, file=paste(path_res, "13pops_Chr1_XtX_BF_C2.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+```
+Le premier graphique est un Manhattan plot des valeurs de C2 le long des chromosomes disposés en lignes (facet_grid). Pour une disposition en grille il faudra utiliser l'option "facet_wrap": facet_wrap(~chr,scales = 'free_x', strip.position =c("bottom")).
+Toutes les combinaisons sont possible (XtX/C2, C2/BF...) selon l'information que l'on souhaite en tirer.
+Le deuxième graphique est un Manhattan plot selon 2 conditions: toutes les positions pour lesquelles le XtX et le BF sont supérieurs aux seuils définis
+Enfin on peut exporter dans un fichier les données qui ont servies à établir le deuxième graphique.
+
+#Comparaison par diagramme de Venn:
+```{r Listes}
+#Filtrage selon conditions
+Datmp1 = subset(Full_M.res, BF.dB.>= 15)
+Datmp2 = subset(Full_V15.res, BF.dB.>= 15)
+#Datmp4 = subset(XtX_BF_Join2, M_XtX> thresh.XtX & BF.dB.>thresh.BF2)
+
+#Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
+List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
+List.SNP2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
+List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
+```
+
+```{r Export}
+#Exporte les données filtrées sous conditions
+#write.table(Manplot.thresh$data, row.names = FALSE, file=paste(path_res, "XtX-C2_VS_pos.txt", sep=""), quote = FALSE, sep = "\t")
+
+#créé et exporte un fichier au format bed
+list.tmp <- paste(Datmp1[,1], Datmp1[,2]-1, Datmp1[,2])
+List.bed<-separate(plyr::ldply(list.tmp, cbind), col = "1",  sep = " ", into = c("chr", "start", "end"))
+write.table(List.bed, row.names = FALSE, file=paste(path_res, "List_Outliers_BF15-chr1_M.bed", sep=""), quote = FALSE, sep = "\t")
+```
+
+```{r venn}
+#Diagramme de Venn
+vd0 <- venn.diagram(x=list("." = List.SNP1, "Phenotype V15" = List.SNP2, "Phenotype M" = List.SNP1), fill = c("white", "darkgreen", "blue"), cat.col = c("white", "darkgreen", "blue"), cat.cex = 1.5, fontface = "bold", filename = NULL, main = "Overlap BF>15 phenotype M vs V15")
+
+grid.newpage()
+grid.draw(vd0)
+
+```
+
+#Extraire les listes de chaque intersecte du diagramme:
+```{r List-Venn}
+myV <- plotVenn(list("BF" = List.SNP1, "Souches" = List.SNP2, "BF2" = List.SNP1))
+myV <- plyr::ldply(listVennRegions(myV), cbind)
+#write.table(myV, file=paste(path_res, "Overlap_BF15.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+
+#récupère la liste des intersectes
+myV %>% distinct(myV[,1])
+```
+#Convertir les liste de SNP dans un intersecte en fichier bed
+```{r Bed-Venn}
+#subset en fonction de l'intersecte que l'on veut
+tmp<-subset(myV,myV[,1] == "1, 1, 1 (BF, Souches, BF2)")
+V.tmp<-separate(plyr::ldply(paste(tmp[,2]), cbind), col = "1",  sep = "_", into = c("chr", "pos"))
+V.bed <- plyr::ldply(paste(V.tmp[,1], as.numeric(V.tmp[,2])-1, V.tmp[,2]), cbind)
+V.bed<-mutate(separate(V.bed, col = "1",  sep = " ", into = c("chr", "start", "end")))
+#write.table(V.bed, file=paste(path_res, "overlap_Wild-souches_chr1.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+```
+
+#Extraction des fréquences du vcf
+```{r}
+var_vcf <- read.vcfR(paste(path_vcf, "Wild13pops_chr1-varscan.vcf.gz", sep =""))
+#on extrait les fréquences de l'allèle alternatif
+gt <- extract.gt(var_vcf, element = "FREQ", as.numeric = TRUE)
+
+#on convertit en data.frame
+Data.var1 <- as.data.frame(gt)
+Data.var1 <- na.omit(Data.var1)
+colnames(Data.var1)=gsub("-","_", pnames)
+```
+Filtrage simple des SNP et extraction des fréquences correspondantes
+```{r}
+Candidate = Joined.res1
+
+#fusionner les fréquences et les resultats "Joined.res"
+Data.var2 <- tibble::rownames_to_column(Data.var1, "VALUE")
+Data.var2<-Data.var2 %>%  separate(VALUE, c("chr", "pos"), "_", convert = TRUE)
+## a degager ?=> Joined.res.M<-left_join(Candidate,Data.var2, by=c("chr","pos"))
+#Joined.res.M.BF15<-left_join(subset(Candidate,BF.dB.>15),Data.var2, by=c("chr","pos"))
+Joined.res.M.BF15<-left_join(Candidate,Data.var2, by=c("chr","pos"))
+Joined.res.M.BF15<-arrange(Joined.res.M.BF15, chr, pos)
+#vérifier les entête de colonnes à extraire
+head(Joined.res.M.BF15)
+#Extraire les résultats avec les bonnes colonnes
+#write.table(Joined.res.M.BF15[, c(1:4,8,16,28,32:44)], file=paste(path_res, "13pops_STD_chr1_BF15_FREQ.txt", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+```
+Extraction des SNP d'un Venn et extraction des fréquences correspondantes
+```{r}
+#on récupère l'intersect VENN que l'on souhaite
+tmp<-subset(myV,myV[,1] == "1, 1, 1 (BF, Souches, BF2)") # 1 intersecte
+#tmp<-subset(myV,myV[,1] == "1, 1, 1 (M-Aux, V15-Aux, M-Std)" | myV[,1] == "1, 0, 1 (M-Aux, M-Std)") # 2 intersecte
+
+#on ne garde que la colonne position/SNP
+tmp<-paste(tmp[,2], sep="")
+
+#on filtre le VCF avec les SNP présent dans tmp
+Data.Venn=filter(Data.var1, row.names(Data.var1) %in% tmp,)
+Data.Venn <- tibble::rownames_to_column(Data.Venn, "VALUE") #convertit les noms de lignes en colonne
+Data.Venn<-Data.Venn %>%  separate(VALUE, c("chr", "pos"), "_", convert = TRUE)
+#Joined.res1.M.BF15<-right_join(subset(Joined.res1,BF.dB.>thresh.BF), Data.Venn, by=c("chr","pos")) #avec filtre
+Joined.res1.M.BF15<-right_join(Joined.res1, Data.Venn, by=c("chr","pos")) #sans filtre
+Joined.res1.M.BF15<-arrange(Joined.res1.M.BF15, chr, pos)
+
+
+#write.table(Joined.res1.M.BF15[, c(1:4,8,16,28,32:44)], file=paste(path_res, "Venn_Candidate_wild-souches", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+
+#pour filtrer directement les fréquences sous R
+colnames(Data.filter)=c("S13", "S84", "S47", "S49", "S85", "SIT", "R47", "R53", "R44_1", "R44_2", "R44_3", "RIT")
+#on filtre ce que l'on veut
+List.V1<-subset(Data.filter, (R47>S13) & (R47>S84) & (R47>S47) & (R47>S49) & (R47>S85) & (R47>SIT) & (R47<R44_3))
+```
+
+#L'intersect se fait avec le BED contre un fichier GFF/GTF comme un transcriptome par exemple.
+
+Très léger, ça passe en frontal:
+
+module load bioinfo/bedtools-2.27.1
+bedtools intersect -wb -a overlap.bed -b ~/save/Ref_Carpo/Cydia_pomonella-Ref.gff3 > overlap.intersect
+#Même chose le GFF3 Gensas.
+bedtools intersect -wb -a RY-3rep_overlap.bed -b Annotations_Gensas.gff3 > RY-3rep_Gensas.intersect
+
+
+On obtient:
+chr1    314013    314014    chr1    StringTie   transcript 314014
+314014  1000    -   .   gene_id "MSTRG.34"; transcript_id "MSTRG.34.2";
+chr1    576413    576414    chr1    StringTie   transcript 576414
+576414  1000    +   .   gene_id "MSTRG.52"; transcript_id "MSTRG.52.1";
+chr1    576413    576414    chr1    StringTie   transcript 576414
+576414  1000    +   .   gene_id "MSTRG.53"; transcript_id "MSTRG.53.1";
+
+# récupérer une liste des genes ID de la colonne 13 en gardant l'ordre initial (plus facile pour s'y retrouver)
+#recupère la colonne 13 | enlèbve les " et ; | garde une seule valeur en cas de doublon (sans tri) > enregistre
+awk '{print $13}' overlap.intersect | sed -e 's/"\|;//g' - | awk '!a[$0]++' -  > overlap.gene.list
+
+# récupérer une liste des transcript ID de la colonne 15 en gardant l'ordre initial (plus facile pour s'y retrouver)
+#recupère la colonne 15 | enlèbve les " et ; | garde une seule valeur en cas de doublon (sans tri) > enregistre
+awk '{print $15}' overlap.intersect | sed -e 's/"\|;//g' - | awk '!a[$0]++' -  > overlap.transcript.list
+
+# extraire les séquences correspondantes à cette liste depuis un fasta
+
+module load bioinfo/seqtk-1.3
+seqtk subseq ~/work/Pipe_RNAseq/Transcriptome_GTF/Merged/Cpom_Full_2021_transcripts.fasta cds.list > cds.fas
+#Comparaison entre RUN
+```{r}
+seed2001.Cov1=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-2001-31274562/", "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
+seed2001.Cov2=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-2001-31274562/", "GWAS-13pops-chr1.Betai-Cov2.merged.sorted", sep=""),h=T)
+seed5001.Cov1=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-5001-31250906/", "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
+seed5001.Cov2=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-5001-31250906/", "GWAS-13pops-chr1.Betai-Cov2.merged.sorted", sep=""),h=T)
+seed8001.Cov1=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-8001-31430093/", "GWAS-13pops-chr1.Betai-Cov1.merged.sorted", sep=""),h=T)
+seed8001.Cov2=read.table(paste("C:/BayPass_pipeline/Output/13pops/seed-8001-31430093/", "GWAS-13pops-chr1.Betai-Cov2.merged.sorted", sep=""),h=T)
+Datmp13 = subset(seed2001.Cov1, BF.dB.>7.5)
+Datmp14 = subset(seed2001.Cov1, BF.dB.>15)
+Datmp15 = subset(seed2001.Cov2, BF.dB.>7.5)
+Datmp16 = subset(seed2001.Cov2, BF.dB.>15)
+Datmp17 = subset(seed5001.Cov1, BF.dB.>7.5)
+Datmp18 = subset(seed5001.Cov1, BF.dB.>15)
+Datmp19 = subset(seed5001.Cov2, BF.dB.>7.5)
+Datmp20 = subset(seed5001.Cov2, BF.dB.>15)
+Datmp21 = subset(seed8001.Cov1, BF.dB.>7.5)
+Datmp22 = subset(seed8001.Cov1, BF.dB.>15)
+Datmp23 = subset(seed8001.Cov2, BF.dB.>7.5)
+Datmp24 = subset(seed8001.Cov2, BF.dB.>15)
+Datmp25 = subset(C2_BF_Join1, M_C2>thresh.C2)
+Datmp26 = subset(C2_BF_Join1, BF.dB.>15)
+Datmp27 = subset(C2_BF_Join2, BF.dB.>15)
+Datmp28 = subset(C2_BF_Join1, BF.dB.>7.5)
+Datmp29 = subset(C2_BF_Join2, BF.dB.>7.5)
+
+
+List.SNP13<-paste(Datmp13[,1], "_", Datmp13[,2], sep="") #2001-BF1 7.5
+List.SNP14<-paste(Datmp14[,1], "_", Datmp14[,2], sep="") #2001-BF1 15
+List.SNP15<-paste(Datmp13[,1], "_", Datmp15[,2], sep="") #2001-BF2 7.5
+List.SNP16<-paste(Datmp14[,1], "_", Datmp16[,2], sep="") #2001-BF2 15
+List.SNP17<-paste(Datmp17[,1], "_", Datmp17[,2], sep="") #5001-BF1 7.5
+List.SNP18<-paste(Datmp18[,1], "_", Datmp18[,2], sep="") #5001-BF1 15
+List.SNP19<-paste(Datmp19[,1], "_", Datmp19[,2], sep="") #5001-BF2 7.5
+List.SNP20<-paste(Datmp20[,1], "_", Datmp20[,2], sep="") #5001-BF2 15
+List.SNP21<-paste(Datmp21[,1], "_", Datmp21[,2], sep="") #8001-BF1 7.5
+List.SNP22<-paste(Datmp22[,1], "_", Datmp22[,2], sep="") #8001-BF1 15
+List.SNP23<-paste(Datmp23[,1], "_", Datmp23[,2], sep="") #8001-BF2 7.5
+List.SNP24<-paste(Datmp24[,1], "_", Datmp24[,2], sep="") #8001-BF2 15
+List.SNP25<-paste(Datmp25[,1], "_", Datmp25[,2], sep="") #C2 top5%
+List.SNP26<-paste(Datmp26[,1], "_", Datmp26[,2], sep="") #BF1 > 15
+List.SNP27<-paste(Datmp26[,1], "_", Datmp27[,2], sep="") #BF2 > 15
+List.SNP28<-paste(Datmp28[,1], "_", Datmp28[,2], sep="") #BF1 > 7.5
+List.SNP29<-paste(Datmp29[,1], "_", Datmp29[,2], sep="") #BF2 > 7.5
+```
+
+```{r venn}
+#Diagramme de Venn
+#cat.col = c("darkgreen", "black", "darkblue")
+vd5 <- venn.diagram(x=list("2001-Cov1" = List.SNP14, "5001-Cov1" = List.SNP18, "8001-Cov1" = List.SNP22), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd6 <- venn.diagram(x=list("2001-Cov2" = List.SNP16, "5001-Cov2" = List.SNP20, "8001-Cov2" = List.SNP24), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd7 <- venn.diagram(x=list("2001-Cov2" = List.SNP15, "5001-Cov2" = List.SNP19, "8001-Cov2" = List.SNP23), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd8 <- venn.diagram(x=list("2001-Cov1" = List.SNP13, "5001-Cov1" = List.SNP17, "8001-Cov1" = List.SNP21), fill = c("blue", "green", "orange"), cat.col = c("blue", "green", "orange"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+grid.newpage()
+grid.draw(vd8)
+
+```
+#Création d'un jeu de données simulées "POD"
+La fonction geno2YN convertit les données de comptages brutes en « Pseudo-Observed Data » (POD) et la fonction simulate.baypass génère un jeu de données simulées à partir de la matrice Ω déjà calculée (omegaB) ainsi qu'un constante Pi.beta que l'on récupère dans un des fichiers de sorties.
+```{r POD data}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+POD.data=geno2YN(paste0(path_input, "genobaypass"))
+pi.betaK=read.table(paste0(path_out, "13pops-chr1_STD_3cov.sub4_summary_beta_params.out"),h=T)$Mean
+POD_BayPass<-simulate.baypass(omega.mat=omegaB,nsnp = 5000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="Poolseq.POD" )
+```
+Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copier sur le cluster de calcul. Le fichier G.Poolseq.POD sera analysé de la même manière que le jeu de données initial si ce n’est qu’il n’est pas nécessaire de découper ni de paralléliser l'analyse, le reste des paramètres (contraste, ecotype…) doit être identique.
+#Analyse des résultats POD:
+Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
+```{r Thresholds}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+POD.omega=as.matrix(read.table(paste(path_POD, "13pops_chr1.POD_mat_omega.out", sep="")))
+plot(POD.omega,omegaB) ; abline(a=0,b=1)
+FMD.POD <- fmd.dist(POD.omega,omegaB)
+cat("Distance FMD =", FMD.POD, "\n")
+#Seuil XtX top 1%
+POD.XtX=read.table(paste(path_POD, "13pops_chr1.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
+thresh.XtX1=quantile(POD.XtX,probs=0.99)
+cat("Seuil XtX =", thresh.XtX1, "(Max=", max(POD.XtX) ,")", "\n")
+POD.XtX=read.table(paste(path_POD, "13pops_chr1.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
+thresh.XtX5=quantile(POD.XtX,probs=0.95)
+cat("Seuil XtX =", thresh.XtX5, "(Max=", max(POD.XtX) ,")", "\n")
+
+#Seuil C2 top 1%, pour chaque combinaison de contraste (3 dans l'exemple)
+POD.C2=read.table(paste0(path_POD, "13pops_chr1.POD_summary_contrast.out"),h=T)$M_C2
+thresh.C2_1=quantile(POD.C2,probs=0.99)
+cat("Seuil C2 =", thresh.C2_1, "(Max=", max(POD.C2) ,")", "\n")
+POD.C2=read.table(paste0(path_POD, "13pops_chr1.POD_summary_contrast.out"),h=T)$M_C2
+thresh.C2_5=quantile(POD.C2,probs=0.95)
+cat("Seuil C2 =", thresh.C2_5, "(Max=", max(POD.C2) ,")", "\n")
+
+#Seuil BF top 1%, pour chaque combinaison de contraste (3 dans l'exemple)
+POD.BF=read.table(paste0(path_POD, "13pops_chr1.POD_summary_betai_reg.out"),h=T)$BF.dB.
+thresh.BF1=quantile(POD.BF,probs=0.99)
+cat("Seuil BF =", thresh.BF1, "(Max=", max(POD.BF) ,")", "\n")
+POD.BF=read.table(paste0(path_POD, "13pops_chr1.POD_summary_betai_reg.out"),h=T)$BF.dB.
+thresh.BF5=quantile(POD.BF,probs=0.95)
+cat("Seuil BF =", thresh.BF5, "(Max=", max(POD.BF) ,")", "\n")
+
+List.tresh.C2<-c()
+for (j in 1:1) {
+POD.C2.j=read.table(paste0(path_POD, "13pops_chr1.POD_summary_contrast.out", sep=""),h=T)$M_C2
+thresh.C2.j=quantile(POD.C2.j,probs=0.99)
+cat("Seuil C2-Contrast", j," =", thresh.C2.j, "(Max=", max(POD.C2.j) ,")", "\n")
+List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des seuils
+}
+
+for (j in 1:3) {
+POD.C2.j=read.table(paste(path_POD, "13pops_chr1.POD.betai_reg.out",j,".out", sep=""),h=T)$M_C2
+thresh.C2.j=quantile(POD.C2.j,probs=0.99)
+cat("Seuil C2-Contrast", j," =", thresh.C2.j, "(Max=", max(POD.C2.j) ,")", "\n")
+List.tresh.C2<-c(List.tresh.C2,as.vector(thresh.C2.j))#récupère une liste des seuils
+}
+```
+La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc. Enfin on affiche un plot de la corrélation entre les deux matrice Ω, le seuil calculé pour la statistique XtX et pour toutes les combinaisons de contraste C2. Le calcul d'un seuil pour le les Bayes Factors n'est pas pertinent.

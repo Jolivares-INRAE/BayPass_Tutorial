@@ -38,6 +38,46 @@
 \makeatother
 \usepackage{xcolor}
 \usepackage[left=3cm,right=3cm,top=1cm,bottom=2cm]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
@@ -86,7 +126,7 @@
 
 \title{BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool}
 \author{Jérôme OLIVARES\footnote{INRAE, UR-1115 PSH, 228 route de l'aérodrome, 84914 Avignon, France}}
-\date{2023-06-22}
+\date{2023-06-28}
 
 \begin{document}
 \maketitle
@@ -162,11 +202,59 @@ Ces covariables évoquées doivent être distribuées en gradient entre les popu
 \section*{Présentation générale de l'analyse :}\label{pruxe9sentation-guxe9nuxe9rale-de-lanalyse}}
 \addcontentsline{toc}{section}{Présentation générale de l'analyse :}
 
-La Figure \ref{fig:Fig1} est une vision simplifiée des différentes étapes nécessaire à l'analyses de données poolseq. Ces étapes se déroulent soit dans l'environnement Linux du cluster de calcul soit sur un ordinateur local sous Rstudio.
-La première étape part d'un fichier d'alignement au format « .bam » et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « .vcf » de tous les points de mutations ou SNP qui sont autant de marqueurs génétiques à analyser. Ce fichier .vcf sert d'entrée au package « PoolFstat » qui va permettre de générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d'entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l'homogénéité des résultats entre eux est analysée sous Rstudio et si tout est bon, les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d'intérêts.
+La Figure \ref{fig:Fig1} est une vision simplifiée des différentes étapes nécessaire à l'analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l'analyse BayPass se déroulent soit dans l'environnement Linux du cluster de calcul, les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
+La première étape part des fichiers d'alignement au format « \textbf{\emph{bam}} » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « *\textbf{\emph{vcf}} » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier \textbf{\emph{vcf}} sert d'entrée au package « PoolFstat » \citep{gautier_f-statistics_2022} qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d'entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l'homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d'intérêts qui seront visualisées par différents plots.
 
 \begin{figure}
-\includegraphics[width=26.07in]{images/Analyse} \caption{Pipeline d'analyses BayPass}\label{fig:Fig1}
+\includegraphics[width=19.67in]{images/Analyse2} \caption{Pipeline d'analyse BayPass}\label{fig:Fig1}
+\end{figure}
+
+Le pipeline d'analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l'analyse des résultats.
+
+\hypertarget{donnuxe9es-brutes-obtention-dun-fichier-poolseq.vcf}{%
+\section*{Données brutes \& Obtention d'un fichier Poolseq.vcf :}\label{donnuxe9es-brutes-obtention-dun-fichier-poolseq.vcf}}
+\addcontentsline{toc}{section}{Données brutes \& Obtention d'un fichier Poolseq.vcf :}
+
+Les étapes de contrôle qualité et d'alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d'alignement \textbf{\emph{bam}}. La première étape consiste à regrouper les fichiers \textbf{\emph{bam}} de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l'utilisation des Samtools \citep{li_sequence_2009} et de Varscan 2 v2.3.6 \citep{koboldt_varscan_2012}avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l'espace de travail Figure \ref{fig:Fig2} \ref{type:b} . Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#!/bin/bash}
+\CommentTok{\#SBATCH {-}{-}array=1{-}29            \#création de l\textquotesingle{}array: un élément par chromosome}
+
+\ExtensionTok{module}\NormalTok{ load bioinfo/samtools{-}1.12}
+\ExtensionTok{module}\NormalTok{ load bioinfo/VarScan{-}2.4.2}
+\ExtensionTok{module}\NormalTok{ load bioinfo/bcftools{-}1.14}
+
+\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\OperatorTok{\textgreater{}}\NormalTok{ BamList.txt}
+\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/.bam//\textquotesingle{}} \OperatorTok{\textgreater{}}\NormalTok{ NameList.txt}
+
+\ExtensionTok{samtools}\NormalTok{ mpileup }\AttributeTok{{-}C}\NormalTok{ 50 }\AttributeTok{{-}d}\NormalTok{ 5000 }\AttributeTok{{-}q}\NormalTok{ 20 }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}r chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}} \DataTypeTok{\textbackslash{}}
+\NormalTok{{-}f /../ref\_genome.fas }\AttributeTok{{-}b}\NormalTok{ /../BamList.txt }\KeywordTok{|} \DataTypeTok{\textbackslash{}}
+\ExtensionTok{java} \AttributeTok{{-}Xmx2G} \AttributeTok{{-}jar} \VariableTok{$VARSCAN}\NormalTok{ mpileup2cns }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}{-}variants }\AttributeTok{{-}{-}min{-}coverage}\NormalTok{ 10 }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}{-}min{-}avg{-}qual 20 }\AttributeTok{{-}{-}min{-}var{-}freq}\NormalTok{ 0.05 }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}{-}p{-}value 0.5 }\AttributeTok{{-}{-}output{-}vcf}\NormalTok{ 1 }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}{-}vcf{-}sample{-}list NameList.txt }\OperatorTok{\textgreater{}}\NormalTok{ /../project\_chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}}\NormalTok{.vcf}
+
+\ExtensionTok{bgzip}\NormalTok{ /../project\_chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}}\NormalTok{.vcf}
+\end{Highlighting}
+\end{Shaded}
+
+Si l'on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d'utiliser l'option -r/--region qui tire profit de cet index.
+
+IMPORTANT :
+Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\FunctionTok{include\_graphics}\NormalTok{(}\StringTok{"C:/Users/Olivares/Documents/R/Git\_Work/BayPass\_Tutorial/images/Analyse2.jpg"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+\includegraphics[width=19.67in]{images/Analyse2} \caption{\label{fig:b} My caption}\label{fig:b}
 \end{figure}
 
   \bibliography{BayPass.bib}
