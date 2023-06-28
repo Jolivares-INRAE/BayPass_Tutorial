@@ -5,6 +5,7 @@ author:
 date: "`r Sys.Date()`"
 
 site: bookdown::bookdown_site
+output: bookdown::html_document2
 documentclass: book
 classoption: openany
 urlcolor: blue
@@ -19,6 +20,13 @@ description: |
 link-citations: no
 github-repo: https://github.com/Jolivares-INRAE/BayPass_Tutorial
 ---
+```{r, echo=FALSE}
+library("bookdown")
+library("tinytex")
+library("rmarkdown")
+library("bibtex")
+```
+
 # Résumé {-}
 
 Ce tutoriel détaille d’une part la manière de générer les fichiers d’entrées du logiciel BayPass à partir de données de séquençage en pool, d’autre part le paramétrage optimal du logiciel BayPass et en fin propose une méthode d’exploreration des résultats d’analyses produits. Un pipeline d'analyse mixant des packages sous Rstudio et des lignes de commandes Linux, est décrit afin de guider pas à pas l’utilisateur tout au long du processus depuis les données brutes jusqu’à la liste finale de loci/variants candidats.

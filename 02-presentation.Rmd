@@ -16,10 +16,75 @@ Ce modèle a une approche différente dans le calcul de la statistique BF, sans 
 Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations. 
 
 ## Présentation générale de l’analyse : {-}
-La Figure \@ref(fig:Fig1) est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Ces étapes se déroulent soit dans l’environnement Linux du cluster de calcul soit sur un ordinateur local sous Rstudio. 
-La première étape part d’un fichier d’alignement au format « .bam » et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « .vcf » de tous les points de mutations ou SNP qui sont autant de marqueurs génétiques à analyser. Ce fichier .vcf sert d’entrée au package « PoolFstat » qui va permettre de générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio et si tout est bon, les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts.
+La Figure \@ref(fig:Fig1) est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l'analyse BayPass se déroulent soit dans l’environnement Linux du cluster de calcul,  les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
+La première étape part des fichiers d’alignement au format « **_bam_** » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « ***_vcf_** » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier **_vcf_** sert d’entrée au package « PoolFstat » [@gautier_f-statistics_2022] qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts qui seront visualisées par différents plots.
 
 
-```{r, fig.cap = "Pipeline d'analyses BayPass", label="Fig1", echo=FALSE, fig.topcaption=TRUE}
-knitr::include_graphics("C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse.jpg")
+```{r Fig1, fig.cap="Pipeline d'analyse BayPass", echo=FALSE, fig.topcaption=TRUE, colorcaption='red'}
+knitr::include_graphics("C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/Analyse2.jpg")
 ```
+<p style="font-family: calibri; font-size:11pt; font-style:italic">
+Le pipeline d’analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l’analyse des résultats.
+</p>
+
+# Données brutes {-}
+## Obtention d’un fichier Poolseq.vcf : {-}
+Les étapes de contrôle qualité et d’alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d’alignement **_bam_**. La première étape consiste à regrouper les fichiers **_bam_** de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l’utilisation des Samtools [@li_sequence_2009] et de Varscan  2 [@koboldt_varscan_2012] avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l’espace de travail (Script \@ref(exm:script1)). Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.
+
+
+```{example, script1}
+Example d'un script bash pour effectuer un variant calling
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic">
+   Si l’on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d’utiliser l’option -r/--region qui tire profit de cet index.
+</p>
+```{bash scr1, eval=FALSE, highlight=TRUE}
+#!/bin/bash
+#SBATCH --array=1-29            #création de l'array: un élément/indice par chromosome
+
+module load bioinfo/samtools-1.12
+module load bioinfo/VarScan-2.4.2
+module load bioinfo/bcftools-1.14
+
+ls /../*.bam > BamList.txt                                                #liste tous les fichiers "bam" et leur chemin
+ls /../*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt      #extrait les noms des échatillons/populations
+
+samtools mpileup -C 50 -d 5000 -q 20 \
+-r chr${SLURM_ARRAY_TASK_ID} \                                            #attribut un chr à chaque indice de l'array : chr1, chr2 ...
+-f /../ref_genome.fas -b /../BamList.txt | \
+java -Xmx2G -jar $VARSCAN mpileup2cns \
+--variants --min-coverage 10 \
+--min-avg-qual 20 --min-var-freq 0.05 \
+--p-value 0.5 --output-vcf 1 \
+--vcf-sample-list NameList.txt > /../project_chr${SLURM_ARRAY_TASK_ID}.vcf
+
+bgzip /../project_chr${SLURM_ARRAY_TASK_ID}.vcf
+bcftools index /../project_chr${SLURM_ARRAY_TASK_ID}.vcf
+```
+
+A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concaténés (Script \@ref(exm:script2)), les chromosomes sexuels ayant une ségrégation, une histoire démographique et une ploïdie différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
+
+```{example, script2}
+<span style="color:darkgreen">Example d'un script bash pour concaténer des fichiers **_vcf_**</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen;">
+   On peut utiliser les bcftools pour concaténer les fichier **_vcf_**, la liste des fichiers à traiter est contenue dans une variable alimentée par une boucle "for".
+</p>
+```{bash scr2, eval=FALSE}
+#!/bin/bash
+module load bioinfo/bcftools-1.14
+Path='/..'
+
+# une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable
+for ((i=2; i<=28; i++))
+do
+    files+=" $Path/project_chr${i}.vcf.gz"  
+done
+
+# bcftools concatène la liste des vcf contenu dans la variable $file
+bcftools concat $files -O z -o $Path/project_chr2-28.vcf.gz
+```
+## Filtrage des données brutes {-}
+
+
+
