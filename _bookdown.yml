@@ -3,8 +3,11 @@ delete_merged_file: true
 output_dir: "docs"
 language:
   label:
-    fig: "Figure "
+    fig: "Figure " 
     tab: "Table "
     exm: "Script "
+    exr: "Chunk "
+    def: "Annexe "
+
   ui:
     chapter_name:

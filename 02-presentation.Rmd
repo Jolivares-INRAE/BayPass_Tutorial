@@ -86,5 +86,52 @@ bcftools concat $files -O z -o $Path/project_chr2-28.vcf.gz
 ```
 ## Filtrage des données brutes {-}
 
+Le fichier **_vcf_**, éventuellement compressé, est téléchargé sur un ordinateur local pour être analysé sous Rstudio. 
+Dans un premier temps il faut charger les packages nécessaires et définir les chemins des différents dossiers qui seront utilisés (Chunk \@ref(exr:chunk1))
 
+```{exercise, chunk1}
+<span style="color:darkgreen">Chargement des packages et chemins</span>
+```
+
+```{r load-Packages, message=FALSE, warning=FALSE}
+library(poolfstat)      #filtrage du vcf et création des fichiers d'entrées BayPass
+library(RColorBrewer)   #gestion couleur des heatmaps
+library(mixOmics)       #"cim" pour heatmap
+library(corrplot)       #matrice de corrélation pour heat map
+library(VennDiagram)    #création de diagramme de Venn
+library(nVennR)         #extraction de données d'un diagramme de Venn
+library(tidyverse)      #manipulation de données et plots (ggplot2)
+
+path_vcf <- "C:/BayPass/vcf/"
+path_input <- "C:/BayPass/Input/"
+path_out <- "C:/BayPass/Output/"
+path_res <- "C:/BayPass/Resultats/"
+```
+
+Le filtrage du **_vcf_** et la sélection des SNPs à analyser ce fait à l'aide du package PoolFstat (Chunk \@ref(exr:chunk2)). Dans un premier temps il faut renseigner les noms des populations dans un objet **_pnames_** et les tailles haploïdes de chaque population dans un objet **_psizes_**. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d'individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d'individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1). 
+La fonction **_vcf2poodata_** va balayer le fichier **_vcf_**, sélectionner les SNP bi-alléliques selon des critères définis par l'utilisateur et créer un objet **_pooldata_**.
+
+```{exercise, chunk2}
+<span style="color:darkgreen">Filtrage et sélection des SNPs</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen;">
+Les options à renseigner sont:<br>
+min.rc =  minimum de reads qu'un allèle doit avoir pour être retenu.<br>
+min.cov.per.pool = Si au moins un pool n'est pas couvert par au moins au moins min.cov.perpool reads, le SNP est rejeté.<br>
+max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpool reads, le SNP est rejeté.<br>
+min.maf = fréquence allélique minimale autorisée pour l'allèle minoritaire pour qu'un SNP soit retenu.<br>
+</p>
+```{r conversion-pooldata}
+#Infos sur les pops
+pnames <- as.character(c('pop01', 'pop02', 'pop03', 'pop04', 'pop05', 'pop06', 'pop07', 'pop08', 'pop09', 'pop10', 'pop11', 'pop12', 'pop13'))
+psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72'))   #ploydie autosome
+psizes_X <- as.numeric(c('120', '135', '16', '86', '135', '30','135', '120', '150', '60', '63', '42', '53'))    #ploydie X/Z
+psizes_Y <- as.numeric(c('30', '45', '8', '28', '45', '14','45', '40', '50', '14', '17', '10', '19'))           #ploydie Y/W
+#conversion du .vcf
+GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project_chr2-28.vcf.gz", sep=""), poolsizes = psizes_A, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+#élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)
+GWAS.pooldata<-pooldata.subset(GWAS.pooldata, cov.qthres.per.pool = c(0,0.99))
+```
+
+A ce stade on peut analyser cet objet **_GWAS.pooldata_** comme les Fst entre populations par example [Annexe 1](#An1)
 
