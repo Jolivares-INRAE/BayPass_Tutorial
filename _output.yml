@@ -1,5 +1,6 @@
 bookdown::gitbook:
   css: style.css
+  split_bib: false
   config:
     toc:
       before: NULL #| #<li><a href="./">A Minimal Book Example</a></li>

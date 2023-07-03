@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-07-02" />
+<meta name="date" content="2023-07-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -37,7 +37,7 @@ set in the _output.yml file.</p>" />
   
   
 <link rel="prev" href="présentation-du-logiciel-baypass-2.html"/>
-<link rel="next" href="annexes.html"/>
+<link rel="next" href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -180,6 +180,11 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="données-brutes.html"><a href="données-brutes.html#obtention-dun-fichier-poolseq.vcf"><i class="fa fa-check"></i>Obtention d’un fichier Poolseq.vcf :</a></li>
 <li class="chapter" data-level="" data-path="données-brutes.html"><a href="données-brutes.html#filtrage-des-données-brutes"><i class="fa fa-check"></i>Filtrage des données brutes</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><i class="fa fa-check"></i>Conversion du pooldata en fichiers d’entrées pour BayPass</a>
+<ul>
+<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass"><i class="fa fa-check"></i>Design de l’analyse BayPass</a></li>
+<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling"><i class="fa fa-check"></i>Subsampling</a></li>
+</ul></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
@@ -187,6 +192,7 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 </ul></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
 </ul>
 
       </nav>
@@ -208,7 +214,7 @@ div.csl-indent {
 <h1>Données brutes<a href="données-brutes.html#données-brutes" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <div id="obtention-dun-fichier-poolseq.vcf" class="section level2 unnumbered hasAnchor">
 <h2>Obtention d’un fichier Poolseq.vcf :<a href="données-brutes.html#obtention-dun-fichier-poolseq.vcf" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Les étapes de contrôle qualité et d’alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d’alignement <strong><em>bam</em></strong>. La première étape consiste à regrouper les fichiers <strong><em>bam</em></strong> de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l’utilisation des Samtools <span class="citation">(Li et al. 2009)</span> et de Varscan 2 <span class="citation">(Koboldt et al. 2012)</span> avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l’espace de travail (Script <a href="données-brutes.html#exm:script1">1</a>). Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.</p>
+<p>Les étapes de contrôle qualité et d’alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d’alignement <strong><em>bam</em></strong>. La première étape consiste à regrouper les fichiers <strong><em>bam</em></strong> de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l’utilisation des Samtools <span class="citation">(<a href="références.html#ref-li_sequence_2009">Li et al. 2009</a>)</span> et de Varscan 2 <span class="citation">(<a href="références.html#ref-koboldt_varscan_2012">Koboldt et al. 2012</a>)</span> avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l’espace de travail (Script <a href="données-brutes.html#exm:script1">1</a>). Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.</p>
 <div class="example">
 <p><span id="exm:script1" class="example"><strong>Script 1  </strong></span>Example d’un script bash pour effectuer un variant calling</p>
 </div>
@@ -305,7 +311,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="données-brutes.html#cb6-1" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)</span></span>
 <span id="cb6-2"><a href="données-brutes.html#cb6-2" tabindex="-1"></a>GWAS.pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(GWAS.pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
 <pre><code>## Data consists of 19276 SNPs for 13 Pools</code></pre>
-<p>A ce stade on peut analyser cet objet <strong><em>GWAS.pooldata</em></strong> comme les Fst entre populations par example <a href="annexes.html#An1">Annexe 1</a></p>
+<p>A ce stade on peut analyser cet objet <strong><em>GWAS.pooldata</em></strong> comme les Fst entre populations par exemple <a href="annexes.html#An1">Annexe 1</a></p>
 
 </div>
 </div>
@@ -315,7 +321,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
         </div>
       </div>
 <a href="présentation-du-logiciel-baypass-2.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="annexes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -369,6 +375,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

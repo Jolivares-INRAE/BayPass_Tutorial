@@ -133,5 +133,5 @@ GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project_chr2-28.vcf.gz
 GWAS.pooldata<-pooldata.subset(GWAS.pooldata, cov.qthres.per.pool = c(0,0.99))
 ```
 
-A ce stade on peut analyser cet objet **_GWAS.pooldata_** comme les Fst entre populations par example [Annexe 1](#An1)
+A ce stade on peut analyser cet objet **_GWAS.pooldata_** comme les Fst entre populations par exemple [Annexe 1](#An1)
 

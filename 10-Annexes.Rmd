@@ -7,12 +7,11 @@ Des outils sont décrits et exemplifiés dans la vignette de PoolFstat : (https:
 
 ### Pairwise {-}
 Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
-```{r heatmap-PW-fst, fig.width=10, fig.height=10}
+```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE}
 #Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.05, output.snp.values = FALSE)
 #conversion en matrice de distance
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
-df
 #heatmap
 cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(9)
 cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatmap des pairwise Fst entre les populations")
@@ -20,7 +19,7 @@ cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatma
 
 On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
 ## Fst en fenêtre glissante {-}
-```{r plot-sliding-Fst}
+```{r plot-sliding-Fst, verbose=FALSE}
 #calcul des Fst avec une fenêtre glissante de 100 SNP
 Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
 #conversion en objet data frame
@@ -34,3 +33,5 @@ Fst.plot + scale_x_continuous() + scale_y_continuous() +
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
   facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom")) #affichage des chromosomes en grille
 ```
+
+

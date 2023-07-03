@@ -4,13 +4,13 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
+  <title>Bibliographie | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta property="og:title" content="Bibliographie | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
   <meta property="og:image" content="https://jolivares-inrae.github.io/BayPass_Tutorial/C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png" />
   <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
@@ -19,7 +19,7 @@ set in the _output.yml file.</p>" />
   <meta name="github-repo" content="https://github.com/Jolivares-INRAE/BayPass_Tutorial" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta name="twitter:title" content="Bibliographie | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   
   <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
@@ -36,8 +36,8 @@ set in the _output.yml file.</p>" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="introduction.html"/>
-<link rel="next" href="données-brutes.html"/>
+<link rel="prev" href="annexes.html"/>
+
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -180,11 +180,6 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="données-brutes.html"><a href="données-brutes.html#obtention-dun-fichier-poolseq.vcf"><i class="fa fa-check"></i>Obtention d’un fichier Poolseq.vcf :</a></li>
 <li class="chapter" data-level="" data-path="données-brutes.html"><a href="données-brutes.html#filtrage-des-données-brutes"><i class="fa fa-check"></i>Filtrage des données brutes</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><i class="fa fa-check"></i>Conversion du pooldata en fichiers d’entrées pour BayPass</a>
-<ul>
-<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass"><i class="fa fa-check"></i>Design de l’analyse BayPass</a></li>
-<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling"><i class="fa fa-check"></i>Subsampling</a></li>
-</ul></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
@@ -192,7 +187,7 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 </ul></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
+<li class="chapter" data-level="" data-path="bibliographie.html"><a href="bibliographie.html"><i class="fa fa-check"></i>Bibliographie</a></li>
 </ul>
 
       </nav>
@@ -210,45 +205,40 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="présentation-du-logiciel-baypass-2.3" class="section level1 unnumbered hasAnchor">
-<h1>Présentation du logiciel BayPass 2.3<a href="présentation-du-logiciel-baypass-2.html#présentation-du-logiciel-baypass-2.3" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à l’identification de marqueurs génétiques soumis à la sélection et/ou associés à des covariables spécifiques à la population (variables environnementales, phénotypiques, quantitatives, catégorielles…). Par une approche baysienne il évalue une <strong>matrice Ω</strong> de covariance des fréquences alléliques des populations résultant de leur histoire démographique. Deux manières d’estimer ces fréquences alléliques sont disponibles soit en se basant sur les génotypes référence/mutant des individus analysés soit, lorsque l’on active le « pool-seq mode », ces fréquences alléliques sont calculées en regard de la profondeur de séquençage (reads count) et pondérées par le nombre d’individus qui ont contribué à cette profondeur. C’est cette seconde approche que nous considérerons dans cet ouvrage.</p>
-<p>BayPass propose 3 modèles statistiques d’analyse :</p>
-<div id="le-core-model" class="section level4 unnumbered hasAnchor">
-<h4>Le Core Model<a href="présentation-du-logiciel-baypass-2.html#le-core-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>C’est le modèle de base, il permet de calculer la matrice de covariance Ω et d’attribuer une statistique de différenciation XtX à chaque SNP, et ainsi de scanner le génome pour identifier les régions génomiques différenciées entre les populations.Le XtX est une statistique analogue au Fst mais tient compte de la co-évolution des populations grace à la matrice Ω.</p>
+<div id="bibliographie" class="section level1 unnumbered hasAnchor">
+<h1>Bibliographie<a href="bibliographie.html#bibliographie" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div class="csl-entry">
+Futschik, Andreas, and Christian Schlötterer. 2010. <span>“The <span>Next</span> <span>Generation</span> of <span>Molecular</span> <span>Markers</span> <span>From</span> <span>Massively</span> <span>Parallel</span> <span>Sequencing</span> of <span>Pooled</span> <span>DNA</span> <span>Samples</span>.”</span> <em>Genetics</em> 186 (1): 207–18. <a href="https://doi.org/10.1534/genetics.110.114397">https://doi.org/10.1534/genetics.110.114397</a>.
 </div>
-<div id="le-standard-model" class="section level4 unnumbered hasAnchor">
-<h4>Le Standard Model<a href="présentation-du-logiciel-baypass-2.html#le-standard-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Ce modèle, permet, l’orsque l’on fournit une ou plusieurs covariables (environnementales, phénotypiques…), de calculer un facteur de Bayes, ou Bayes factor en anglais, (BF) pour chaque marqueur génétique représentant la force d’association avec une covariable. C’est un modèle tout en un qui intègre le calcul des XtX et de la matrice Ω, il est adapté au faible nombre de population (&lt; 15).</p>
+<div class="csl-entry">
+Gautier, Mathieu, Renaud Vitalis, Laurence Flori, and Arnaud Estoup. 2022. <span>“F-Statistics Estimation and Admixture Graph Construction with <span>Pool</span>-<span>Seq</span> or Allele Count Data Using the <span>R</span> Package Poolfstat.”</span>
 </div>
-<div id="lauxiliairy-model" class="section level4 unnumbered hasAnchor">
-<h4>L’Auxiliairy Model<a href="présentation-du-logiciel-baypass-2.html#lauxiliairy-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (&gt; 15), En contrepartie il nécessite que l’on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.</p>
-<p>Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.</p>
+<div class="csl-entry">
+Koboldt, Daniel C., Qunyuan Zhang, David E. Larson, Dong Shen, Michael D. McLellan, Ling Lin, Christopher A. Miller, Elaine R. Mardis, Li Ding, and Richard K. Wilson. 2012. <span>“<span>VarScan</span> 2: <span>Somatic</span> Mutation and Copy Number Alteration Discovery in Cancer by Exome Sequencing.”</span> <em>Genome Research</em> 22 (3): 568–76. <a href="https://doi.org/10.1101/gr.129684.111">https://doi.org/10.1101/gr.129684.111</a>.
 </div>
-<div id="présentation-générale-de-lanalyse" class="section level2 unnumbered hasAnchor">
-<h2>Présentation générale de l’analyse :<a href="présentation-du-logiciel-baypass-2.html#présentation-générale-de-lanalyse" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>La Figure <a href="présentation-du-logiciel-baypass-2.html#fig:Fig1">1</a> est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l’analyse BayPass se déroulent soit dans l’environnement Linux du cluster de calcul, les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
-La première étape part des fichiers d’alignement au format « <strong><em>bam</em></strong> » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « *<strong><em>vcf</em></strong> » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier <strong><em>vcf</em></strong> sert d’entrée au package « PoolFstat » <span class="citation">(<a href="références.html#ref-gautier_f-statistics_2022">Gautier et al. 2022</a>)</span> qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts qui seront visualisées par différents plots.</p>
-<div class="figure"><span style="display:block;" id="fig:Fig1"></span>
-<p class="caption">
-Figure 1: Pipeline d’analyse BayPass
-</p>
-<img src="images/Analyse2.jpg" alt="Pipeline d'analyse BayPass" width="708" />
+<div class="csl-entry">
+Li, Heng, Bob Handsaker, Alec Wysoker, Tim Fennell, Jue Ruan, Nils Homer, Gabor Marth, Goncalo Abecasis, Richard Durbin, and 1000 Genome Project Data Processing Subgroup. 2009. <span>“The <span>Sequence</span> <span>Alignment</span>/<span>Map</span> Format and <span>SAMtools</span>.”</span> <em>Bioinformatics</em> 25 (16): 2078–79. <a href="https://doi.org/10.1093/bioinformatics/btp352">https://doi.org/10.1093/bioinformatics/btp352</a>.
 </div>
-<p style="font-family: calibri; font-size:11pt; font-style:italic">
-Le pipeline d’analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l’analyse des résultats.
-</p>
+<div class="csl-entry">
+Nielsen, Erica S. 2020. <span>“Pool-<span>Seq</span> <span>Analyses</span>: <span>PoolFstat</span> &amp; <span>BayPass</span>.”</span> <a href="https://esnielsen.github.io/post/pool-seq-analyses-poolfstat-baypass/">https://esnielsen.github.io/post/pool-seq-analyses-poolfstat-baypass/</a>.
 </div>
 </div>
+
+</div>
+
+
+
+
+
+
             </section>
 
           </div>
         </div>
       </div>
-<a href="introduction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="données-brutes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="annexes.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -279,7 +269,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-presentation.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/11-Bibliographie.Rmd",
 "text": "Edit"
 },
 "history": {
@@ -302,20 +292,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>

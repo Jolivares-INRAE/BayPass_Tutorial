@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-07-02" />
+<meta name="date" content="2023-07-03" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -180,6 +180,11 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="données-brutes.html"><a href="données-brutes.html#obtention-dun-fichier-poolseq.vcf"><i class="fa fa-check"></i>Obtention d’un fichier Poolseq.vcf :</a></li>
 <li class="chapter" data-level="" data-path="données-brutes.html"><a href="données-brutes.html#filtrage-des-données-brutes"><i class="fa fa-check"></i>Filtrage des données brutes</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><i class="fa fa-check"></i>Conversion du pooldata en fichiers d’entrées pour BayPass</a>
+<ul>
+<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass"><i class="fa fa-check"></i>Design de l’analyse BayPass</a></li>
+<li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling"><i class="fa fa-check"></i>Subsampling</a></li>
+</ul></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
@@ -187,6 +192,7 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 </ul></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
 </ul>
 
       </nav>
@@ -207,8 +213,8 @@ div.csl-indent {
 <div id="introduction" class="section level1 unnumbered hasAnchor">
 <h1>Introduction<a href="introduction.html#introduction" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Dans un contexte agronomique actuel de réduction de l’utilisation des pesticides ou de réchauffement climatique, analyser et comprendre les bases génétiques de l’adaptation des organismes aux méthodes de luttes qui leurs sont opposées ou à l’évolution de leur environnement est un enjeu majeur des recherches de ces dernières années.</p>
-<p>Les études d’associations pangénomiques (GWAS en anglais pour genome-wide association study) adossées aux techniques de séquençage haut débit (NGS) permettant le séquençage de génome complet, sont un outil de choix pour ce type d’analyse. L’étude au niveau populationnel demandant le séquençage d’un grand nombre d’individus, les couts d’analyses étaient initialement très élevés et ces études étaient souvent réservées aux organismes dit ‘‘modèles’’, humain en tête. Néanmoins il a été démontré depuis, que le séquençage en pool d’individus (poolseq) c’est-à-dire en mélangeant de manière équimolaire l’ADN d’un grand nombre d’individus (50 à 100) issus d’une même population permettait non seulement de réduire drastiquement les couts puisqu’on ne réalise qu’un seul séquençage mais aussi que la découverte des points de mutations (SNP) et l’estimation de leur fréquence allélique étaient souvent plus efficaces et précises <span class="citation">(Futschik and Schlötterer 2010)</span>. Parmi les logiciels à même d’analyser ces fréquences alléliques on compte Baypass <span class="citation">(Gautier 2015)</span> qui évalue par une approche baysienne, la différenciation des SNP en liaison avec une covariable environnementale en tenant compte de la structure et de la parenté entre les populations en estimant la covariance (Ω) des fréquences alléliques. Baypass 2.3 a la particularité supplémentaire de pouvoir calculer un contraste des fréquences alléliques entre deux groupes de populations caractérisés par un caractère binaire, sensible ou résistant par exemple.</p>
-<p>La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A ma connaissance un seul tutoriel est disponible sur le web <span class="citation">(Nielsen 2020)</span> et décrit de manière plus détaillée la préparation des données brutes et l’analyse en mode « poolseq » de Baypass, mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n’en va pas forcément de même pour bon nombre d’agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d’une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d’éclairer les points qui sont habituellement peu explicités car considérés comme évident et se veut, au final, le plus proche possible de la citation de Talleyrand : « Si cela va sans le dire, cela ira encore mieux en le disant ».</p>
+<p>Les études d’associations pangénomiques (GWAS en anglais pour genome-wide association study) adossées aux techniques de séquençage haut débit (NGS) permettant le séquençage de génome complet, sont un outil de choix pour ce type d’analyse. L’étude au niveau populationnel demandant le séquençage d’un grand nombre d’individus, les couts d’analyses étaient initialement très élevés et ces études étaient souvent réservées aux organismes dit ‘‘modèles’’, humain en tête. Néanmoins il a été démontré depuis, que le séquençage en pool d’individus (poolseq) c’est-à-dire en mélangeant de manière équimolaire l’ADN d’un grand nombre d’individus (50 à 100) issus d’une même population permettait non seulement de réduire drastiquement les couts puisqu’on ne réalise qu’un seul séquençage mais aussi que la découverte des points de mutations (SNP) et l’estimation de leur fréquence allélique étaient souvent plus efficaces et précises <span class="citation">(<a href="références.html#ref-futschik_next_2010">Futschik and Schlötterer 2010</a>)</span>. Parmi les logiciels à même d’analyser ces fréquences alléliques on compte Baypass <span class="citation">(<a href="références.html#ref-gautier_genome-wide_2015">Gautier 2015</a>)</span> qui évalue par une approche baysienne, la différenciation des SNP en liaison avec une covariable environnementale en tenant compte de la structure et de la parenté entre les populations en estimant la covariance (Ω) des fréquences alléliques. Baypass 2.3 a la particularité supplémentaire de pouvoir calculer un contraste des fréquences alléliques entre deux groupes de populations caractérisés par un caractère binaire, sensible ou résistant par exemple.</p>
+<p>La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A ma connaissance un seul tutoriel est disponible sur le web <span class="citation">(<a href="références.html#ref-nielsen_pool-seq_2020">Nielsen 2020</a>)</span> et décrit de manière plus détaillée la préparation des données brutes et l’analyse en mode « poolseq » de Baypass, mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n’en va pas forcément de même pour bon nombre d’agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d’une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d’éclairer les points qui sont habituellement peu explicités car considérés comme évident et se veut, au final, le plus proche possible de la citation de Talleyrand : « Si cela va sans le dire, cela ira encore mieux en le disant ».</p>
 
 </div>
             </section>
@@ -271,6 +277,20 @@ gitbook.start({
 });
 </script>
 
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
 </body>
 
 </html>

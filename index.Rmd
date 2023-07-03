@@ -9,7 +9,7 @@ output: bookdown::html_document2
 documentclass: book
 classoption: openany
 urlcolor: blue
-bibliography: BayPass.bib
+bibliography: "BayPass.bib"
 geometry: "left=3cm,right=3cm,top=1cm,bottom=2cm"
 url: https://jolivares-inrae.github.io/BayPass_Tutorial/
 cover-image: "C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png"
@@ -17,7 +17,8 @@ description: |
   This is a minimal example of using the bookdown package to write a book.
   The HTML output format for this example is bookdown::gitbook,
   set in the _output.yml file.
-link-citations: no
+link-citations: yes
+reference-section-title: "Références"
 github-repo: https://github.com/Jolivares-INRAE/BayPass_Tutorial
 ---
 ```{r, echo=FALSE}
