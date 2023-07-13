@@ -13,7 +13,7 @@ Ce modèle, permet, l’orsque l’on fournit une ou plusieurs covariables (envi
 #### L’Auxiliairy Model {-}
 Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (> 15), En contrepartie il nécessite que l’on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.
 
-Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations. 
+Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement qualitative ou binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations. 
 
 ## Présentation générale de l’analyse : {-}
 La Figure \@ref(fig:Fig1) est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l'analyse BayPass se déroulent soit dans l’environnement Linux du cluster de calcul,  les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
@@ -33,9 +33,9 @@ Les étapes de contrôle qualité et d’alignement des données de séquençage
 
 
 ```{example, script1}
-Example d'un script bash pour effectuer un variant calling
+<span style="color:darkgreen">Exemple d'un script bash pour effectuer un variant calling</span>
 ```
-<p style="font-family: calibri; font-size:11pt; font-style:italic">
+<p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
    Si l’on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d’utiliser l’option -r/--region qui tire profit de cet index.
 </p>
 ```{bash scr1, eval=FALSE, highlight=TRUE}
@@ -65,9 +65,9 @@ bcftools index /../project_chr${SLURM_ARRAY_TASK_ID}.vcf
 A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concaténés (Script \@ref(exm:script2)), les chromosomes sexuels ayant une ségrégation, une histoire démographique et une ploïdie différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
 
 ```{example, script2}
-<span style="color:darkgreen">Example d'un script bash pour concaténer des fichiers **_vcf_**</span>
+<span style="color:darkgreen">Exemple d'un script bash pour concaténer des fichiers **_vcf_**</span>
 ```
-<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen;">
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
    On peut utiliser les bcftools pour concaténer les fichier **_vcf_**, la liste des fichiers à traiter est contenue dans une variable alimentée par une boucle "for".
 </p>
 ```{bash scr2, eval=FALSE}
@@ -114,7 +114,7 @@ La fonction **_vcf2poodata_** va balayer le fichier **_vcf_**, sélectionner les
 ```{exercise, chunk2}
 <span style="color:darkgreen">Filtrage et sélection des SNPs</span>
 ```
-<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen;">
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les options à renseigner sont:<br>
 min.rc =  minimum de reads qu'un allèle doit avoir pour être retenu.<br>
 min.cov.per.pool = Si au moins un pool n'est pas couvert par au moins au moins min.cov.perpool reads, le SNP est rejeté.<br>
@@ -128,10 +128,10 @@ psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '2
 psizes_X <- as.numeric(c('120', '135', '16', '86', '135', '30','135', '120', '150', '60', '63', '42', '53'))    #ploydie X/Z
 psizes_Y <- as.numeric(c('30', '45', '8', '28', '45', '14','45', '40', '50', '14', '17', '10', '19'))           #ploydie Y/W
 #conversion du .vcf
-GWAS.pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project_chr2-28.vcf.gz", sep=""), poolsizes = psizes_A, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
+pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project_chr2-28.vcf.gz", sep=""), poolsizes = psizes_A, poolnames = pnames, min.cov.per.pool = 4, min.rc = 2, max.cov.per.pool = 1e+06, min.maf = 0.05, remove.indels = FALSE, nlines.per.readblock = 1e+06)
 #élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)
-GWAS.pooldata<-pooldata.subset(GWAS.pooldata, cov.qthres.per.pool = c(0,0.99))
+pooldata<-pooldata.subset(pooldata, cov.qthres.per.pool = c(0,0.99))
 ```
 
-A ce stade on peut analyser cet objet **_GWAS.pooldata_** comme les Fst entre populations par exemple [Annexe 1](#An1)
+A ce stade cet objet **_pooldata_** peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d'estimation de la structure génétique des populations déduite des Fst est donné en [Annexe 1](#An1)
 

@@ -7,7 +7,7 @@ language:
     tab: "Table "
     exm: "Script "
     exr: "Chunk "
-    def: "Annexe "
+    def: "Table "
 
   ui:
     chapter_name:

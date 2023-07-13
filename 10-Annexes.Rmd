@@ -2,14 +2,13 @@
 
 ## Annexe 1 {-#An1}
 
-A partir de cet objet pooldata on faire une première analyse des Fst.
-Des outils sont décrits et exemplifiés dans la vignette de PoolFstat : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf), parmis ceux-ci on trouve l'analyse des Fst.
+Le package R **_poolfstat_** peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de **_poolfstat_** : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf), parmis ceux-ci on trouve l'analyse des Fst.
 
 ### Pairwise {-}
 Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
 ```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE}
 #Calcul des pairwise Fst 
-PairWise.fst <- compute.pairwiseFST(GWAS.pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.05, output.snp.values = FALSE)
+PairWise.fst <- compute.pairwiseFST(pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.05, output.snp.values = FALSE)
 #conversion en matrice de distance
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
 #heatmap
@@ -17,14 +16,15 @@ cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(9)
 cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatmap des pairwise Fst entre les populations")
 ```
 
-On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
-## Fst en fenêtre glissante {-}
+On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
+
+### Fst en fenêtre glissante {-}
 ```{r plot-sliding-Fst, verbose=FALSE}
-#calcul des Fst avec une fenêtre glissante de 100 SNP
-Multi.Loc.fst <- computeFST(GWAS.pooldata, method = "Anova", sliding.window.size = 100)
+#calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .
+Multi.Loc.fst <- computeFST(pooldata, method = "Anova", sliding.window.size = 100)
 #conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
-#plot en ligne.
+#plot.
 Fst.plot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) +
   geom_point(aes(color=Chr), alpha=0.8, size=1.5) +
   ggtitle("Fst en fenêtres glissantes") +

@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-07-03" />
+<meta name="date" content="2023-07-11" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -185,11 +185,13 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass"><i class="fa fa-check"></i>Design de l’analyse BayPass</a></li>
 <li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling"><i class="fa fa-check"></i>Subsampling</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="baypass-lanalyse-poolseq.html"><a href="baypass-lanalyse-poolseq.html"><i class="fa fa-check"></i>Baypass : l’analyse poolseq</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
@@ -225,7 +227,7 @@ div.csl-indent {
 <div id="lauxiliairy-model" class="section level4 unnumbered hasAnchor">
 <h4>L’Auxiliairy Model<a href="présentation-du-logiciel-baypass-2.html#lauxiliairy-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
 <p>Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (&gt; 15), En contrepartie il nécessite que l’on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.</p>
-<p>Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.</p>
+<p>Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement qualitative ou binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.</p>
 </div>
 <div id="présentation-générale-de-lanalyse" class="section level2 unnumbered hasAnchor">
 <h2>Présentation générale de l’analyse :<a href="présentation-du-logiciel-baypass-2.html#présentation-générale-de-lanalyse" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -302,20 +304,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>

@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-07-03" />
+<meta name="date" content="2023-07-11" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -37,7 +37,7 @@ set in the _output.yml file.</p>" />
   
   
 <link rel="prev" href="données-brutes.html"/>
-<link rel="next" href="annexes.html"/>
+<link rel="next" href="baypass-lanalyse-poolseq.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -185,11 +185,13 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass"><i class="fa fa-check"></i>Design de l’analyse BayPass</a></li>
 <li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling"><i class="fa fa-check"></i>Subsampling</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="baypass-lanalyse-poolseq.html"><a href="baypass-lanalyse-poolseq.html"><i class="fa fa-check"></i>Baypass : l’analyse poolseq</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
@@ -213,35 +215,168 @@ div.csl-indent {
 <div id="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass" class="section level1 unnumbered hasAnchor">
 <h1>Conversion du pooldata en fichiers d’entrées pour BayPass<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#conversion-du-pooldata-en-fichiers-dentrées-pour-baypass" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>La fonction <strong><em>pooldata2genobaypass</em></strong> convertit l’ogbjet <strong><em>pooldata</em></strong> en fichier d’entrée pour BayPass:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb8-1" tabindex="-1"></a><span class="fu">pooldata2genobaypass</span>(GWAS.pooldata, <span class="at">writing.dir =</span> path_input, <span class="at">subsamplesize =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">subsamplingmethod =</span> <span class="st">&quot;thinning&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb8-1" tabindex="-1"></a><span class="fu">pooldata2genobaypass</span>(pooldata, <span class="at">writing.dir =</span> path_input, <span class="at">subsamplesize =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">subsamplingmethod =</span> <span class="st">&quot;thinning&quot;</span>)</span></code></pre></div>
 <pre><code>## x being coerced from class: matrix to data.table</code></pre>
-<p>On récupère dans le répertoire <strong><em>path_input</em></strong> trois fichiers: un fichier “<strong><em>genobaypass</em></strong>” qui contient les données brutes de génotypage, un fichier “<strong><em>snpdet</em></strong>” qui contient la liste des positions correspondantes et un fichier “<strong><em>poolsize</em></strong>”, qui est une copie de l’objet <strong><em>psizes</em></strong>.</p>
+<p>On récupère dans le répertoire <strong><em>path_input</em></strong> trois fichiers: un fichier “<strong><em>genobaypass</em></strong>” qui contient les données filtrées de génotypage, un fichier “<strong><em>snpdet</em></strong>” qui contient la liste des positions correspondantes et un fichier “<strong><em>poolsize</em></strong>”, qui est une copie de l’objet <strong><em>psizes</em></strong>.</p>
 <div id="design-de-lanalyse-baypass" class="section level2 unnumbered hasAnchor">
 <h2>Design de l’analyse BayPass<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Deux fichiers de paramétrages au format texte/tabulation peuvent être créés en fonction de l’analyse envisagé:
-Le premier fichier “<strong><em>ecotype.txt</em></strong>” identifie les covariables écologiques de chaque population, avec une covariable par ligne et autant de lignes que de covariables à analyser. Seules sont acceptées les valeurs numériques de préférence en gradient (taille, poids, température…), les valeurs texte devront être converties, par exemple des noms de villes pourront être remplacées par une latitude ou une longitude. L’exemple suivant donne la structure d’un fichier pour 3 covariables (latitude/poids/taux de mortalité) et 5 populations :</p>
-<p>4.75 0.53 0.27 -0.86 -0.61<br>
-43.90 44.37 44.29 47.36 47.86<br>
-25 48.5 96.2 17 15.3<br></p>
-<p>Le deuxième fichier contraste.txt identifie l’appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste. L’exemple suivant donne la structure d’un fichier pour 3 analyses de contraste :</p>
-<p>1 1 -1 -1 -1<br>
-1 0 0 -1 -1<br>
-0 1 -1 -1 0<br></p>
-<p>1ere ligne = pop 1 et 2 VS pop 3, 4 et 5<br>
-2e ligne = pop 1 VS pop 4 et 5<br>
-3e ligne = pop 2 VS pop 3 et 4<br></p>
+Le premier fichier “<strong><em>ecotype</em></strong>” (Table <a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#def:table1">1</a>) identifie les covariables quantitatives écologiques de chaque population, avec une covariable par ligne et autant de lignes que de covariables à analyser. Seules sont acceptées les valeurs numériques graduées (taille, poids, mortalité …).</p>
+<div class="definition">
+<p><span id="def:table1" class="definition"><strong>Table 1  </strong></span><span style="color:darkgreen">Example de constitution d’un fichier <strong><em>ecotype</em></strong></span></p>
+</div>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+</p>
+<table>
+<tr>
+<td>
+25
+</td>
+<td>
+48.5
+</td>
+<td>
+96.2
+</td>
+<td>
+17
+</td>
+<td>
+15.3
+</td>
+<td>
+…
+</td>
+</tr>
+<tr>
+<td>
+4.75
+</td>
+<td>
+0.53
+</td>
+<td>
+0.27
+</td>
+<td>
+-0.86
+</td>
+<td>
+-0.61
+</td>
+<td>
+…
+</td>
+</tr>
+<tr>
+<td>
+43.90
+</td>
+<td>
+44.37
+</td>
+<td>
+44.29
+</td>
+<td>
+47.36
+</td>
+<td>
+47.86
+</td>
+<td>
+…
+</td>
+</tr>
+</table>
+<p>Le deuxième fichier <strong><em>contraste</em></strong> (Table <a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#def:table2">2</a>)contient les covariables qualitatives (petit, chaud, resistant…), il permet d’identifier l’appartenance de chaque population à un groupe qualitatif soit référence (-1), un groupe candidat (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste.</p>
+<div class="definition">
+<p><span id="def:table2" class="definition"><strong>Table 2  </strong></span><span style="color:darkgreen">Example de constitution d’un fichier <strong><em>contraste</em></strong></span></p>
+</div>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Chaque ligne correspond à une analyse binaire de comparaison des fréquences alléliques de 2 groupes de population.<br>
+Sur la ligne 1 le groupe composé des population 1 et 2 est comparé au groupe des populations 3,4 et 5.<br>
+Sur la ligne 2 le groupe composé des population 1 et 2 est comparé au groupe des populations 4 et 5, la population 3 est exclue de l’analyse.
+Etc…
+</p>
+<table>
+<tr>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+-1
+</td>
+<td>
+-1
+</td>
+<td>
+-1
+</td>
+<td>
+…
+</td>
+</tr>
+<tr>
+<td>
+1
+</td>
+<td>
+1
+</td>
+<td>
+0
+</td>
+<td>
+-1
+</td>
+<td>
+-1
+</td>
+<td>
+…
+</td>
+</tr>
+<tr>
+<td>
+0
+</td>
+<td>
+1
+</td>
+<td>
+-1
+</td>
+<td>
+-1
+</td>
+<td>
+0
+</td>
+<td>
+…
+</td>
+</tr>
+</table>
 <p>Ces fichiers seront aussi transférés sur le cluster de calcul.</p>
-<p>IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) il est très fortement conseillé de multiplier les analyses de contraste ou de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d’entre elles.</p>
+<p>IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) mais l’analyses conjointes de plusieurs covariables a un impact relativement faible sur le temps de calcul final, dès lors il est très rentable de multiplier les analyses de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d’entre elles.</p>
 </div>
 <div id="subsampling" class="section level2 unnumbered hasAnchor">
 <h2>Subsampling<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Copier les fichiers genobaypass, snpdet, poolsize et les fichiers contraste.txt et ecotype.txt sur le cluster de calcul. Afin d’éviter d’éventuels problèmes de format les fichiers .txt sont passé à la commande dos2unix
-La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec la commande sed.
-Exemple pour 100 sous jeux:</p>
-<p>for i in {1..100}; do sed -n “<span class="math inline">\(i~100p&quot; genobaypass &gt; genobaypass.sub\)</span>i; sed -n”<span class="math inline">\(i~100p&quot; snpdet &gt; snpdet.sub\)</span>i; done</p>
-<p>IMPORTANT: pour 25 000 SNP et 12 populations, une analyse (1contraste, 3 covariables) avec 1 CPU dure environ 8H, si on augmente le nombre de contraste à 8, le temps de calcul passe à environ 10H ce qui est nettement plus rentable que de relancer 8 fois l’analyse.
-Si on alloue 8 CPU, l’analyse est 5 fois plus rapide mais pas 8 donc une partie (30 à 40%) du temps total CPU est perdue. A noter que la consommation de mémoire vive est négligeable, il n’y a pas de gain à espérer à allouer des gigaoctets de mémoire.</p>
-<p>La stratégie la plus rentable est donc d’inclure dans une même analyse un maximum de combinaison de contraste/covariables, de découper en sous jeux de données de 25 000 à 50 000 SNP et d’allouer 1 CPU à chacun. Il n’est pas aberrant de faire un test sur une fraction des données totale et d’extrapoler pour avoir une idée du coût en temps et en ressources.</p>
+<p>Copier les fichiers <strong><em>genobaypass, snpdet, poolsize, contraste, ecotype</em></strong> sur le cluster de calcul.
+La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec une commande sed par exemple (Script <a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#exm:script3">3</a>).</p>
+<div class="example">
+<p><span id="exm:script3" class="example"><strong>Script 3  </strong></span><span style="color:darkgreen">Exemple d’une commande de subsampling.</span></p>
+</div>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+La commande <strong><em>sed</em></strong> prélève une ligne toutes les 100 et les copies dans un fichier <strong><em>.sub</em></strong> et s’exécute 100 fois pour ballayer tous le fichier initial et créer ainsi 100 fichiers de sous-jeux de données.
+</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb10-1" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">100</span><span class="dt">}</span><span class="kw">;</span> <span class="cf">do</span> <span class="fu">sed</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$i</span><span class="st">~100p&quot;</span> genobaypass <span class="op">&gt;</span> genobaypass.sub<span class="va">$i</span><span class="kw">;</span> <span class="fu">sed</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$i</span><span class="st">~100p&quot;</span> snpdet <span class="op">&gt;</span> snpdet.sub<span class="va">$i</span><span class="kw">;</span> <span class="cf">done</span></span></code></pre></div>
+<p>Le nombre de fichiers <strong><em>.sub</em></strong> à créer dépend du nombre total de SNP à analyser, une taille finale de 80 000 à 120 000 SNPs par fichier de sous-jeux de données est un bon compromis entre qualité d’analyse et temps de calcul.</p>
 
 </div>
 </div>
@@ -251,7 +386,7 @@ Si on alloue 8 CPU, l’analyse est 5 fois plus rapide mais pas 8 donc une parti
         </div>
       </div>
 <a href="données-brutes.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="annexes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="baypass-lanalyse-poolseq.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -305,20 +440,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>

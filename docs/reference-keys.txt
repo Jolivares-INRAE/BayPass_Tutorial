@@ -1,5 +1,0 @@
-fig:Fig1
-exm:script1
-exm:script2
-exr:chunk1
-exr:chunk2

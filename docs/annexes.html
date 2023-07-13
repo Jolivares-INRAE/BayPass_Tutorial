@@ -29,14 +29,14 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-07-03" />
+<meta name="date" content="2023-07-11" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"/>
+<link rel="prev" href="baypass-lanalyse-poolseq.html"/>
 <link rel="next" href="références.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -185,11 +185,13 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass"><i class="fa fa-check"></i>Design de l’analyse BayPass</a></li>
 <li class="chapter" data-level="" data-path="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#subsampling"><i class="fa fa-check"></i>Subsampling</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="baypass-lanalyse-poolseq.html"><a href="baypass-lanalyse-poolseq.html"><i class="fa fa-check"></i>Baypass : l’analyse poolseq</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
@@ -214,40 +216,41 @@ div.csl-indent {
 <h1>Annexes<a href="annexes.html#annexes" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <div id="An1" class="section level2 unnumbered hasAnchor">
 <h2>Annexe 1<a href="annexes.html#An1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>A partir de cet objet pooldata on faire une première analyse des Fst.
-Des outils sont décrits et exemplifiés dans la vignette de PoolFstat : (<a href="https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf" class="uri">https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf</a>), parmis ceux-ci on trouve l’analyse des Fst.</p>
+<p>Le package R <strong><em>poolfstat</em></strong> peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de <strong><em>poolfstat</em></strong> : (<a href="https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf" class="uri">https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf</a>), parmis ceux-ci on trouve l’analyse des Fst.</p>
 <div id="pairwise" class="section level3 unnumbered hasAnchor">
 <h3>Pairwise<a href="annexes.html#pairwise" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="annexes.html#cb10-1" tabindex="-1"></a><span class="co">#Calcul des pairwise Fst </span></span>
-<span id="cb10-2"><a href="annexes.html#cb10-2" tabindex="-1"></a>PairWise.fst <span class="ot">&lt;-</span> <span class="fu">compute.pairwiseFST</span>(GWAS.pooldata, <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>, <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>, <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>, <span class="at">min.maf =</span> <span class="fl">0.05</span>, <span class="at">output.snp.values =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="annexes.html#cb14-1" tabindex="-1"></a><span class="co">#Calcul des pairwise Fst </span></span>
+<span id="cb14-2"><a href="annexes.html#cb14-2" tabindex="-1"></a>PairWise.fst <span class="ot">&lt;-</span> <span class="fu">compute.pairwiseFST</span>(pooldata, <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>, <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>, <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>, <span class="at">min.maf =</span> <span class="fl">0.05</span>, <span class="at">output.snp.values =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <pre><code>## Computation of the 78 pairwise Fst
 ## 
 ## Overall Analysis Time: 0 h 0 m 1 s</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="annexes.html#cb12-1" tabindex="-1"></a><span class="co">#conversion en matrice de distance</span></span>
-<span id="cb12-2"><a href="annexes.html#cb12-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">t</span>(PairWise.fst<span class="sc">@</span>PairwiseFSTmatrix)))</span>
-<span id="cb12-3"><a href="annexes.html#cb12-3" tabindex="-1"></a><span class="co">#heatmap</span></span>
-<span id="cb12-4"><a href="annexes.html#cb12-4" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Reds&quot;</span>)))(<span class="dv">9</span>)</span>
-<span id="cb12-5"><a href="annexes.html#cb12-5" tabindex="-1"></a><span class="fu">cim</span>(df, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>),  <span class="at">title =</span> <span class="st">&quot;heatmap des pairwise Fst entre les populations&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="annexes.html#cb16-1" tabindex="-1"></a><span class="co">#conversion en matrice de distance</span></span>
+<span id="cb16-2"><a href="annexes.html#cb16-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">t</span>(PairWise.fst<span class="sc">@</span>PairwiseFSTmatrix)))</span>
+<span id="cb16-3"><a href="annexes.html#cb16-3" tabindex="-1"></a><span class="co">#heatmap</span></span>
+<span id="cb16-4"><a href="annexes.html#cb16-4" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Reds&quot;</span>)))(<span class="dv">9</span>)</span>
+<span id="cb16-5"><a href="annexes.html#cb16-5" tabindex="-1"></a><span class="fu">cim</span>(df, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>),  <span class="at">title =</span> <span class="st">&quot;heatmap des pairwise Fst entre les populations&quot;</span>)</span></code></pre></div>
 <p><img src="BayPass_Fr_files/figure-html/heatmap-PW-fst-1.png" width="960" /></p>
-<p>On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs, une région génomique très différenciée apparaitra sous la forme d’une éruption de points colorés.
-## Fst en fenêtre glissante {-}</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="annexes.html#cb13-1" tabindex="-1"></a><span class="co">#calcul des Fst avec une fenêtre glissante de 100 SNP</span></span>
-<span id="cb13-2"><a href="annexes.html#cb13-2" tabindex="-1"></a>Multi.Loc.fst <span class="ot">&lt;-</span> <span class="fu">computeFST</span>(GWAS.pooldata, <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>, <span class="at">sliding.window.size =</span> <span class="dv">100</span>)</span></code></pre></div>
+<p>On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d’une demi fenêtre, une région génomique très différenciée apparaitra sous la forme d’une éruption de points colorés.</p>
+</div>
+<div id="fst-en-fenêtre-glissante" class="section level3 unnumbered hasAnchor">
+<h3>Fst en fenêtre glissante<a href="annexes.html#fst-en-fenêtre-glissante" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="annexes.html#cb17-1" tabindex="-1"></a><span class="co">#calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .</span></span>
+<span id="cb17-2"><a href="annexes.html#cb17-2" tabindex="-1"></a>Multi.Loc.fst <span class="ot">&lt;-</span> <span class="fu">computeFST</span>(pooldata, <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>, <span class="at">sliding.window.size =</span> <span class="dv">100</span>)</span></code></pre></div>
 <pre><code>## Start sliding-window scan
 ## 1 chromosomes scanned (with more than 100 SNPs)
 ## 
 ## Average (min-max) Window Sizes 28 ( 1.7 - 865.6 ) kb</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="annexes.html#cb15-1" tabindex="-1"></a><span class="co">#conversion en objet data frame</span></span>
-<span id="cb15-2"><a href="annexes.html#cb15-2" tabindex="-1"></a>df.fst<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(Multi.Loc.fst<span class="sc">$</span>sliding.windows.fst, <span class="at">h=</span>T)</span>
-<span id="cb15-3"><a href="annexes.html#cb15-3" tabindex="-1"></a><span class="co">#plot en ligne.</span></span>
-<span id="cb15-4"><a href="annexes.html#cb15-4" tabindex="-1"></a>Fst.plot <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>df.fst, <span class="fu">aes</span>(<span class="at">x=</span>CumulatedPosition<span class="sc">/</span><span class="fl">1e6</span>, <span class="at">y=</span>MultiLocusFst)) <span class="sc">+</span></span>
-<span id="cb15-5"><a href="annexes.html#cb15-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>Chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb15-6"><a href="annexes.html#cb15-6" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;Fst en fenêtres glissantes&quot;</span>) <span class="sc">+</span></span>
-<span id="cb15-7"><a href="annexes.html#cb15-7" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept=</span>Multi.Loc.fst<span class="sc">$</span>FST,<span class="at">lty=</span><span class="dv">2</span>) <span class="co">#le seuil indique la Fst globale estimée à l&#39;échelle du génome</span></span>
-<span id="cb15-8"><a href="annexes.html#cb15-8" tabindex="-1"></a>Fst.plot <span class="sc">+</span> <span class="fu">scale_x_continuous</span>() <span class="sc">+</span> <span class="fu">scale_y_continuous</span>() <span class="sc">+</span></span>
-<span id="cb15-9"><a href="annexes.html#cb15-9" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span></span>
-<span id="cb15-10"><a href="annexes.html#cb15-10" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span><span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>)) <span class="co">#affichage des chromosomes en grille</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="annexes.html#cb19-1" tabindex="-1"></a><span class="co">#conversion en objet data frame</span></span>
+<span id="cb19-2"><a href="annexes.html#cb19-2" tabindex="-1"></a>df.fst<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(Multi.Loc.fst<span class="sc">$</span>sliding.windows.fst, <span class="at">h=</span>T)</span>
+<span id="cb19-3"><a href="annexes.html#cb19-3" tabindex="-1"></a><span class="co">#plot.</span></span>
+<span id="cb19-4"><a href="annexes.html#cb19-4" tabindex="-1"></a>Fst.plot <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>df.fst, <span class="fu">aes</span>(<span class="at">x=</span>CumulatedPosition<span class="sc">/</span><span class="fl">1e6</span>, <span class="at">y=</span>MultiLocusFst)) <span class="sc">+</span></span>
+<span id="cb19-5"><a href="annexes.html#cb19-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>Chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb19-6"><a href="annexes.html#cb19-6" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;Fst en fenêtres glissantes&quot;</span>) <span class="sc">+</span></span>
+<span id="cb19-7"><a href="annexes.html#cb19-7" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept=</span>Multi.Loc.fst<span class="sc">$</span>FST,<span class="at">lty=</span><span class="dv">2</span>) <span class="co">#le seuil indique la Fst globale estimée à l&#39;échelle du génome</span></span>
+<span id="cb19-8"><a href="annexes.html#cb19-8" tabindex="-1"></a>Fst.plot <span class="sc">+</span> <span class="fu">scale_x_continuous</span>() <span class="sc">+</span> <span class="fu">scale_y_continuous</span>() <span class="sc">+</span></span>
+<span id="cb19-9"><a href="annexes.html#cb19-9" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb19-10"><a href="annexes.html#cb19-10" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span><span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>)) <span class="co">#affichage des chromosomes en grille</span></span></code></pre></div>
 <p><img src="BayPass_Fr_files/figure-html/plot-sliding-Fst-1.png" width="672" /></p>
 
 </div>
@@ -258,7 +261,7 @@ Des outils sont décrits et exemplifiés dans la vignette de PoolFstat : (<a hre
           </div>
         </div>
       </div>
-<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="baypass-lanalyse-poolseq.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="références.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
@@ -313,20 +316,6 @@ gitbook.start({
 });
 </script>
 
-<!-- dynamically load mathjax for compatibility with self-contained -->
-<script>
-  (function () {
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    var src = "true";
-    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:")
-      if (/^https?:/.test(src))
-        src = src.replace(/^https?:/, '');
-    script.src = src;
-    document.getElementsByTagName("head")[0].appendChild(script);
-  })();
-</script>
 </body>
 
 </html>

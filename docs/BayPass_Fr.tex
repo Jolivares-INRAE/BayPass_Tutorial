@@ -126,8 +126,25 @@
 
 \title{BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool}
 \author{Jérôme OLIVARES\footnote{INRAE, UR-1115 PSH, 228 route de l'aérodrome, 84914 Avignon, France}}
-\date{2023-06-28}
+\date{2023-07-11}
 
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}{Lemma}[chapter]
+\newtheorem{corollary}{Corollary}[chapter]
+\newtheorem{proposition}{Proposition}[chapter]
+\newtheorem{conjecture}{Conjecture}[chapter]
+\theoremstyle{definition}
+\newtheorem{definition}{Table}[chapter]
+\theoremstyle{definition}
+\newtheorem{example}{Script}[chapter]
+\theoremstyle{definition}
+\newtheorem{exercise}{Chunk}[chapter]
+\theoremstyle{definition}
+\newtheorem{hypothesis}{Hypothesis}[chapter]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem*{solution}{Solution}
 \begin{document}
 \maketitle
 
@@ -196,7 +213,7 @@ Ce modèle, permet, l'orsque l'on fournit une ou plusieurs covariables (environn
 
 Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (\textgreater{} 15), En contrepartie il nécessite que l'on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.
 
-Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d'altitude\ldots), en complément, dans le cas où la covariable étudiée serait purement binaire (sensible/résistant, gros/petit\ldots), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.
+Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d'altitude\ldots), en complément, dans le cas où la covariable étudiée serait purement qualitative ou binaire (sensible/résistant, gros/petit\ldots), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.
 
 \hypertarget{pruxe9sentation-guxe9nuxe9rale-de-lanalyse}{%
 \section*{Présentation générale de l'analyse :}\label{pruxe9sentation-guxe9nuxe9rale-de-lanalyse}}
@@ -211,27 +228,37 @@ La première étape part des fichiers d'alignement au format « \textbf{\emph{ba
 
 Le pipeline d'analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l'analyse des résultats.
 
-\hypertarget{donnuxe9es-brutes-obtention-dun-fichier-poolseq.vcf}{%
-\section*{Données brutes \& Obtention d'un fichier Poolseq.vcf :}\label{donnuxe9es-brutes-obtention-dun-fichier-poolseq.vcf}}
-\addcontentsline{toc}{section}{Données brutes \& Obtention d'un fichier Poolseq.vcf :}
+\hypertarget{donnuxe9es-brutes}{%
+\chapter*{Données brutes}\label{donnuxe9es-brutes}}
+\addcontentsline{toc}{chapter}{Données brutes}
 
-Les étapes de contrôle qualité et d'alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d'alignement \textbf{\emph{bam}}. La première étape consiste à regrouper les fichiers \textbf{\emph{bam}} de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l'utilisation des Samtools \citep{li_sequence_2009} et de Varscan 2 v2.3.6 \citep{koboldt_varscan_2012}avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l'espace de travail Figure \ref{fig:Fig2} \ref{type:b} . Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.
+\hypertarget{obtention-dun-fichier-poolseq.vcf}{%
+\section*{Obtention d'un fichier Poolseq.vcf :}\label{obtention-dun-fichier-poolseq.vcf}}
+\addcontentsline{toc}{section}{Obtention d'un fichier Poolseq.vcf :}
+
+Les étapes de contrôle qualité et d'alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d'alignement \textbf{\emph{bam}}. La première étape consiste à regrouper les fichiers \textbf{\emph{bam}} de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l'utilisation des Samtools \citep{li_sequence_2009} et de Varscan 2 \citep{koboldt_varscan_2012} avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l'espace de travail (Script \ref{exm:script1}). Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.
+
+\begin{example}
+\protect\hypertarget{exm:script1}{}\label{exm:script1}{Exemple d'un script bash pour effectuer un variant calling}
+\end{example}
+
+Si l'on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d'utiliser l'option -r/--region qui tire profit de cet index.
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\#!/bin/bash}
-\CommentTok{\#SBATCH {-}{-}array=1{-}29            \#création de l\textquotesingle{}array: un élément par chromosome}
+\CommentTok{\#SBATCH {-}{-}array=1{-}29            \#création de l\textquotesingle{}array: un élément/indice par chromosome}
 
 \ExtensionTok{module}\NormalTok{ load bioinfo/samtools{-}1.12}
 \ExtensionTok{module}\NormalTok{ load bioinfo/VarScan{-}2.4.2}
 \ExtensionTok{module}\NormalTok{ load bioinfo/bcftools{-}1.14}
 
-\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\OperatorTok{\textgreater{}}\NormalTok{ BamList.txt}
-\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/.bam//\textquotesingle{}} \OperatorTok{\textgreater{}}\NormalTok{ NameList.txt}
+\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\OperatorTok{\textgreater{}}\NormalTok{ BamList.txt                                                }\CommentTok{\#liste tous les fichiers "bam" et leur chemin}
+\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/.bam//\textquotesingle{}} \OperatorTok{\textgreater{}}\NormalTok{ NameList.txt      }\CommentTok{\#extrait les noms des échatillons/populations}
 
 \ExtensionTok{samtools}\NormalTok{ mpileup }\AttributeTok{{-}C}\NormalTok{ 50 }\AttributeTok{{-}d}\NormalTok{ 5000 }\AttributeTok{{-}q}\NormalTok{ 20 }\DataTypeTok{\textbackslash{}}
-\NormalTok{{-}r chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}} \DataTypeTok{\textbackslash{}}
-\NormalTok{{-}f /../ref\_genome.fas }\AttributeTok{{-}b}\NormalTok{ /../BamList.txt }\KeywordTok{|} \DataTypeTok{\textbackslash{}}
+\NormalTok{{-}r chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}} \DataTypeTok{\textbackslash{} }                                           \CommentTok{\#attribut un chr à chaque indice de l\textquotesingle{}array : chr1, chr2 ...}
+\ExtensionTok{{-}f}\NormalTok{ /../ref\_genome.fas }\AttributeTok{{-}b}\NormalTok{ /../BamList.txt }\KeywordTok{|} \DataTypeTok{\textbackslash{}}
 \ExtensionTok{java} \AttributeTok{{-}Xmx2G} \AttributeTok{{-}jar} \VariableTok{$VARSCAN}\NormalTok{ mpileup2cns }\DataTypeTok{\textbackslash{}}
 \NormalTok{{-}{-}variants }\AttributeTok{{-}{-}min{-}coverage}\NormalTok{ 10 }\DataTypeTok{\textbackslash{}}
 \NormalTok{{-}{-}min{-}avg{-}qual 20 }\AttributeTok{{-}{-}min{-}var{-}freq}\NormalTok{ 0.05 }\DataTypeTok{\textbackslash{}}
@@ -239,23 +266,403 @@ Les étapes de contrôle qualité et d'alignement des données de séquençage s
 \NormalTok{{-}{-}vcf{-}sample{-}list NameList.txt }\OperatorTok{\textgreater{}}\NormalTok{ /../project\_chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}}\NormalTok{.vcf}
 
 \ExtensionTok{bgzip}\NormalTok{ /../project\_chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}}\NormalTok{.vcf}
+\ExtensionTok{bcftools}\NormalTok{ index /../project\_chr}\VariableTok{$\{SLURM\_ARRAY\_TASK\_ID\}}\NormalTok{.vcf}
 \end{Highlighting}
 \end{Shaded}
 
-Si l'on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d'utiliser l'option -r/--region qui tire profit de cet index.
+A l'issue du variant calling les fichiers \textbf{\emph{vcf}} des autosomes seront concaténés (Script \ref{exm:script2}), les chromosomes sexuels ayant une ségrégation, une histoire démographique et une ploïdie différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
 
-IMPORTANT :
-Les chromosomes sexuels ayant une évolution historique différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.
+\begin{example}
+\protect\hypertarget{exm:script2}{}\label{exm:script2}{Exemple d'un script bash pour concaténer des fichiers \textbf{\emph{vcf}}}
+\end{example}
+
+On peut utiliser les bcftools pour concaténer les fichier \textbf{\emph{vcf}}, la liste des fichiers à traiter est contenue dans une variable alimentée par une boucle ``for''.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{knitr}\SpecialCharTok{::}\FunctionTok{include\_graphics}\NormalTok{(}\StringTok{"C:/Users/Olivares/Documents/R/Git\_Work/BayPass\_Tutorial/images/Analyse2.jpg"}\NormalTok{)}
+\CommentTok{\#!/bin/bash}
+\ExtensionTok{module}\NormalTok{ load bioinfo/bcftools{-}1.14}
+\VariableTok{Path}\OperatorTok{=}\StringTok{\textquotesingle{}/..\textquotesingle{}}
+
+\CommentTok{\# une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable}
+\ControlFlowTok{for} \KeywordTok{((}\VariableTok{i}\OperatorTok{=}\DecValTok{2}\KeywordTok{;} \VariableTok{i}\OperatorTok{\textless{}=}\DecValTok{28}\KeywordTok{;} \VariableTok{i}\OperatorTok{++}\KeywordTok{))}
+\ControlFlowTok{do}
+    \VariableTok{files}\OperatorTok{+=}\StringTok{" }\VariableTok{$Path}\StringTok{/project\_chr}\VariableTok{$\{i\}}\StringTok{.vcf.gz"}  
+\ControlFlowTok{done}
+
+\CommentTok{\# bcftools concatène la liste des vcf contenu dans la variable $file}
+\ExtensionTok{bcftools}\NormalTok{ concat }\VariableTok{$files} \AttributeTok{{-}O}\NormalTok{ z }\AttributeTok{{-}o} \VariableTok{$Path}\NormalTok{/project\_chr2{-}28.vcf.gz}
 \end{Highlighting}
 \end{Shaded}
 
-\begin{figure}
-\includegraphics[width=19.67in]{images/Analyse2} \caption{\label{fig:b} My caption}\label{fig:b}
-\end{figure}
+\hypertarget{filtrage-des-donnuxe9es-brutes}{%
+\section*{Filtrage des données brutes}\label{filtrage-des-donnuxe9es-brutes}}
+\addcontentsline{toc}{section}{Filtrage des données brutes}
+
+Le fichier \textbf{\emph{vcf}}, éventuellement compressé, est téléchargé sur un ordinateur local pour être analysé sous Rstudio.
+Dans un premier temps il faut charger les packages nécessaires et définir les chemins des différents dossiers qui seront utilisés (Chunk \ref{exr:chunk1})
+
+\begin{exercise}
+\protect\hypertarget{exr:chunk1}{}\label{exr:chunk1}{Chargement des packages et chemins}
+\end{exercise}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(poolfstat)      }\CommentTok{\#filtrage du vcf et création des fichiers d\textquotesingle{}entrées BayPass}
+\FunctionTok{library}\NormalTok{(RColorBrewer)   }\CommentTok{\#gestion couleur des heatmaps}
+\FunctionTok{library}\NormalTok{(mixOmics)       }\CommentTok{\#"cim" pour heatmap}
+\FunctionTok{library}\NormalTok{(corrplot)       }\CommentTok{\#matrice de corrélation pour heat map}
+\FunctionTok{library}\NormalTok{(VennDiagram)    }\CommentTok{\#création de diagramme de Venn}
+\FunctionTok{library}\NormalTok{(nVennR)         }\CommentTok{\#extraction de données d\textquotesingle{}un diagramme de Venn}
+\FunctionTok{library}\NormalTok{(tidyverse)      }\CommentTok{\#manipulation de données et plots (ggplot2)}
+
+\NormalTok{path\_vcf }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/vcf/"}
+\NormalTok{path\_input }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/Input/"}
+\NormalTok{path\_out }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/Output/"}
+\NormalTok{path\_res }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/Resultats/"}
+\end{Highlighting}
+\end{Shaded}
+
+Le filtrage du \textbf{\emph{vcf}} et la sélection des SNPs à analyser ce fait à l'aide du package PoolFstat (Chunk \ref{exr:chunk2}). Dans un premier temps il faut renseigner les noms des populations dans un objet \textbf{\emph{pnames}} et les tailles haploïdes de chaque population dans un objet \textbf{\emph{psizes}}. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d'individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d'individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1).
+La fonction \textbf{\emph{vcf2poodata}} va balayer le fichier \textbf{\emph{vcf}}, sélectionner les SNP bi-alléliques selon des critères définis par l'utilisateur et créer un objet \textbf{\emph{pooldata}}.
+
+\begin{exercise}
+\protect\hypertarget{exr:chunk2}{}\label{exr:chunk2}{Filtrage et sélection des SNPs}
+\end{exercise}
+
+Les options à renseigner sont:
+min.rc = minimum de reads qu'un allèle doit avoir pour être retenu.
+min.cov.per.pool = Si au moins un pool n'est pas couvert par au moins au moins min.cov.perpool reads, le SNP est rejeté.
+max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpool reads, le SNP est rejeté.
+min.maf = fréquence allélique minimale autorisée pour l'allèle minoritaire pour qu'un SNP soit retenu.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Infos sur les pops}
+\NormalTok{pnames }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}pop01\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop02\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop03\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop04\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop05\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop06\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop07\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop08\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop09\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop10\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop11\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop12\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop13\textquotesingle{}}\NormalTok{))}
+\NormalTok{psizes\_A }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}150\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}180\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}24\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}114\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}180\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}180\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}160\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}200\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}74\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}80\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}52\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}72\textquotesingle{}}\NormalTok{))   }\CommentTok{\#ploydie autosome}
+\NormalTok{psizes\_X }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}120\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}135\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}16\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}86\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}135\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}30\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}135\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}120\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}150\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}60\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}63\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}42\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}53\textquotesingle{}}\NormalTok{))    }\CommentTok{\#ploydie X/Z}
+\NormalTok{psizes\_Y }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}30\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}45\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}8\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}28\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}45\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}14\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}45\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}40\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}50\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}14\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}10\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}19\textquotesingle{}}\NormalTok{))           }\CommentTok{\#ploydie Y/W}
+\CommentTok{\#conversion du .vcf}
+\NormalTok{pooldata }\OtherTok{\textless{}{-}} \FunctionTok{vcf2pooldata}\NormalTok{(}\AttributeTok{vcf.file =} \FunctionTok{paste}\NormalTok{(path\_vcf, }\StringTok{"project\_chr2{-}28.vcf.gz"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{), }\AttributeTok{poolsizes =}\NormalTok{ psizes\_A, }\AttributeTok{poolnames =}\NormalTok{ pnames, }\AttributeTok{min.cov.per.pool =} \DecValTok{4}\NormalTok{, }\AttributeTok{min.rc =} \DecValTok{2}\NormalTok{, }\AttributeTok{max.cov.per.pool =} \FloatTok{1e+06}\NormalTok{, }\AttributeTok{min.maf =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{remove.indels =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{nlines.per.readblock =} \FloatTok{1e+06}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Reading Header lines
+## VarScan like format detected for allele count data:
+##  the AD field contains allele depth
+## for the alternate allele and RD field for the reference allele
+## (N.B., positions with more than one alternate allele will be ignored)
+## Parsing allele counts
+## 107526  lines processed in 0 h  0 m  3 s : 19529 SNPs found
+## Data consists of 19529 SNPs for 13 Pools
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#élimine le 1\% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)}
+\NormalTok{pooldata}\OtherTok{\textless{}{-}}\FunctionTok{pooldata.subset}\NormalTok{(pooldata, }\AttributeTok{cov.qthres.per.pool =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\FloatTok{0.99}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Data consists of 19276 SNPs for 13 Pools
+\end{verbatim}
+
+A ce stade cet objet \textbf{\emph{pooldata}} peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d'estimation de la structure génétique des populations déduite des Fst est donné en \protect\hyperlink{An1}{Annexe 1}
+
+\hypertarget{conversion-du-pooldata-en-fichiers-dentruxe9es-pour-baypass}{%
+\chapter*{Conversion du pooldata en fichiers d'entrées pour BayPass}\label{conversion-du-pooldata-en-fichiers-dentruxe9es-pour-baypass}}
+\addcontentsline{toc}{chapter}{Conversion du pooldata en fichiers d'entrées pour BayPass}
+
+La fonction \textbf{\emph{pooldata2genobaypass}} convertit l'ogbjet \textbf{\emph{pooldata}} en fichier d'entrée pour BayPass:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{pooldata2genobaypass}\NormalTok{(pooldata, }\AttributeTok{writing.dir =}\NormalTok{ path\_input, }\AttributeTok{subsamplesize =} \SpecialCharTok{{-}}\DecValTok{1}\NormalTok{, }\AttributeTok{subsamplingmethod =} \StringTok{"thinning"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## x being coerced from class: matrix to data.table
+\end{verbatim}
+
+On récupère dans le répertoire \textbf{\emph{path\_input}} trois fichiers: un fichier ``\textbf{\emph{genobaypass}}'' qui contient les données filtrées de génotypage, un fichier ``\textbf{\emph{snpdet}}'' qui contient la liste des positions correspondantes et un fichier ``\textbf{\emph{poolsize}}'', qui est une copie de l'objet \textbf{\emph{psizes}}.
+
+\hypertarget{design-de-lanalyse-baypass}{%
+\section*{Design de l'analyse BayPass}\label{design-de-lanalyse-baypass}}
+\addcontentsline{toc}{section}{Design de l'analyse BayPass}
+
+Deux fichiers de paramétrages au format texte/tabulation peuvent être créés en fonction de l'analyse envisagé:
+Le premier fichier ``\textbf{\emph{ecotype}}'' (Table \ref{def:table1}) identifie les covariables quantitatives écologiques de chaque population, avec une covariable par ligne et autant de lignes que de covariables à analyser. Seules sont acceptées les valeurs numériques graduées (taille, poids, mortalité \ldots).
+
+\begin{definition}
+\protect\hypertarget{def:table1}{}\label{def:table1}{Example de constitution d'un fichier \textbf{\emph{ecotype}}}
+\end{definition}
+
+Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+
+25
+
+48.5
+
+96.2
+
+17
+
+15.3
+
+\ldots{}
+
+4.75
+
+0.53
+
+0.27
+
+-0.86
+
+-0.61
+
+\ldots{}
+
+43.90
+
+44.37
+
+44.29
+
+47.36
+
+47.86
+
+\ldots{}
+
+Le deuxième fichier \textbf{\emph{contraste}} (Table \ref{def:table2})contient les covariables qualitatives (petit, chaud, resistant\ldots), il permet d'identifier l'appartenance de chaque population à un groupe qualitatif soit référence (-1), un groupe candidat (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste.
+
+\begin{definition}
+\protect\hypertarget{def:table2}{}\label{def:table2}{Example de constitution d'un fichier \textbf{\emph{contraste}}}
+\end{definition}
+
+Chaque ligne correspond à une analyse binaire de comparaison des fréquences alléliques de 2 groupes de population.
+Sur la ligne 1 le groupe composé des population 1 et 2 est comparé au groupe des populations 3,4 et 5.
+Sur la ligne 2 le groupe composé des population 1 et 2 est comparé au groupe des populations 4 et 5, la population 3 est exclue de l'analyse.
+Etc\ldots{}
+
+1
+
+1
+
+-1
+
+-1
+
+-1
+
+\ldots{}
+
+1
+
+1
+
+0
+
+-1
+
+-1
+
+\ldots{}
+
+0
+
+1
+
+-1
+
+-1
+
+0
+
+\ldots{}
+
+Ces fichiers seront aussi transférés sur le cluster de calcul.
+
+IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) mais l'analyses conjointes de plusieurs covariables a un impact relativement faible sur le temps de calcul final, dès lors il est très rentable de multiplier les analyses de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d'entre elles.
+
+\hypertarget{subsampling}{%
+\section*{Subsampling}\label{subsampling}}
+\addcontentsline{toc}{section}{Subsampling}
+
+Copier les fichiers \textbf{\emph{genobaypass, snpdet, poolsize, contraste, ecotype}} sur le cluster de calcul.
+La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec une commande sed par exemple (Script \ref{exm:script3}).
+
+\begin{example}
+\protect\hypertarget{exm:script3}{}\label{exm:script3}{Exemple d'une commande de subsampling.}
+\end{example}
+
+La commande \textbf{\emph{sed}} prélève une ligne toutes les 100 et les copies dans un fichier \textbf{\emph{.sub}} et s'exécute 100 fois pour ballayer tous le fichier initial et créer ainsi 100 fichiers de sous-jeux de données.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{for}\NormalTok{ i }\KeywordTok{in} \DataTypeTok{\{}\DecValTok{1}\DataTypeTok{..}\DecValTok{100}\DataTypeTok{\}}\KeywordTok{;} \ControlFlowTok{do} \FunctionTok{sed} \AttributeTok{{-}n} \StringTok{"}\VariableTok{$i}\StringTok{\textasciitilde{}100p"}\NormalTok{ genobaypass }\OperatorTok{\textgreater{}}\NormalTok{ genobaypass.sub}\VariableTok{$i}\KeywordTok{;} \FunctionTok{sed} \AttributeTok{{-}n} \StringTok{"}\VariableTok{$i}\StringTok{\textasciitilde{}100p"}\NormalTok{ snpdet }\OperatorTok{\textgreater{}}\NormalTok{ snpdet.sub}\VariableTok{$i}\KeywordTok{;} \ControlFlowTok{done}
+\end{Highlighting}
+\end{Shaded}
+
+Le nombre de fichiers \textbf{\emph{.sub}} à créer dépend du nombre total de SNP à analyser, une taille finale de 80 000 à 120 000 SNPs par fichier de sous-jeux de données est un bon compromis entre qualité d'analyse et temps de calcul.
+
+\hypertarget{baypass-lanalyse-poolseq}{%
+\chapter*{Baypass : l'analyse poolseq}\label{baypass-lanalyse-poolseq}}
+\addcontentsline{toc}{chapter}{Baypass : l'analyse poolseq}
+
+La commande est la même pour les différents modèles employés par BayPass (Script \ref{exm:script4}), ce sont les fichiers optionnels qui définissent le modèle :
+Pour le core model, seuls les fichiers genobaypass et snpdet sont nécessaires, on peut néanmoins faire une analyse de la statistique de contraste C2 avec le fichier de covariable qualitative \textbf{\emph{contraste}}.
+Le standard model est activé par l'option \textbf{\emph{-efile}} et le fichier de covariable quantitative \textbf{\emph{ecotype}}
+
+, l'option -efile pour le covariate model et l'option poolsize pour activer le mode Pool-Seq.
+Un exemple de script d'analyse de type Pool-Seq, parallélisée sur 25 CPU est disponible à l'adresse suivante:
+\url{https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline}
+
+Il est recommandé dans le cadre d'une analyse Pool-Seq d'utiliser et fixer le paramètre -d0yij à 1/5e de la valeur la plus faible du poolsize. (voir page 22 et 39 du manuel de BayPass).
+Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.
+
+\begin{example}
+\protect\hypertarget{exm:script4}{}\label{exm:script4}{Exemple d'un script bash pour lancer une analyse BayPass}
+\end{example}
+
+Les sous-jeux de données sont analysés en parallèle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#!/bin/bash}
+\CommentTok{\#SBATCH {-}{-}array=0{-}99        \#création de l\textquotesingle{}array: un élément/indice par job prévu (indice base 0)}
+\CommentTok{\#SBATCH {-}{-}cpus{-}per{-}task=2   \#nbr de core par job}
+\CommentTok{\#SBATCH {-}{-}mem{-}per{-}cpu=2G    \#mémoire partagée par tous les cores}
+
+\ExtensionTok{module}\NormalTok{ load system/R{-}3.4.3}
+\ExtensionTok{module}\NormalTok{ load bioinfo/baypass\_2.3}
+\ExtensionTok{module}\NormalTok{ load compiler/intel{-}2018.0.128}
+\ExtensionTok{module}\NormalTok{ load mpi/openmpi{-}1.8.8{-}intel2018.0.128}
+\ExtensionTok{module}\NormalTok{ load compiler/gcc{-}9.3.0}
+
+\VariableTok{Path}\OperatorTok{=}\StringTok{\textquotesingle{}/BayPass/Input\textquotesingle{}}
+\VariableTok{FILES\_R1}\OperatorTok{=}\VariableTok{($(}\FunctionTok{ls} \VariableTok{$Path}\NormalTok{/genobaypass.sub}\PreprocessorTok{*} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}}\VariableTok{))}
+\VariableTok{INPUT\_F1}\OperatorTok{=}\VariableTok{$\{FILES\_R1}\OperatorTok{[}\VariableTok{$SLURM\_ARRAY\_TASK\_ID}\OperatorTok{]}\VariableTok{\}}
+\VariableTok{OUTPUT}\OperatorTok{=}\VariableTok{$\{FILES\_R1}\OperatorTok{[}\VariableTok{$SLURM\_ARRAY\_TASK\_ID}\OperatorTok{]/}\SpecialStringTok{genobaypass}\OperatorTok{/}\NormalTok{project.output}\VariableTok{\}}
+
+\ExtensionTok{i\_baypass} \DataTypeTok{\textbackslash{}}
+\NormalTok{{-}gfile }\VariableTok{$Path}\NormalTok{/}\VariableTok{$INPUT\_F1} \DataTypeTok{\textbackslash{} }                 \CommentTok{\#fichiers genobaypass.sub*}
+\ExtensionTok{{-}poolsizefile} \VariableTok{$Path}\NormalTok{/poolsize }\DataTypeTok{\textbackslash{} }           \CommentTok{\#active le mode poolseq}
+\ExtensionTok{{-}d0yij}\NormalTok{ 40 }\DataTypeTok{\textbackslash{} }                              \CommentTok{\#1/5e de la valeur la plus faible du poolsize}
+\ExtensionTok{{-}seed}\NormalTok{ 5001 }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}nthreads 2 }\DataTypeTok{\textbackslash{}}
+\NormalTok{{-}outprefix }\VariableTok{$OUTPUT} \DataTypeTok{\textbackslash{}}
+\end{Highlighting}
+\end{Shaded}
+
+Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives et l'option scalecov
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{{-}efile} \VariableTok{$Path}\NormalTok{/ecotype }\DataTypeTok{\textbackslash{} }                   \CommentTok{\#calcul des Bayes Factors: modèle standard \& auxiliaire}
+\ExtensionTok{{-}scalecov} \DataTypeTok{\textbackslash{} }                              \CommentTok{\#re{-}scale les covariables quantitatives}
+\ExtensionTok{{-}contrastfile} \VariableTok{$Path}\NormalTok{/contrast }\DataTypeTok{\textbackslash{} }           \CommentTok{\#calcul du contraste C2: modèle core, standard \& auxiliaire}
+\end{Highlighting}
+\end{Shaded}
+
+Pour activer le modèle auxiliaire il faut ajouter l'
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{{-}auxmodel} \DataTypeTok{\textbackslash{} }                              \CommentTok{\#active le modèle auxiliaire}
+\ExtensionTok{{-}omegafile} \VariableTok{$Path}\NormalTok{/omega.mat }\DataTypeTok{\textbackslash{} }             \CommentTok{\#matrice Ω modèle standard (optionnel) \& auxiliaire (obligatoire)}
+\ExtensionTok{{-}auxPbetaprior}\NormalTok{ 0.02 1.98                  }\CommentTok{\#ajuste le Pi beta prior }
+\end{Highlighting}
+\end{Shaded}
+
+c
+
+\hypertarget{annexes}{%
+\chapter*{Annexes}\label{annexes}}
+\addcontentsline{toc}{chapter}{Annexes}
+
+\hypertarget{An1}{%
+\section*{Annexe 1}\label{An1}}
+\addcontentsline{toc}{section}{Annexe 1}
+
+Le package R \textbf{\emph{poolfstat}} peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de \textbf{\emph{poolfstat}} : (\url{https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf}), parmis ceux-ci on trouve l'analyse des Fst.
+
+\hypertarget{pairwise}{%
+\subsection*{Pairwise}\label{pairwise}}
+\addcontentsline{toc}{subsection}{Pairwise}
+
+Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Calcul des pairwise Fst }
+\NormalTok{PairWise.fst }\OtherTok{\textless{}{-}} \FunctionTok{compute.pairwiseFST}\NormalTok{(pooldata, }\AttributeTok{method =} \StringTok{"Anova"}\NormalTok{, }\AttributeTok{min.cov.per.pool =} \DecValTok{4}\NormalTok{, }\AttributeTok{max.cov.per.pool =} \FloatTok{1e+06}\NormalTok{, }\AttributeTok{min.maf =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{output.snp.values =} \ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Computation of the 78 pairwise Fst
+## 
+## Overall Analysis Time: 0 h 0 m 1 s
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#conversion en matrice de distance}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(}\FunctionTok{dist}\NormalTok{(}\FunctionTok{t}\NormalTok{(PairWise.fst}\SpecialCharTok{@}\NormalTok{PairwiseFSTmatrix)))}
+\CommentTok{\#heatmap}
+\NormalTok{cim\_color }\OtherTok{\textless{}{-}} \FunctionTok{colorRampPalette}\NormalTok{(}\FunctionTok{rev}\NormalTok{(}\FunctionTok{brewer.pal}\NormalTok{(}\DecValTok{9}\NormalTok{, }\StringTok{"Reds"}\NormalTok{)))(}\DecValTok{9}\NormalTok{)}
+\FunctionTok{cim}\NormalTok{(df, }\AttributeTok{color =}\NormalTok{ cim\_color, }\AttributeTok{symkey =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{margins =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{),  }\AttributeTok{title =} \StringTok{"heatmap des pairwise Fst entre les populations"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{BayPass_Fr_files/figure-latex/heatmap-PW-fst-1.pdf}
+
+On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
+
+\hypertarget{fst-en-fenuxeatre-glissante}{%
+\subsection*{Fst en fenêtre glissante}\label{fst-en-fenuxeatre-glissante}}
+\addcontentsline{toc}{subsection}{Fst en fenêtre glissante}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .}
+\NormalTok{Multi.Loc.fst }\OtherTok{\textless{}{-}} \FunctionTok{computeFST}\NormalTok{(pooldata, }\AttributeTok{method =} \StringTok{"Anova"}\NormalTok{, }\AttributeTok{sliding.window.size =} \DecValTok{100}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Start sliding-window scan
+## 1 chromosomes scanned (with more than 100 SNPs)
+## 
+## Average (min-max) Window Sizes 28 ( 1.7 - 865.6 ) kb
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#conversion en objet data frame}
+\NormalTok{df.fst}\OtherTok{\textless{}{-}}\FunctionTok{as.data.frame}\NormalTok{(Multi.Loc.fst}\SpecialCharTok{$}\NormalTok{sliding.windows.fst, }\AttributeTok{h=}\NormalTok{T)}
+\CommentTok{\#plot.}
+\NormalTok{Fst.plot }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{df.fst, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{CumulatedPosition}\SpecialCharTok{/}\FloatTok{1e6}\NormalTok{, }\AttributeTok{y=}\NormalTok{MultiLocusFst)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{color=}\NormalTok{Chr), }\AttributeTok{alpha=}\FloatTok{0.8}\NormalTok{, }\AttributeTok{size=}\FloatTok{1.5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"Fst en fenêtres glissantes"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept=}\NormalTok{Multi.Loc.fst}\SpecialCharTok{$}\NormalTok{FST,}\AttributeTok{lty=}\DecValTok{2}\NormalTok{) }\CommentTok{\#le seuil indique la Fst globale estimée à l\textquotesingle{}échelle du génome}
+\NormalTok{Fst.plot }\SpecialCharTok{+} \FunctionTok{scale\_x\_continuous}\NormalTok{() }\SpecialCharTok{+} \FunctionTok{scale\_y\_continuous}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.x=}\FunctionTok{element\_blank}\NormalTok{(), }\AttributeTok{axis.text.x=}\FunctionTok{element\_blank}\NormalTok{(), }\AttributeTok{axis.ticks.x=}\FunctionTok{element\_blank}\NormalTok{()) }\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{Chr, }\AttributeTok{scales =} \StringTok{\textquotesingle{}free\_x\textquotesingle{}}\NormalTok{, }\AttributeTok{strip.position =}\FunctionTok{c}\NormalTok{(}\StringTok{"bottom"}\NormalTok{)) }\CommentTok{\#affichage des chromosomes en grille}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{BayPass_Fr_files/figure-latex/plot-sliding-Fst-1.pdf}
+
+\hypertarget{ruxe9fuxe9rences}{%
+\chapter*{Références}\label{ruxe9fuxe9rences}}
+\addcontentsline{toc}{chapter}{Références}
 
   \bibliography{BayPass.bib}
 

@@ -1,40 +1,102 @@
 # Conversion du pooldata en fichiers d'entrées pour BayPass {-}
 La fonction **_pooldata2genobaypass_** convertit l'ogbjet **_pooldata_** en fichier d'entrée pour BayPass:
 ```{r Input-BayPass}
-pooldata2genobaypass(GWAS.pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = "thinning")
+pooldata2genobaypass(pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = "thinning")
 ```
-On récupère dans le répertoire **_path_input_** trois fichiers: un fichier "**_genobaypass_**" qui contient les données brutes de génotypage, un fichier "**_snpdet_**" qui contient la liste des positions correspondantes et un fichier "**_poolsize_**", qui est une copie de l'objet **_psizes_**.
+On récupère dans le répertoire **_path_input_** trois fichiers: un fichier "**_genobaypass_**" qui contient les données filtrées de génotypage, un fichier "**_snpdet_**" qui contient la liste des positions correspondantes et un fichier "**_poolsize_**", qui est une copie de l'objet **_psizes_**.
 
 ## Design de l’analyse BayPass {-}
 Deux fichiers de paramétrages au format texte/tabulation peuvent être créés en fonction de l'analyse envisagé:
-Le premier fichier "**_ecotype.txt_**" identifie les covariables écologiques de chaque population, avec une covariable par ligne et autant de lignes que de covariables à analyser. Seules sont acceptées les valeurs numériques de préférence en gradient (taille, poids, température...), les valeurs texte devront être converties, par exemple des noms de villes pourront être remplacées par une latitude ou une longitude. L’exemple suivant donne la structure d’un fichier pour 3 covariables (latitude/poids/taux de mortalité) et 5 populations :
+Le premier fichier "**_ecotype_**" (Table \@ref(def:table1)) identifie les covariables quantitatives écologiques de chaque population, avec une covariable par ligne et autant de lignes que de covariables à analyser. Seules sont acceptées les valeurs numériques graduées (taille, poids, mortalité ...).
 
-4.75    0.53    0.27    -0.86   -0.61<br>
-43.90   44.37   44.29   47.36   47.86<br>
-25    48.5    96.2    17    15.3<br>
+```{definition, table1}
+<span style="color:darkgreen">Example de constitution d'un fichier **_ecotype_**</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+   Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+</p>
 
-Le deuxième fichier contraste.txt identifie l’appartenance de chaque population à un groupe référence (-1), un groupe test (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste. L’exemple suivant donne la structure d’un fichier pour 3 analyses de contraste : 
+<table>
+  <tr>
+    <td>25</td>
+    <td>48.5</td>
+    <td>96.2</td>
+    <td>17</td>
+    <td>15.3</td>
+    <td>...</td>
+  </tr>
+  <tr>
+    <td>4.75</td>
+    <td>0.53</td>
+    <td>0.27</td>
+    <td>-0.86</td>
+    <td>-0.61</td>
+    <td>...</td>
+  </tr>
+  <tr>
+    <td>43.90</td>
+    <td>44.37</td>
+    <td>44.29</td>
+    <td>47.36</td>
+    <td>47.86</td>
+    <td>...</td>
+  </tr>
+</table>
 
-1	1	-1	-1	-1<br>
-1	0	 0	-1	-1<br>
-0	1	-1	-1	 0<br>
+Le deuxième fichier **_contraste_** (Table \@ref(def:table2))contient les covariables qualitatives (petit, chaud, resistant...), il permet d'identifier l’appartenance de chaque population à un groupe qualitatif soit référence (-1), un groupe candidat (1) ou aucun des deux groupes (0). Une ligne par combinaison de contraste.
 
-1ere ligne = pop 1 et 2 VS pop 3, 4 et 5<br>
-2e ligne = pop 1 VS pop 4 et 5<br>
-3e ligne = pop 2 VS pop 3 et 4<br>
+```{definition, table2}
+<span style="color:darkgreen">Example de constitution d'un fichier **_contraste_**</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+   Chaque ligne correspond à une analyse binaire de comparaison des fréquences alléliques de 2 groupes de population.<br>
+   Sur la ligne 1 le groupe composé des population 1 et 2 est comparé au groupe des populations 3,4 et 5.<br>
+   Sur la ligne 2 le groupe composé des population 1 et 2 est comparé au groupe des populations 4 et 5, la population 3 est exclue de l'analyse.
+   Etc...
+</p>
+
+<table>
+  <tr>
+    <td>1</td>
+    <td>1</td>
+    <td>-1</td>
+    <td>-1</td>
+    <td>-1</td>
+    <td>...</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>1</td>
+    <td>0</td>
+    <td>-1</td>
+    <td>-1</td>
+    <td>...</td>
+  </tr>
+  <tr>
+    <td>0</td>
+    <td>1</td>
+    <td>-1</td>
+    <td>-1</td>
+    <td>0</td>
+    <td>...</td>
+  </tr>
+</table>
 
 Ces fichiers seront aussi transférés sur le cluster de calcul.
 
-IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) il est très fortement conseillé de multiplier les analyses de contraste ou de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d’entre elles. 
+IMPORTANT : Les analyses BayPass sont relativement longues (plusieurs heures) mais l'analyses conjointes de plusieurs covariables a un impact relativement faible sur le temps de calcul final, dès lors il est très rentable de multiplier les analyses de covariables en ajoutant autant de lignes que nécessaires dans ces fichiers de paramétrages plutôt que de relancer une analyse complète pour chacune d’entre elles. 
 
 ## Subsampling {-}
-Copier les fichiers genobaypass, snpdet, poolsize et les fichiers contraste.txt et ecotype.txt sur le cluster de calcul. Afin d’éviter d’éventuels problèmes de format les fichiers .txt sont passé à la commande dos2unix
-La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec la commande sed.
-Exemple pour 100 sous jeux:
+Copier les fichiers **_genobaypass, snpdet, poolsize, contraste, ecotype_** sur le cluster de calcul.
+La découpe en sous jeux de données des fichier genobaypass et snpdet se fait sous Bash avec une commande sed par exemple (Script \@ref(exm:script3)).
 
+```{example, script3}
+<span style="color:darkgreen">Exemple d'une commande de subsampling.</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+   La commande **_sed_** prélève une ligne toutes les 100 et les copies dans un fichier **_.sub_** et s'exécute 100 fois pour ballayer tous le fichier initial et créer ainsi 100 fichiers de sous-jeux de données.
+</p>
+```{bash scr3, eval=FALSE}
 for i in {1..100}; do sed -n "$i~100p" genobaypass > genobaypass.sub$i; sed -n "$i~100p" snpdet > snpdet.sub$i; done
-
-IMPORTANT: pour 25 000 SNP et 12 populations, une analyse (1contraste, 3 covariables) avec 1 CPU dure environ 8H, si on augmente le nombre de contraste à 8, le temps de calcul passe à environ 10H ce qui est nettement plus rentable que de relancer 8 fois l’analyse.
-Si on alloue 8 CPU, l’analyse est 5 fois plus rapide mais pas 8 donc une partie (30 à 40%) du temps total CPU est perdue. A noter que la consommation de mémoire vive est négligeable, il n’y a pas de gain à espérer à allouer des gigaoctets de mémoire.
-
-La stratégie la plus rentable est donc d’inclure dans une même analyse un maximum de combinaison de contraste/covariables, de découper en sous jeux de données de 25 000 à 50 000 SNP et d’allouer 1 CPU à chacun. Il n’est pas aberrant de faire un test sur une fraction des données totale et d’extrapoler pour avoir une idée du coût en temps et en ressources. 
+```
+Le nombre de fichiers **_.sub_** à créer dépend du nombre total de SNP à analyser, une taille finale de 80 000 à 120 000 SNPs par fichier de sous-jeux de données est un bon compromis entre qualité d'analyse et temps de calcul.
