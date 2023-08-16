@@ -42,9 +42,9 @@ Les étapes de contrôle qualité et d’alignement des données de séquençage
 #!/bin/bash
 #SBATCH --array=1-29            #création de l'array: un élément/indice par chromosome
 
-module load bioinfo/samtools-1.12
-module load bioinfo/VarScan-2.4.2
-module load bioinfo/bcftools-1.14
+module load bioinfo/samtools/1.12
+module load bioinfo/VarScan/2.4.2
+module load bioinfo/bcftools/1.14
 
 ls /../*.bam > BamList.txt                                                #liste tous les fichiers "bam" et leur chemin
 ls /../*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt      #extrait les noms des échatillons/populations
@@ -72,17 +72,17 @@ A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concat�
 </p>
 ```{bash scr2, eval=FALSE}
 #!/bin/bash
-module load bioinfo/bcftools-1.14
-Path='/..'
+module load bioinfo/bcftools/1.14
+my_path='/..'
 
 # une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable
 for ((i=2; i<=28; i++))
 do
-    files+=" $Path/project_chr${i}.vcf.gz"  
+    files+=" $my_path/project_chr${i}.vcf.gz"  
 done
 
 # bcftools concatène la liste des vcf contenu dans la variable $file
-bcftools concat $files -O z -o $Path/project_chr2-28.vcf.gz
+bcftools concat $files -O z -o $my_path/project_chr2-28.vcf.gz
 ```
 ## Filtrage des données brutes {-}
 
@@ -121,7 +121,7 @@ min.cov.per.pool = Si au moins un pool n'est pas couvert par au moins au moins m
 max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpool reads, le SNP est rejeté.<br>
 min.maf = fréquence allélique minimale autorisée pour l'allèle minoritaire pour qu'un SNP soit retenu.<br>
 </p>
-```{r conversion-pooldata}
+```{r conversion-pooldata, eval=FALSE}
 #Infos sur les pops
 pnames <- as.character(c('pop01', 'pop02', 'pop03', 'pop04', 'pop05', 'pop06', 'pop07', 'pop08', 'pop09', 'pop10', 'pop11', 'pop12', 'pop13'))
 psizes_A <- as.numeric(c('150', '180', '24', '114', '180', '44','180', '160', '200', '74', '80', '52', '72'))   #ploydie autosome

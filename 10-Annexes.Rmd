@@ -6,7 +6,7 @@ Le package R **_poolfstat_** peut être utilisé pour calculer diverses statisti
 
 ### Pairwise {-}
 Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
-```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE}
+```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE, eval=FALSE}
 #Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.05, output.snp.values = FALSE)
 #conversion en matrice de distance
@@ -19,7 +19,7 @@ cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatma
 On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
 
 ### Fst en fenêtre glissante {-}
-```{r plot-sliding-Fst, verbose=FALSE}
+```{r plot-sliding-Fst, verbose=FALSE, eval=FALSE}
 #calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .
 Multi.Loc.fst <- computeFST(pooldata, method = "Anova", sliding.window.size = 100)
 #conversion en objet data frame

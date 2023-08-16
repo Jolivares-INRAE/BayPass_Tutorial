@@ -1,12 +1,8 @@
 # Baypass : l’analyse poolseq {-}
 
 La commande est la même pour les différents modèles employés par BayPass (Script \@ref(exm:script4)), ce sont les fichiers optionnels qui définissent le modèle :
-Pour le core model, seuls les fichiers genobaypass et snpdet sont nécessaires, on peut néanmoins faire une analyse de la statistique de contraste C2 avec le fichier de covariable qualitative **_contraste_**.
-Le standard model est activé par l'option **_-efile_** et le fichier de covariable quantitative **_ecotype_**
-
-
-, l'option -efile pour le covariate model et l'option poolsize pour activer le mode Pool-Seq.
-
+l'option poolsize active le mode Pool-Seq, pour le core model, seuls les fichiers genobaypass et snpdet sont nécessaires, on peut néanmoins faire une analyse de la statistique de contraste C2 avec le fichier de covariable qualitative **_contraste_**.
+Le modèle standard est activé par l'option **_-efile_**, le fichier de covariable quantitative **_ecotype_**.
 
 Il est recommandé dans le cadre d’une analyse Pool-Seq d’utiliser et fixer le paramètre -d0yij à 1/5e de la valeur la plus faible du poolsize. (voir page 22 et 39 du manuel de BayPass).
 Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.
@@ -29,32 +25,29 @@ module load compiler/intel-2018.0.128
 module load mpi/openmpi-1.8.8-intel2018.0.128
 module load compiler/gcc-9.3.0
 
-Path='/BayPass/Input'
+my_path='/BayPass/Input'
 FILES_R1=($(ls $Path/genobaypass.sub* | sed -r 's/^.+\///'))
 INPUT_F1=${FILES_R1[$SLURM_ARRAY_TASK_ID]}
 OUTPUT=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/project.output}
 
 i_baypass \
--gfile $Path/$INPUT_F1 \                  #fichiers genobaypass.sub*
--poolsizefile $Path/poolsize \            #active le mode poolseq
+-gfile $my_path/$INPUT_F1 \                  #fichiers genobaypass.sub*
+-poolsizefile $my_path/poolsize \            #active le mode poolseq
 -d0yij 40 \                               #1/5e de la valeur la plus faible du poolsize
 -seed 5001 \
 -nthreads 2 \
 -outprefix $OUTPUT \
 ```
 
-Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables  quantitatives et l'option scalecov
+Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables  quantitatives
 ```{bash scr4.2, eval=FALSE}
--efile $Path/ecotype \                    #calcul des Bayes Factors: modèle standard & auxiliaire
--scalecov \                               #re-scale les covariables quantitatives
--contrastfile $Path/contrast \            #calcul du contraste C2: modèle core, standard & auxiliaire
+-efile $my_path/ecotype \                    #calcul des Bayes Factors: modèle standard & auxiliaire
+-contrastfile $my_path/contrast \            #calcul du contraste C2: modèle core, standard & auxiliaire
 ```
 
 L'option **_auxmodel_** active le modèle auxiliaire il faut ajouter l'
 ```{bash scr4.3, eval=FALSE}
 -auxmodel \                               #active le modèle auxiliaire
--omegafile $Path/omega.mat \              #matrice Ω modèle standard (optionnel) & auxiliaire (obligatoire)
+-omegafile $my_path/omega.mat \              #matrice Ω modèle standard (optionnel) & auxiliaire (obligatoire)
 -auxPbetaprior 0.02 1.98                  #ajuste le Pi beta prior 
 ```
-
-c

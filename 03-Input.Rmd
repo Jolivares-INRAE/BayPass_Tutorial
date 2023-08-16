@@ -1,6 +1,13 @@
 # Conversion du pooldata en fichiers d'entrées pour BayPass {-}
-La fonction **_pooldata2genobaypass_** convertit l'ogbjet **_pooldata_** en fichier d'entrée pour BayPass:
-```{r Input-BayPass}
+La fonction **_pooldata2genobaypass_** (Chunk \@ref(exr:chunk3)) convertit l'ogbjet **_pooldata_** en fichier d'entrée pour BayPass:
+
+```{exercise, chunk3}
+<span style="color:darkgreen">Création des fichiers input de BayPass</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+   Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+</p>
+```{r Input-BayPass, eval=FALSE}
 pooldata2genobaypass(pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = "thinning")
 ```
 On récupère dans le répertoire **_path_input_** trois fichiers: un fichier "**_genobaypass_**" qui contient les données filtrées de génotypage, un fichier "**_snpdet_**" qui contient la liste des positions correspondantes et un fichier "**_poolsize_**", qui est une copie de l'objet **_psizes_**.

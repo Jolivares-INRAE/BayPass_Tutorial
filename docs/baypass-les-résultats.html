@@ -4,13 +4,13 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
+  <title>Baypass : les résultats | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta property="og:title" content="Baypass : les résultats | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
   <meta property="og:image" content="https://jolivares-inrae.github.io/BayPass_Tutorial/C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png" />
   <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
@@ -19,7 +19,7 @@ set in the _output.yml file.</p>" />
   <meta name="github-repo" content="https://github.com/Jolivares-INRAE/BayPass_Tutorial" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta name="twitter:title" content="Baypass : les résultats | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   
   <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
@@ -36,8 +36,8 @@ set in the _output.yml file.</p>" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-
-<link rel="next" href="introduction.html"/>
+<link rel="prev" href="baypass-lanalyse-poolseq.html"/>
+<link rel="next" href="annexes.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -213,43 +213,55 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</h1>
-<p class="author"><em>Jérôme OLIVARES<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></em></p>
-<p class="date"><em>2023-08-17</em></p>
+<div id="baypass-les-résultats" class="section level1 unnumbered hasAnchor">
+<h1>Baypass : les résultats<a href="baypass-les-résultats.html#baypass-les-résultats" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers <strong><em>mat_omega.out</em></strong> qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse. Avant de regrouper les résultats, il faut s’assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles.
+Cette comparaison se fait en évaluant un indice de distance FMD (Förstner &amp; Moonen, 2003) entre matrices ; plus la distance sera faible plus les matrices, donc les analyses, seront comparables.(Chunk <a href="baypass-les-résultats.html#exr:chunk4">4</a>)</p>
+<div class="exercise">
+<p><span id="exr:chunk4" class="exercise"><strong>Chunk 4  </strong></span><span style="color:darkgreen">Comparaison des matrices Ω</span></p>
 </div>
-<div id="résumé" class="section level1 unnumbered hasAnchor">
-<h1>Résumé<a href="index.html#résumé" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Ce tutoriel détaille d’une part la manière de générer les fichiers d’entrées du logiciel BayPass à partir de données de séquençage en pool, d’autre part le paramétrage optimal du logiciel BayPass et en fin propose une méthode d’exploreration des résultats d’analyses produits. Un pipeline d’analyse mixant des packages sous Rstudio et des lignes de commandes Linux, est décrit afin de guider pas à pas l’utilisateur tout au long du processus depuis les données brutes jusqu’à la liste finale de loci/variants candidats.
-Ce tutoriel est à destination des étudiants et des bioinformaticiens débutants.</p>
-<div id="mots-clefs" class="section level3 unnumbered hasAnchor">
-<h3>mots clefs<a href="index.html#mots-clefs" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>Logiciel BayPass, séquençage en pool, GWAS, études d’associations pangénomiques, Rstudio.</p>
-</div>
-<div id="prérequis" class="section level2 unnumbered hasAnchor">
-<h2>prérequis<a href="index.html#prérequis" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Les commandes décrites dans cet article ont été regroupées dans un fichier au format « R markdown » (Rmd) « Poolseq_pipeline.Rmd » librement téléchargeable à l’adresse : <a href="https://github.com/Jolivares-INRAE/Download" class="uri">https://github.com/Jolivares-INRAE/Download</a>. Ce tutoriel est conçu pour décrire pas à pas les différentes étapes du fichier Rmd et permettre à l’utilisateur de les exécuter en parallèle.
-L’utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d’écrire et lancer des scripts sur un cluster de calcul.
-Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l’environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d’une utilisation dans un autre environnement logiciel, l’utilisateur devra probablement effectuer des adaptations du code.
-Bien que l’essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l’adresse <a href="https://forgemia.inra.fr/mathieu.gautier/baypass_public" class="uri">https://forgemia.inra.fr/mathieu.gautier/baypass_public</a> et décompressée dans un répertoire local par l’utilisateur.
-Dans tous les codes qui suivent l’expression « ~/path/ » sera à remplacer par les chemins personnels de l’utilisateur.
-Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.</p>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+blabla à trouver:<br>
+blabla.<br>
+blabla.<br>
+blabla.<br>
+</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="baypass-les-résultats.html#cb10-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;C:/BayPass_pipeline/utils/baypass_utils.R&quot;</span>)</span>
+<span id="cb10-2"><a href="baypass-les-résultats.html#cb10-2" tabindex="-1"></a>prefix <span class="ot">&lt;-</span> <span class="st">&quot;13pops-chr1_STD3K_3cov.sub&quot;</span></span>
+<span id="cb10-3"><a href="baypass-les-résultats.html#cb10-3" tabindex="-1"></a><span class="co">#prefix &lt;- &quot;13pops-chr1_RUN&quot;</span></span>
+<span id="cb10-4"><a href="baypass-les-résultats.html#cb10-4" tabindex="-1"></a><span class="co">#liste et compte les matrices Ω du répertoire &quot;path&quot;</span></span>
+<span id="cb10-5"><a href="baypass-les-résultats.html#cb10-5" tabindex="-1"></a>path_Omega <span class="ot">&lt;-</span> <span class="st">&quot;C:/BayPass_pipeline/Output/13pops/chr1/Omega3K/&quot;</span></span>
+<span id="cb10-6"><a href="baypass-les-résultats.html#cb10-6" tabindex="-1"></a>listMatrix <span class="ot">&lt;-</span> <span class="fu">list.files</span>(path_Omega, <span class="at">pattern=</span><span class="st">&quot;mat_omega.out&quot;</span>)</span>
+<span id="cb10-7"><a href="baypass-les-résultats.html#cb10-7" tabindex="-1"></a>nMatrix<span class="ot">&lt;-</span><span class="fu">length</span>(listMatrix)</span>
+<span id="cb10-8"><a href="baypass-les-résultats.html#cb10-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Nbr matrix files =&quot;</span>, nMatrix, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb10-9"><a href="baypass-les-résultats.html#cb10-9" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="baypass-les-résultats.html#cb10-10" tabindex="-1"></a><span class="co">#boucle sur toutes les matrices, calcule les distances FMD en pairwise et stocke le résultat</span></span>
+<span id="cb10-11"><a href="baypass-les-résultats.html#cb10-11" tabindex="-1"></a>ListFMD<span class="ot">&lt;-</span><span class="fu">c</span>()</span>
+<span id="cb10-12"><a href="baypass-les-résultats.html#cb10-12" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nMatrix) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nMatrix) <span class="cf">if</span>(i<span class="sc">!=</span>j) {</span>
+<span id="cb10-13"><a href="baypass-les-résultats.html#cb10-13" tabindex="-1"></a>omegaA<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_Omega, prefix, i,<span class="st">&quot;_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
+<span id="cb10-14"><a href="baypass-les-résultats.html#cb10-14" tabindex="-1"></a>omegaB<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_Omega, prefix, j,<span class="st">&quot;_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
+<span id="cb10-15"><a href="baypass-les-résultats.html#cb10-15" tabindex="-1"></a>FMD <span class="ot">&lt;-</span> <span class="fu">fmd.dist</span>(omegaA, omegaB)</span>
+<span id="cb10-16"><a href="baypass-les-résultats.html#cb10-16" tabindex="-1"></a>ListFMD <span class="ot">&lt;-</span> <span class="fu">c</span>(ListFMD,FMD)</span>
+<span id="cb10-17"><a href="baypass-les-résultats.html#cb10-17" tabindex="-1"></a>}</span>
+<span id="cb10-18"><a href="baypass-les-résultats.html#cb10-18" tabindex="-1"></a>pnames <span class="ot">&lt;-</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="st">&#39;13-1-S&#39;</span>, <span class="st">&#39;18-84-001-S&#39;</span>, <span class="st">&#39;17-47-003-S&#39;</span>, <span class="st">&#39;17-49-001-S&#39;</span>, <span class="st">&#39;85-3-4-S&#39;</span>, <span class="st">&#39;IT-ID3-S&#39;</span>, <span class="st">&#39;17-47-002-R&#39;</span>, <span class="st">&#39;17-53-006-R&#39;</span>, <span class="st">&#39;19-30-1-R&#39;</span>, <span class="st">&#39;44-1-R&#39;</span>, <span class="st">&#39;44-2-R&#39;</span>, <span class="st">&#39;44-3-R&#39;</span>, <span class="st">&#39;IT-ID1-R&#39;</span>))</span>
+<span id="cb10-19"><a href="baypass-les-résultats.html#cb10-19" tabindex="-1"></a><span class="co">#heatmap de la dernière matrice Ω.</span></span>
+<span id="cb10-20"><a href="baypass-les-résultats.html#cb10-20" tabindex="-1"></a><span class="fu">colnames</span>(omegaB) <span class="ot">&lt;-</span><span class="fu">c</span>(pnames)</span>
+<span id="cb10-21"><a href="baypass-les-résultats.html#cb10-21" tabindex="-1"></a><span class="fu">rownames</span>(omegaB) <span class="ot">&lt;-</span><span class="fu">c</span>(pnames)</span>
+<span id="cb10-22"><a href="baypass-les-résultats.html#cb10-22" tabindex="-1"></a>cor.mat<span class="ot">=</span><span class="fu">cov2cor</span>(omegaB)</span>
+<span id="cb10-23"><a href="baypass-les-résultats.html#cb10-23" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Blues&quot;</span>)))(<span class="dv">16</span>)</span>
+<span id="cb10-24"><a href="baypass-les-résultats.html#cb10-24" tabindex="-1"></a><span class="fu">cim</span>(cor.mat, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>), <span class="at">title =</span> <span class="st">&quot;Correlation map based on last &quot;</span><span class="sc">~</span><span class="fu">hat</span>(Omega))</span>
+<span id="cb10-25"><a href="baypass-les-résultats.html#cb10-25" tabindex="-1"></a><span class="co">#SVD de la dernière matrice Ω.</span></span>
+<span id="cb10-26"><a href="baypass-les-résultats.html#cb10-26" tabindex="-1"></a>SVD_omega<span class="ot">&lt;-</span><span class="fu">plot.omega</span>(<span class="at">omega=</span>omegaB, <span class="at">pop.names=</span>pnames, <span class="at">main =</span> <span class="fu">expression</span>(<span class="st">&quot;Singular Value Decomposition of last &quot;</span> <span class="sc">*</span> <span class="er">~</span><span class="fu">hat</span>(Omega)), <span class="at">pos=</span><span class="dv">3</span>)</span>
+<span id="cb10-27"><a href="baypass-les-résultats.html#cb10-27" tabindex="-1"></a>SVD_omega</span></code></pre></div>
 
-</div>
-</div>
-<div class="footnotes">
-<hr />
-<ol start="1">
-<li id="fn1"><p>INRAE, UR-1115 PSH, 228 route de l’aérodrome, 84914 Avignon, France<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
-</ol>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-
-<a href="introduction.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="baypass-lanalyse-poolseq.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="annexes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -280,7 +292,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/index.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/05-Validation.Rmd",
 "text": "Edit"
 },
 "history": {

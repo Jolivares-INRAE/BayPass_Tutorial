@@ -126,7 +126,7 @@
 
 \title{BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool}
 \author{Jérôme OLIVARES\footnote{INRAE, UR-1115 PSH, 228 route de l'aérodrome, 84914 Avignon, France}}
-\date{2023-07-11}
+\date{2023-08-17}
 
 \usepackage{amsthm}
 \newtheorem{theorem}{Theorem}[chapter]
@@ -173,7 +173,7 @@ Logiciel BayPass, séquençage en pool, GWAS, études d'associations pangénomiq
 Les commandes décrites dans cet article ont été regroupées dans un fichier au format « R markdown » (Rmd) « Poolseq\_pipeline.Rmd » librement téléchargeable à l'adresse : \url{https://github.com/Jolivares-INRAE/Download}. Ce tutoriel est conçu pour décrire pas à pas les différentes étapes du fichier Rmd et permettre à l'utilisateur de les exécuter en parallèle.
 L'utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d'écrire et lancer des scripts sur un cluster de calcul.
 Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l'environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d'une utilisation dans un autre environnement logiciel, l'utilisateur devra probablement effectuer des adaptations du code.
-Bien que l'essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l'adresse \url{http://www1.montpellier.inra.fr/CBGP/software/baypass/download.html} et décompressée dans un répertoire local par l'utilisateur.
+Bien que l'essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l'adresse \url{https://forgemia.inra.fr/mathieu.gautier/baypass_public} et décompressée dans un répertoire local par l'utilisateur.
 Dans tous les codes qui suivent l'expression « \textasciitilde/path/ » sera à remplacer par les chemins personnels de l'utilisateur.
 Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 
@@ -249,9 +249,9 @@ Si l'on veut découper le travail en chromosomes, il est indispensable de travai
 \CommentTok{\#!/bin/bash}
 \CommentTok{\#SBATCH {-}{-}array=1{-}29            \#création de l\textquotesingle{}array: un élément/indice par chromosome}
 
-\ExtensionTok{module}\NormalTok{ load bioinfo/samtools{-}1.12}
-\ExtensionTok{module}\NormalTok{ load bioinfo/VarScan{-}2.4.2}
-\ExtensionTok{module}\NormalTok{ load bioinfo/bcftools{-}1.14}
+\ExtensionTok{module}\NormalTok{ load bioinfo/samtools/1.12}
+\ExtensionTok{module}\NormalTok{ load bioinfo/VarScan/2.4.2}
+\ExtensionTok{module}\NormalTok{ load bioinfo/bcftools/1.14}
 
 \FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\OperatorTok{\textgreater{}}\NormalTok{ BamList.txt                                                }\CommentTok{\#liste tous les fichiers "bam" et leur chemin}
 \FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/.bam//\textquotesingle{}} \OperatorTok{\textgreater{}}\NormalTok{ NameList.txt      }\CommentTok{\#extrait les noms des échatillons/populations}
@@ -281,17 +281,17 @@ On peut utiliser les bcftools pour concaténer les fichier \textbf{\emph{vcf}}, 
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{\#!/bin/bash}
-\ExtensionTok{module}\NormalTok{ load bioinfo/bcftools{-}1.14}
-\VariableTok{Path}\OperatorTok{=}\StringTok{\textquotesingle{}/..\textquotesingle{}}
+\ExtensionTok{module}\NormalTok{ load bioinfo/bcftools/1.14}
+\VariableTok{my\_path}\OperatorTok{=}\StringTok{\textquotesingle{}/..\textquotesingle{}}
 
 \CommentTok{\# une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable}
 \ControlFlowTok{for} \KeywordTok{((}\VariableTok{i}\OperatorTok{=}\DecValTok{2}\KeywordTok{;} \VariableTok{i}\OperatorTok{\textless{}=}\DecValTok{28}\KeywordTok{;} \VariableTok{i}\OperatorTok{++}\KeywordTok{))}
 \ControlFlowTok{do}
-    \VariableTok{files}\OperatorTok{+=}\StringTok{" }\VariableTok{$Path}\StringTok{/project\_chr}\VariableTok{$\{i\}}\StringTok{.vcf.gz"}  
+    \VariableTok{files}\OperatorTok{+=}\StringTok{" }\VariableTok{$my\_path}\StringTok{/project\_chr}\VariableTok{$\{i\}}\StringTok{.vcf.gz"}  
 \ControlFlowTok{done}
 
 \CommentTok{\# bcftools concatène la liste des vcf contenu dans la variable $file}
-\ExtensionTok{bcftools}\NormalTok{ concat }\VariableTok{$files} \AttributeTok{{-}O}\NormalTok{ z }\AttributeTok{{-}o} \VariableTok{$Path}\NormalTok{/project\_chr2{-}28.vcf.gz}
+\ExtensionTok{bcftools}\NormalTok{ concat }\VariableTok{$files} \AttributeTok{{-}O}\NormalTok{ z }\AttributeTok{{-}o} \VariableTok{$my\_path}\NormalTok{/project\_chr2{-}28.vcf.gz}
 \end{Highlighting}
 \end{Shaded}
 
@@ -345,30 +345,10 @@ min.maf = fréquence allélique minimale autorisée pour l'allèle minoritaire p
 \NormalTok{psizes\_Y }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}30\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}45\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}8\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}28\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}45\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}14\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}45\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}40\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}50\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}14\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}10\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}19\textquotesingle{}}\NormalTok{))           }\CommentTok{\#ploydie Y/W}
 \CommentTok{\#conversion du .vcf}
 \NormalTok{pooldata }\OtherTok{\textless{}{-}} \FunctionTok{vcf2pooldata}\NormalTok{(}\AttributeTok{vcf.file =} \FunctionTok{paste}\NormalTok{(path\_vcf, }\StringTok{"project\_chr2{-}28.vcf.gz"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{), }\AttributeTok{poolsizes =}\NormalTok{ psizes\_A, }\AttributeTok{poolnames =}\NormalTok{ pnames, }\AttributeTok{min.cov.per.pool =} \DecValTok{4}\NormalTok{, }\AttributeTok{min.rc =} \DecValTok{2}\NormalTok{, }\AttributeTok{max.cov.per.pool =} \FloatTok{1e+06}\NormalTok{, }\AttributeTok{min.maf =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{remove.indels =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{nlines.per.readblock =} \FloatTok{1e+06}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Reading Header lines
-## VarScan like format detected for allele count data:
-##  the AD field contains allele depth
-## for the alternate allele and RD field for the reference allele
-## (N.B., positions with more than one alternate allele will be ignored)
-## Parsing allele counts
-## 107526  lines processed in 0 h  0 m  3 s : 19529 SNPs found
-## Data consists of 19529 SNPs for 13 Pools
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \CommentTok{\#élimine le 1\% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)}
 \NormalTok{pooldata}\OtherTok{\textless{}{-}}\FunctionTok{pooldata.subset}\NormalTok{(pooldata, }\AttributeTok{cov.qthres.per.pool =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\FloatTok{0.99}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-## Data consists of 19276 SNPs for 13 Pools
-\end{verbatim}
 
 A ce stade cet objet \textbf{\emph{pooldata}} peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d'estimation de la structure génétique des populations déduite des Fst est donné en \protect\hyperlink{An1}{Annexe 1}
 
@@ -376,17 +356,17 @@ A ce stade cet objet \textbf{\emph{pooldata}} peut être utilisé pour calculer 
 \chapter*{Conversion du pooldata en fichiers d'entrées pour BayPass}\label{conversion-du-pooldata-en-fichiers-dentruxe9es-pour-baypass}}
 \addcontentsline{toc}{chapter}{Conversion du pooldata en fichiers d'entrées pour BayPass}
 
-La fonction \textbf{\emph{pooldata2genobaypass}} convertit l'ogbjet \textbf{\emph{pooldata}} en fichier d'entrée pour BayPass:
+La fonction \textbf{\emph{pooldata2genobaypass}} (Chunk \ref{exr:chunk3}) convertit l'ogbjet \textbf{\emph{pooldata}} en fichier d'entrée pour BayPass:
+
+\begin{exercise}
+\protect\hypertarget{exr:chunk3}{}\label{exr:chunk3}{Filtrage et sélection des SNPs}
+\end{exercise}
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{pooldata2genobaypass}\NormalTok{(pooldata, }\AttributeTok{writing.dir =}\NormalTok{ path\_input, }\AttributeTok{subsamplesize =} \SpecialCharTok{{-}}\DecValTok{1}\NormalTok{, }\AttributeTok{subsamplingmethod =} \StringTok{"thinning"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
-
-\begin{verbatim}
-## x being coerced from class: matrix to data.table
-\end{verbatim}
 
 On récupère dans le répertoire \textbf{\emph{path\_input}} trois fichiers: un fichier ``\textbf{\emph{genobaypass}}'' qui contient les données filtrées de génotypage, un fichier ``\textbf{\emph{snpdet}}'' qui contient la liste des positions correspondantes et un fichier ``\textbf{\emph{poolsize}}'', qui est une copie de l'objet \textbf{\emph{psizes}}.
 
@@ -516,12 +496,8 @@ Le nombre de fichiers \textbf{\emph{.sub}} à créer dépend du nombre total de 
 \addcontentsline{toc}{chapter}{Baypass : l'analyse poolseq}
 
 La commande est la même pour les différents modèles employés par BayPass (Script \ref{exm:script4}), ce sont les fichiers optionnels qui définissent le modèle :
-Pour le core model, seuls les fichiers genobaypass et snpdet sont nécessaires, on peut néanmoins faire une analyse de la statistique de contraste C2 avec le fichier de covariable qualitative \textbf{\emph{contraste}}.
-Le standard model est activé par l'option \textbf{\emph{-efile}} et le fichier de covariable quantitative \textbf{\emph{ecotype}}
-
-, l'option -efile pour le covariate model et l'option poolsize pour activer le mode Pool-Seq.
-Un exemple de script d'analyse de type Pool-Seq, parallélisée sur 25 CPU est disponible à l'adresse suivante:
-\url{https://github.com/Jolivares-INRAE/Download/tree/BayPass_pipeline}
+l'option poolsize active le mode Pool-Seq, pour le core model, seuls les fichiers genobaypass et snpdet sont nécessaires, on peut néanmoins faire une analyse de la statistique de contraste C2 avec le fichier de covariable qualitative \textbf{\emph{contraste}}.
+Le modèle standard est activé par l'option \textbf{\emph{-efile}}, le fichier de covariable quantitative \textbf{\emph{ecotype}}.
 
 Il est recommandé dans le cadre d'une analyse Pool-Seq d'utiliser et fixer le paramètre -d0yij à 1/5e de la valeur la plus faible du poolsize. (voir page 22 et 39 du manuel de BayPass).
 Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.
@@ -545,14 +521,14 @@ Les sous-jeux de données sont analysés en parallèle
 \ExtensionTok{module}\NormalTok{ load mpi/openmpi{-}1.8.8{-}intel2018.0.128}
 \ExtensionTok{module}\NormalTok{ load compiler/gcc{-}9.3.0}
 
-\VariableTok{Path}\OperatorTok{=}\StringTok{\textquotesingle{}/BayPass/Input\textquotesingle{}}
+\VariableTok{my\_path}\OperatorTok{=}\StringTok{\textquotesingle{}/BayPass/Input\textquotesingle{}}
 \VariableTok{FILES\_R1}\OperatorTok{=}\VariableTok{($(}\FunctionTok{ls} \VariableTok{$Path}\NormalTok{/genobaypass.sub}\PreprocessorTok{*} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}}\VariableTok{))}
 \VariableTok{INPUT\_F1}\OperatorTok{=}\VariableTok{$\{FILES\_R1}\OperatorTok{[}\VariableTok{$SLURM\_ARRAY\_TASK\_ID}\OperatorTok{]}\VariableTok{\}}
 \VariableTok{OUTPUT}\OperatorTok{=}\VariableTok{$\{FILES\_R1}\OperatorTok{[}\VariableTok{$SLURM\_ARRAY\_TASK\_ID}\OperatorTok{]/}\SpecialStringTok{genobaypass}\OperatorTok{/}\NormalTok{project.output}\VariableTok{\}}
 
 \ExtensionTok{i\_baypass} \DataTypeTok{\textbackslash{}}
-\NormalTok{{-}gfile }\VariableTok{$Path}\NormalTok{/}\VariableTok{$INPUT\_F1} \DataTypeTok{\textbackslash{} }                 \CommentTok{\#fichiers genobaypass.sub*}
-\ExtensionTok{{-}poolsizefile} \VariableTok{$Path}\NormalTok{/poolsize }\DataTypeTok{\textbackslash{} }           \CommentTok{\#active le mode poolseq}
+\NormalTok{{-}gfile }\VariableTok{$my\_path}\NormalTok{/}\VariableTok{$INPUT\_F1} \DataTypeTok{\textbackslash{} }                 \CommentTok{\#fichiers genobaypass.sub*}
+\ExtensionTok{{-}poolsizefile} \VariableTok{$my\_path}\NormalTok{/poolsize }\DataTypeTok{\textbackslash{} }           \CommentTok{\#active le mode poolseq}
 \ExtensionTok{{-}d0yij}\NormalTok{ 40 }\DataTypeTok{\textbackslash{} }                              \CommentTok{\#1/5e de la valeur la plus faible du poolsize}
 \ExtensionTok{{-}seed}\NormalTok{ 5001 }\DataTypeTok{\textbackslash{}}
 \NormalTok{{-}nthreads 2 }\DataTypeTok{\textbackslash{}}
@@ -560,27 +536,72 @@ Les sous-jeux de données sont analysés en parallèle
 \end{Highlighting}
 \end{Shaded}
 
-Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives et l'option scalecov
+Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\ExtensionTok{{-}efile} \VariableTok{$Path}\NormalTok{/ecotype }\DataTypeTok{\textbackslash{} }                   \CommentTok{\#calcul des Bayes Factors: modèle standard \& auxiliaire}
-\ExtensionTok{{-}scalecov} \DataTypeTok{\textbackslash{} }                              \CommentTok{\#re{-}scale les covariables quantitatives}
-\ExtensionTok{{-}contrastfile} \VariableTok{$Path}\NormalTok{/contrast }\DataTypeTok{\textbackslash{} }           \CommentTok{\#calcul du contraste C2: modèle core, standard \& auxiliaire}
+\ExtensionTok{{-}efile} \VariableTok{$my\_path}\NormalTok{/ecotype }\DataTypeTok{\textbackslash{} }                   \CommentTok{\#calcul des Bayes Factors: modèle standard \& auxiliaire}
+\ExtensionTok{{-}contrastfile} \VariableTok{$my\_path}\NormalTok{/contrast }\DataTypeTok{\textbackslash{} }           \CommentTok{\#calcul du contraste C2: modèle core, standard \& auxiliaire}
 \end{Highlighting}
 \end{Shaded}
 
-Pour activer le modèle auxiliaire il faut ajouter l'
+L'option \textbf{\emph{auxmodel}} active le modèle auxiliaire il faut ajouter l'
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \ExtensionTok{{-}auxmodel} \DataTypeTok{\textbackslash{} }                              \CommentTok{\#active le modèle auxiliaire}
-\ExtensionTok{{-}omegafile} \VariableTok{$Path}\NormalTok{/omega.mat }\DataTypeTok{\textbackslash{} }             \CommentTok{\#matrice Ω modèle standard (optionnel) \& auxiliaire (obligatoire)}
+\ExtensionTok{{-}omegafile} \VariableTok{$my\_path}\NormalTok{/omega.mat }\DataTypeTok{\textbackslash{} }             \CommentTok{\#matrice Ω modèle standard (optionnel) \& auxiliaire (obligatoire)}
 \ExtensionTok{{-}auxPbetaprior}\NormalTok{ 0.02 1.98                  }\CommentTok{\#ajuste le Pi beta prior }
 \end{Highlighting}
 \end{Shaded}
 
-c
+\hypertarget{baypass-les-ruxe9sultats}{%
+\chapter*{Baypass : les résultats}\label{baypass-les-ruxe9sultats}}
+\addcontentsline{toc}{chapter}{Baypass : les résultats}
+
+Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l'analyse (crash, disque plein\ldots) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers \textbf{\emph{mat\_omega.out}} qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse. Avant de regrouper les résultats, il faut s'assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles.
+Cette comparaison se fait en évaluant un indice de distance FMD (Förstner \& Moonen, 2003) entre matrices ; plus la distance sera faible plus les matrices, donc les analyses, seront comparables.(Chunk \ref{exr:chunk4})
+
+\begin{exercise}
+\protect\hypertarget{exr:chunk4}{}\label{exr:chunk4}{Comparaison des matrices Ω}
+\end{exercise}
+
+blabla à trouver:
+blabla.
+blabla.
+blabla.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{source}\NormalTok{(}\StringTok{"C:/BayPass\_pipeline/utils/baypass\_utils.R"}\NormalTok{)}
+\NormalTok{prefix }\OtherTok{\textless{}{-}} \StringTok{"13pops{-}chr1\_STD3K\_3cov.sub"}
+\CommentTok{\#prefix \textless{}{-} "13pops{-}chr1\_RUN"}
+\CommentTok{\#liste et compte les matrices Ω du répertoire "path"}
+\NormalTok{path\_Omega }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass\_pipeline/Output/13pops/chr1/Omega3K/"}
+\NormalTok{listMatrix }\OtherTok{\textless{}{-}} \FunctionTok{list.files}\NormalTok{(path\_Omega, }\AttributeTok{pattern=}\StringTok{"mat\_omega.out"}\NormalTok{)}
+\NormalTok{nMatrix}\OtherTok{\textless{}{-}}\FunctionTok{length}\NormalTok{(listMatrix)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"Nbr matrix files ="}\NormalTok{, nMatrix, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+
+\CommentTok{\#boucle sur toutes les matrices, calcule les distances FMD en pairwise et stocke le résultat}
+\NormalTok{ListFMD}\OtherTok{\textless{}{-}}\FunctionTok{c}\NormalTok{()}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{nMatrix) }\ControlFlowTok{for}\NormalTok{ (j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{nMatrix) }\ControlFlowTok{if}\NormalTok{(i}\SpecialCharTok{!=}\NormalTok{j) \{}
+\NormalTok{omegaA}\OtherTok{=}\FunctionTok{as.matrix}\NormalTok{(}\FunctionTok{read.table}\NormalTok{(}\FunctionTok{paste}\NormalTok{(path\_Omega, prefix, i,}\StringTok{"\_mat\_omega.out"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{)))}
+\NormalTok{omegaB}\OtherTok{=}\FunctionTok{as.matrix}\NormalTok{(}\FunctionTok{read.table}\NormalTok{(}\FunctionTok{paste}\NormalTok{(path\_Omega, prefix, j,}\StringTok{"\_mat\_omega.out"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{)))}
+\NormalTok{FMD }\OtherTok{\textless{}{-}} \FunctionTok{fmd.dist}\NormalTok{(omegaA, omegaB)}
+\NormalTok{ListFMD }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(ListFMD,FMD)}
+\NormalTok{\}}
+\NormalTok{pnames }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}13{-}1{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}18{-}84{-}001{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}47{-}003{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}49{-}001{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}85{-}3{-}4{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}IT{-}ID3{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}47{-}002{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}53{-}006{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}19{-}30{-}1{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44{-}1{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44{-}2{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44{-}3{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}IT{-}ID1{-}R\textquotesingle{}}\NormalTok{))}
+\CommentTok{\#heatmap de la dernière matrice Ω.}
+\FunctionTok{colnames}\NormalTok{(omegaB) }\OtherTok{\textless{}{-}}\FunctionTok{c}\NormalTok{(pnames)}
+\FunctionTok{rownames}\NormalTok{(omegaB) }\OtherTok{\textless{}{-}}\FunctionTok{c}\NormalTok{(pnames)}
+\NormalTok{cor.mat}\OtherTok{=}\FunctionTok{cov2cor}\NormalTok{(omegaB)}
+\NormalTok{cim\_color }\OtherTok{\textless{}{-}} \FunctionTok{colorRampPalette}\NormalTok{(}\FunctionTok{rev}\NormalTok{(}\FunctionTok{brewer.pal}\NormalTok{(}\DecValTok{9}\NormalTok{, }\StringTok{"Blues"}\NormalTok{)))(}\DecValTok{16}\NormalTok{)}
+\FunctionTok{cim}\NormalTok{(cor.mat, }\AttributeTok{color =}\NormalTok{ cim\_color, }\AttributeTok{symkey =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{margins =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{), }\AttributeTok{title =} \StringTok{"Correlation map based on last "}\SpecialCharTok{\textasciitilde{}}\FunctionTok{hat}\NormalTok{(Omega))}
+\CommentTok{\#SVD de la dernière matrice Ω.}
+\NormalTok{SVD\_omega}\OtherTok{\textless{}{-}}\FunctionTok{plot.omega}\NormalTok{(}\AttributeTok{omega=}\NormalTok{omegaB, }\AttributeTok{pop.names=}\NormalTok{pnames, }\AttributeTok{main =} \FunctionTok{expression}\NormalTok{(}\StringTok{"Singular Value Decomposition of last "} \SpecialCharTok{*} \ErrorTok{\textasciitilde{}}\FunctionTok{hat}\NormalTok{(Omega)), }\AttributeTok{pos=}\DecValTok{3}\NormalTok{)}
+\NormalTok{SVD\_omega}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{annexes}{%
 \chapter*{Annexes}\label{annexes}}
@@ -602,17 +623,6 @@ Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser 
 \begin{Highlighting}[]
 \CommentTok{\#Calcul des pairwise Fst }
 \NormalTok{PairWise.fst }\OtherTok{\textless{}{-}} \FunctionTok{compute.pairwiseFST}\NormalTok{(pooldata, }\AttributeTok{method =} \StringTok{"Anova"}\NormalTok{, }\AttributeTok{min.cov.per.pool =} \DecValTok{4}\NormalTok{, }\AttributeTok{max.cov.per.pool =} \FloatTok{1e+06}\NormalTok{, }\AttributeTok{min.maf =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{output.snp.values =} \ConstantTok{FALSE}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Computation of the 78 pairwise Fst
-## 
-## Overall Analysis Time: 0 h 0 m 1 s
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \CommentTok{\#conversion en matrice de distance}
 \NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(}\FunctionTok{dist}\NormalTok{(}\FunctionTok{t}\NormalTok{(PairWise.fst}\SpecialCharTok{@}\NormalTok{PairwiseFSTmatrix)))}
 \CommentTok{\#heatmap}
@@ -620,8 +630,6 @@ Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser 
 \FunctionTok{cim}\NormalTok{(df, }\AttributeTok{color =}\NormalTok{ cim\_color, }\AttributeTok{symkey =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{margins =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{),  }\AttributeTok{title =} \StringTok{"heatmap des pairwise Fst entre les populations"}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
-
-\includegraphics{BayPass_Fr_files/figure-latex/heatmap-PW-fst-1.pdf}
 
 On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
 
@@ -633,18 +641,6 @@ On peut aussi calculer et plotter des Fst multi-locus en balayant le génome ave
 \begin{Highlighting}[]
 \CommentTok{\#calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .}
 \NormalTok{Multi.Loc.fst }\OtherTok{\textless{}{-}} \FunctionTok{computeFST}\NormalTok{(pooldata, }\AttributeTok{method =} \StringTok{"Anova"}\NormalTok{, }\AttributeTok{sliding.window.size =} \DecValTok{100}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{verbatim}
-## Start sliding-window scan
-## 1 chromosomes scanned (with more than 100 SNPs)
-## 
-## Average (min-max) Window Sizes 28 ( 1.7 - 865.6 ) kb
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \CommentTok{\#conversion en objet data frame}
 \NormalTok{df.fst}\OtherTok{\textless{}{-}}\FunctionTok{as.data.frame}\NormalTok{(Multi.Loc.fst}\SpecialCharTok{$}\NormalTok{sliding.windows.fst, }\AttributeTok{h=}\NormalTok{T)}
 \CommentTok{\#plot.}
@@ -657,8 +653,6 @@ On peut aussi calculer et plotter des Fst multi-locus en balayant le génome ave
   \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{Chr, }\AttributeTok{scales =} \StringTok{\textquotesingle{}free\_x\textquotesingle{}}\NormalTok{, }\AttributeTok{strip.position =}\FunctionTok{c}\NormalTok{(}\StringTok{"bottom"}\NormalTok{)) }\CommentTok{\#affichage des chromosomes en grille}
 \end{Highlighting}
 \end{Shaded}
-
-\includegraphics{BayPass_Fr_files/figure-latex/plot-sliding-Fst-1.pdf}
 
 \hypertarget{ruxe9fuxe9rences}{%
 \chapter*{Références}\label{ruxe9fuxe9rences}}
