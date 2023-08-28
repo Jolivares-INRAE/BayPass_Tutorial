@@ -73,7 +73,7 @@ A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concat�
 ```{bash scr2, eval=FALSE}
 #!/bin/bash
 module load bioinfo/bcftools/1.14
-my_path='/..'
+my_path='/../'
 
 # une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable
 for ((i=2; i<=28; i++))

@@ -5,7 +5,7 @@ La fonction **_pooldata2genobaypass_** (Chunk \@ref(exr:chunk3)) convertit l'ogb
 <span style="color:darkgreen">Création des fichiers input de BayPass</span>
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
-   Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+  
 </p>
 ```{r Input-BayPass, eval=FALSE}
 pooldata2genobaypass(pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = "thinning")
