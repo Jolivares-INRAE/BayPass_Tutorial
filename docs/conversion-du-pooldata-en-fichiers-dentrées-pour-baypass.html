@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-08-17" />
+<meta name="date" content="2023-08-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -217,8 +217,11 @@ div.csl-indent {
 <h1>Conversion du pooldata en fichiers d’entrées pour BayPass<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#conversion-du-pooldata-en-fichiers-dentrées-pour-baypass" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>La fonction <strong><em>pooldata2genobaypass</em></strong> (Chunk <a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#exr:chunk3">3</a>) convertit l’ogbjet <strong><em>pooldata</em></strong> en fichier d’entrée pour BayPass:</p>
 <div class="exercise">
-<p><span id="exr:chunk3" class="exercise"><strong>Chunk 3  </strong></span><span style="color:darkgreen">Filtrage et sélection des SNPs</span></p>
+<p><span id="exr:chunk3" class="exercise"><strong>Chunk 3  </strong></span><span style="color:darkgreen">Création des fichiers input de BayPass</span></p>
 </div>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb5-1" tabindex="-1"></a><span class="fu">pooldata2genobaypass</span>(pooldata, <span class="at">writing.dir =</span> path_input, <span class="at">subsamplesize =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">subsamplingmethod =</span> <span class="st">&quot;thinning&quot;</span>)</span></code></pre></div>
 <p>On récupère dans le répertoire <strong><em>path_input</em></strong> trois fichiers: un fichier “<strong><em>genobaypass</em></strong>” qui contient les données filtrées de génotypage, un fichier “<strong><em>snpdet</em></strong>” qui contient la liste des positions correspondantes et un fichier “<strong><em>poolsize</em></strong>”, qui est une copie de l’objet <strong><em>psizes</em></strong>.</p>
 <div id="design-de-lanalyse-baypass" class="section level2 unnumbered hasAnchor">

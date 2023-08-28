@@ -30,7 +30,7 @@ omegaB=as.matrix(read.table(paste(path_Omega, prefix, j,"_mat_omega.out", sep=""
 FMD <- fmd.dist(omegaA, omegaB)
 ListFMD <- c(ListFMD,FMD)
 }
-pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', '85-3-4-S', 'IT-ID3-S', '17-47-002-R', '17-53-006-R', '19-30-1-R', '44-1-R', '44-2-R', '44-3-R', 'IT-ID1-R'))
+pnames <- as.character(c('pop1', 'pop2', 'pop3', 'pop4', 'pop5', 'pop6', 'pop7', 'pop8', 'pop9', 'pop10', 'pop11', 'pop12', 'pop13'))
 #heatmap de la dernière matrice Ω.
 colnames(omegaB) <-c(pnames)
 rownames(omegaB) <-c(pnames)

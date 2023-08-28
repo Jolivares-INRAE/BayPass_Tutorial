@@ -11,7 +11,7 @@
 
 <meta name="author" content="Jérôme OLIVARES" />
 
-<meta name="date" content="2023-08-17" />
+<meta name="date" content="2023-08-22" />
 
 <title>BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
 
@@ -362,7 +362,7 @@ display: none;
 
 <h1 class="title toc-ignore">BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</h1>
 <h4 class="author">Jérôme OLIVARES<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></h4>
-<h4 class="date">2023-08-17</h4>
+<h4 class="date">2023-08-22</h4>
 
 </div>
 
@@ -525,8 +525,11 @@ pooldata&lt;-pooldata.subset(pooldata, cov.qthres.per.pool = c(0,0.99))</code></
 <h1>Conversion du pooldata en fichiers d’entrées pour BayPass</h1>
 <p>La fonction <strong><em>pooldata2genobaypass</em></strong> (Chunk <a href="#exr:chunk3">3</a>) convertit l’ogbjet <strong><em>pooldata</em></strong> en fichier d’entrée pour BayPass:</p>
 <div class="exercise">
-<p><span id="exr:chunk3" class="exercise"><strong>Chunk 3  </strong></span><span style="color:darkgreen">Filtrage et sélection des SNPs</span></p>
+<p><span id="exr:chunk3" class="exercise"><strong>Chunk 3  </strong></span><span style="color:darkgreen">Création des fichiers input de BayPass</span></p>
 </div>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
+</p>
 <pre class="r"><code>pooldata2genobaypass(pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = &quot;thinning&quot;)</code></pre>
 <p>On récupère dans le répertoire <strong><em>path_input</em></strong> trois fichiers: un fichier “<strong><em>genobaypass</em></strong>” qui contient les données filtrées de génotypage, un fichier “<strong><em>snpdet</em></strong>” qui contient la liste des positions correspondantes et un fichier “<strong><em>poolsize</em></strong>”, qui est une copie de l’objet <strong><em>psizes</em></strong>.</p>
 <div id="design-de-lanalyse-baypass" class="section level2 unnumbered">
@@ -727,12 +730,12 @@ i_baypass \
 -seed 5001 \
 -nthreads 2 \
 -outprefix $OUTPUT \</code></pre>
-<p>Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives</p>
+<p>Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives:</p>
 <pre class="bash"><code>-efile $my_path/ecotype \                    #calcul des Bayes Factors: modèle standard &amp; auxiliaire
 -contrastfile $my_path/contrast \            #calcul du contraste C2: modèle core, standard &amp; auxiliaire</code></pre>
-<p>L’option <strong><em>auxmodel</em></strong> active le modèle auxiliaire il faut ajouter l’</p>
+<p>Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:</p>
 <pre class="bash"><code>-auxmodel \                               #active le modèle auxiliaire
--omegafile $my_path/omega.mat \              #matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)
+-omegafile $my_path/omega.mat \           #matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)
 -auxPbetaprior 0.02 1.98                  #ajuste le Pi beta prior </code></pre>
 <!--chapter:end:04-BayPass.Rmd-->
 </div>

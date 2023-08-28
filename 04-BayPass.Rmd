@@ -39,15 +39,15 @@ i_baypass \
 -outprefix $OUTPUT \
 ```
 
-Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables  quantitatives
+Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables  quantitatives:
 ```{bash scr4.2, eval=FALSE}
 -efile $my_path/ecotype \                    #calcul des Bayes Factors: modèle standard & auxiliaire
 -contrastfile $my_path/contrast \            #calcul du contraste C2: modèle core, standard & auxiliaire
 ```
 
-L'option **_auxmodel_** active le modèle auxiliaire il faut ajouter l'
+Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:
 ```{bash scr4.3, eval=FALSE}
 -auxmodel \                               #active le modèle auxiliaire
--omegafile $my_path/omega.mat \              #matrice Ω modèle standard (optionnel) & auxiliaire (obligatoire)
+-omegafile $my_path/omega.mat \           #matrice Ω modèle standard (optionnel) & auxiliaire (obligatoire)
 -auxPbetaprior 0.02 1.98                  #ajuste le Pi beta prior 
 ```

@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-08-17" />
+<meta name="date" content="2023-08-22" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -249,12 +249,12 @@ Les sous-jeux de données sont analysés en parallèle
 <span id="cb7-21"><a href="baypass-lanalyse-poolseq.html#cb7-21" tabindex="-1"></a><span class="ex">-seed</span> 5001 <span class="dt">\</span></span>
 <span id="cb7-22"><a href="baypass-lanalyse-poolseq.html#cb7-22" tabindex="-1"></a>-nthreads 2 <span class="dt">\</span></span>
 <span id="cb7-23"><a href="baypass-lanalyse-poolseq.html#cb7-23" tabindex="-1"></a>-outprefix <span class="va">$OUTPUT</span> <span class="dt">\</span></span></code></pre></div>
-<p>Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives</p>
+<p>Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="baypass-lanalyse-poolseq.html#cb8-1" tabindex="-1"></a><span class="ex">-efile</span> <span class="va">$my_path</span>/ecotype <span class="dt">\ </span>                   <span class="co">#calcul des Bayes Factors: modèle standard &amp; auxiliaire</span></span>
 <span id="cb8-2"><a href="baypass-lanalyse-poolseq.html#cb8-2" tabindex="-1"></a><span class="ex">-contrastfile</span> <span class="va">$my_path</span>/contrast <span class="dt">\ </span>           <span class="co">#calcul du contraste C2: modèle core, standard &amp; auxiliaire</span></span></code></pre></div>
-<p>L’option <strong><em>auxmodel</em></strong> active le modèle auxiliaire il faut ajouter l’</p>
+<p>Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="baypass-lanalyse-poolseq.html#cb9-1" tabindex="-1"></a><span class="ex">-auxmodel</span> <span class="dt">\ </span>                              <span class="co">#active le modèle auxiliaire</span></span>
-<span id="cb9-2"><a href="baypass-lanalyse-poolseq.html#cb9-2" tabindex="-1"></a><span class="ex">-omegafile</span> <span class="va">$my_path</span>/omega.mat <span class="dt">\ </span>             <span class="co">#matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)</span></span>
+<span id="cb9-2"><a href="baypass-lanalyse-poolseq.html#cb9-2" tabindex="-1"></a><span class="ex">-omegafile</span> <span class="va">$my_path</span>/omega.mat <span class="dt">\ </span>          <span class="co">#matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)</span></span>
 <span id="cb9-3"><a href="baypass-lanalyse-poolseq.html#cb9-3" tabindex="-1"></a><span class="ex">-auxPbetaprior</span> 0.02 1.98                  <span class="co">#ajuste le Pi beta prior </span></span></code></pre></div>
 
 </div>

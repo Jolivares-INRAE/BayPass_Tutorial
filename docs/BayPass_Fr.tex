@@ -126,7 +126,7 @@
 
 \title{BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool}
 \author{Jérôme OLIVARES\footnote{INRAE, UR-1115 PSH, 228 route de l'aérodrome, 84914 Avignon, France}}
-\date{2023-08-17}
+\date{2023-08-22}
 
 \usepackage{amsthm}
 \newtheorem{theorem}{Theorem}[chapter]
@@ -359,8 +359,10 @@ A ce stade cet objet \textbf{\emph{pooldata}} peut être utilisé pour calculer 
 La fonction \textbf{\emph{pooldata2genobaypass}} (Chunk \ref{exr:chunk3}) convertit l'ogbjet \textbf{\emph{pooldata}} en fichier d'entrée pour BayPass:
 
 \begin{exercise}
-\protect\hypertarget{exr:chunk3}{}\label{exr:chunk3}{Filtrage et sélection des SNPs}
+\protect\hypertarget{exr:chunk3}{}\label{exr:chunk3}{Création des fichiers input de BayPass}
 \end{exercise}
+
+Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -536,7 +538,7 @@ Les sous-jeux de données sont analysés en parallèle
 \end{Highlighting}
 \end{Shaded}
 
-Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives
+Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -545,12 +547,12 @@ Pour le modèle standard, il faut rajouter au script précédent le fichier cont
 \end{Highlighting}
 \end{Shaded}
 
-L'option \textbf{\emph{auxmodel}} active le modèle auxiliaire il faut ajouter l'
+Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \ExtensionTok{{-}auxmodel} \DataTypeTok{\textbackslash{} }                              \CommentTok{\#active le modèle auxiliaire}
-\ExtensionTok{{-}omegafile} \VariableTok{$my\_path}\NormalTok{/omega.mat }\DataTypeTok{\textbackslash{} }             \CommentTok{\#matrice Ω modèle standard (optionnel) \& auxiliaire (obligatoire)}
+\ExtensionTok{{-}omegafile} \VariableTok{$my\_path}\NormalTok{/omega.mat }\DataTypeTok{\textbackslash{} }          \CommentTok{\#matrice Ω modèle standard (optionnel) \& auxiliaire (obligatoire)}
 \ExtensionTok{{-}auxPbetaprior}\NormalTok{ 0.02 1.98                  }\CommentTok{\#ajuste le Pi beta prior }
 \end{Highlighting}
 \end{Shaded}
