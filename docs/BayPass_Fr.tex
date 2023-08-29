@@ -126,7 +126,7 @@
 
 \title{BayPass 2.3: tutoriel de génomique d'association adapté au séquençage en pool}
 \author{Jérôme OLIVARES\footnote{INRAE, UR-1115 PSH, 228 route de l'aérodrome, 84914 Avignon, France}}
-\date{2023-08-29}
+\date{2023-08-30}
 
 \usepackage{amsthm}
 \newtheorem{theorem}{Theorem}[chapter]
@@ -174,7 +174,7 @@ Les commandes décrites dans cet article ont été regroupées dans un fichier a
 L'utilisateur devra avoir une connaissance basique du logiciel Rstudio et être capable d'écrire et lancer des scripts sur un cluster de calcul.
 Les commandes ont été rédigées sous Rstudio version 1.4.1106 couplé à R 64 bits version 4.0.5. avec toutes les librairies nécessaires à jour (Capture 1) et dans l'environnement bash/SLURM des clusters de calculs de la plateforme GenoToul de bioinformatique (GenoToul Bioinfo ). Dans le cas d'une utilisation dans un autre environnement logiciel, l'utilisateur devra probablement effectuer des adaptations du code.
 Bien que l'essentiel des calculs de BayPass seront réalisés sur un cluster de calcul, certains de ses utilitaires seront utilisés en local sous Rstudio, la dernière version du logiciel sera donc téléchargée depuis l'adresse \url{https://forgemia.inra.fr/mathieu.gautier/baypass_public} et décompressée dans un répertoire local par l'utilisateur.
-Dans tous les codes qui suivent l'expression « \textasciitilde/path/ » sera à remplacer par les chemins personnels de l'utilisateur.
+Dans tous les codes qui suivent l'expression «/../» sera à remplacer par les chemins personnels de l'utilisateur.
 Le terme de chromosome sera utilisé en références aux appellations de contigs, scaffold, ou chromosomes qui correspondent aux séquences nucléotidiques du génome de référence, plus ou moins mature, qui sera utilisé.
 
 \hypertarget{introduction}{%
@@ -185,7 +185,7 @@ Dans un contexte agronomique actuel de réduction de l'utilisation des pesticide
 
 Les études d'associations pangénomiques (GWAS en anglais pour genome-wide association study) adossées aux techniques de séquençage haut débit (NGS) permettant le séquençage de génome complet, sont un outil de choix pour ce type d'analyse. L'étude au niveau populationnel demandant le séquençage d'un grand nombre d'individus, les couts d'analyses étaient initialement très élevés et ces études étaient souvent réservées aux organismes dit ``modèles'', humain en tête. Néanmoins il a été démontré depuis, que le séquençage en pool d'individus (poolseq) c'est-à-dire en mélangeant de manière équimolaire l'ADN d'un grand nombre d'individus (50 à 100) issus d'une même population permettait non seulement de réduire drastiquement les couts puisqu'on ne réalise qu'un seul séquençage mais aussi que la découverte des points de mutations (SNP) et l'estimation de leur fréquence allélique étaient souvent plus efficaces et précises \citep{futschik_next_2010}. Parmi les logiciels à même d'analyser ces fréquences alléliques on compte Baypass \citep{gautier_genome-wide_2015} qui évalue par une approche baysienne, la différenciation des SNP en liaison avec une covariable environnementale en tenant compte de la structure et de la parenté entre les populations en estimant la covariance (Ω) des fréquences alléliques. Baypass 2.3 a la particularité supplémentaire de pouvoir calculer un contraste des fréquences alléliques entre deux groupes de populations caractérisés par un caractère binaire, sensible ou résistant par exemple.
 
-La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A ma connaissance un seul tutoriel est disponible sur le web \citep{nielsen_pool-seq_2020} et décrit de manière plus détaillée la préparation des données brutes et l'analyse en mode « poolseq » de Baypass, mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n'en va pas forcément de même pour bon nombre d'agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d'une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d'éclairer les points qui sont habituellement peu explicités car considérés comme évident et se veut, au final, le plus proche possible de la citation de Talleyrand : « Si cela va sans le dire, cela ira encore mieux en le disant ».
+La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A ma connaissance un seul tutoriel est disponible sur le web \citep{nielsen_pool-seq_2020} et décrit de manière plus détaillée la préparation des données brutes et l'analyse en mode « poolseq » de Baypass, mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n'en va pas forcément de même pour bon nombre d'agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d'une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d'éclairer les points qui sont habituellement peu explicités car considérés comme évident.
 
 \hypertarget{pruxe9sentation-du-logiciel-baypass-2.3}{%
 \chapter*{Présentation du logiciel BayPass 2.3}\label{pruxe9sentation-du-logiciel-baypass-2.3}}
@@ -253,7 +253,7 @@ Si l'on veut découper le travail en chromosomes, il est indispensable de travai
 \ExtensionTok{module}\NormalTok{ load bioinfo/VarScan/2.4.2}
 \ExtensionTok{module}\NormalTok{ load bioinfo/bcftools/1.14}
 
-\FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\OperatorTok{\textgreater{}}\NormalTok{ BamList.txt                                                }\CommentTok{\#liste tous les fichiers "bam" et leur chemin}
+\FunctionTok{ls}\NormalTok{ /My\_path/}\PreprocessorTok{*}\NormalTok{.bam }\OperatorTok{\textgreater{}}\NormalTok{ BamList.txt                                                }\CommentTok{\#liste tous les fichiers "bam" et leur chemin}
 \FunctionTok{ls}\NormalTok{ /../}\PreprocessorTok{*}\NormalTok{.bam }\KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/.bam//\textquotesingle{}} \OperatorTok{\textgreater{}}\NormalTok{ NameList.txt      }\CommentTok{\#extrait les noms des échatillons/populations}
 
 \ExtensionTok{samtools}\NormalTok{ mpileup }\AttributeTok{{-}C}\NormalTok{ 50 }\AttributeTok{{-}d}\NormalTok{ 5000 }\AttributeTok{{-}q}\NormalTok{ 20 }\DataTypeTok{\textbackslash{}}
@@ -282,7 +282,7 @@ On peut utiliser les bcftools pour concaténer les fichier \textbf{\emph{vcf}}, 
 \begin{Highlighting}[]
 \CommentTok{\#!/bin/bash}
 \ExtensionTok{module}\NormalTok{ load bioinfo/bcftools/1.14}
-\VariableTok{my\_path}\OperatorTok{=}\StringTok{\textquotesingle{}/..\textquotesingle{}}
+\VariableTok{my\_path}\OperatorTok{=}\StringTok{\textquotesingle{}/../\textquotesingle{}}
 
 \CommentTok{\# une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable}
 \ControlFlowTok{for} \KeywordTok{((}\VariableTok{i}\OperatorTok{=}\DecValTok{2}\KeywordTok{;} \VariableTok{i}\OperatorTok{\textless{}=}\DecValTok{28}\KeywordTok{;} \VariableTok{i}\OperatorTok{++}\KeywordTok{))}
@@ -314,12 +314,13 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 \FunctionTok{library}\NormalTok{(corrplot)       }\CommentTok{\#matrice de corrélation pour heat map}
 \FunctionTok{library}\NormalTok{(VennDiagram)    }\CommentTok{\#création de diagramme de Venn}
 \FunctionTok{library}\NormalTok{(nVennR)         }\CommentTok{\#extraction de données d\textquotesingle{}un diagramme de Venn}
-\FunctionTok{library}\NormalTok{(tidyverse)      }\CommentTok{\#manipulation de données et plots (ggplot2)}
+\FunctionTok{library}\NormalTok{(tidyverse)      }\CommentTok{\#manipulation de données (dplyr) et plots (ggplot2)}
 
-\NormalTok{path\_vcf }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/vcf/"}
-\NormalTok{path\_input }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/Input/"}
-\NormalTok{path\_out }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/Output/"}
-\NormalTok{path\_res }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass/Resultats/"}
+\CommentTok{\#définition des chemins de travail}
+\NormalTok{path\_vcf }\OtherTok{\textless{}{-}} \StringTok{"/../vcf/"}
+\NormalTok{path\_input }\OtherTok{\textless{}{-}} \StringTok{"/../Input/"}
+\NormalTok{path\_out }\OtherTok{\textless{}{-}} \StringTok{"/../Output/"}
+\NormalTok{path\_res }\OtherTok{\textless{}{-}} \StringTok{"/../Resultats/"}
 \end{Highlighting}
 \end{Shaded}
 
@@ -361,8 +362,6 @@ La fonction \textbf{\emph{pooldata2genobaypass}} (Chunk \ref{exr:chunk3}) conver
 \begin{exercise}
 \protect\hypertarget{exr:chunk3}{}\label{exr:chunk3}{Création des fichiers input de BayPass}
 \end{exercise}
-
-Chaque ligne correspond à une covariable quantitative, chaque colonne correspond à une population.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -517,14 +516,17 @@ Les sous-jeux de données sont analysés en parallèle
 \CommentTok{\#SBATCH {-}{-}cpus{-}per{-}task=2   \#nbr de core par job}
 \CommentTok{\#SBATCH {-}{-}mem{-}per{-}cpu=2G    \#mémoire partagée par tous les cores}
 
-\ExtensionTok{module}\NormalTok{ load system/R{-}3.4.3}
-\ExtensionTok{module}\NormalTok{ load bioinfo/baypass\_2.3}
-\ExtensionTok{module}\NormalTok{ load compiler/intel{-}2018.0.128}
-\ExtensionTok{module}\NormalTok{ load mpi/openmpi{-}1.8.8{-}intel2018.0.128}
-\ExtensionTok{module}\NormalTok{ load compiler/gcc{-}9.3.0}
+\ExtensionTok{module}\NormalTok{ purge}
+\ExtensionTok{module}\NormalTok{ load statistics/R/4.2.2}
+\ExtensionTok{module}\NormalTok{ load bioinfo/BayPass/2.4}
+\ExtensionTok{module}\NormalTok{ load compilers/intel/2023.0.0    }\CommentTok{\#pour i\_baypass}
+\CommentTok{\#module load mpi/openmpi/4.1.4}
+\CommentTok{\#module load compilers/gcc/12.2.0       \#pour g\_baypass}
 
-\VariableTok{my\_path}\OperatorTok{=}\StringTok{\textquotesingle{}/BayPass/Input\textquotesingle{}}
-\VariableTok{FILES\_R1}\OperatorTok{=}\VariableTok{($(}\FunctionTok{ls} \VariableTok{$Path}\NormalTok{/genobaypass.sub}\PreprocessorTok{*} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}}\VariableTok{))}
+
+\CommentTok{\#définition du chemin ciblant les fichiers genobaypass et snpdet}
+\VariableTok{my\_path}\OperatorTok{=}\StringTok{\textquotesingle{}/../Input/\textquotesingle{}}
+\VariableTok{FILES\_R1}\OperatorTok{=}\VariableTok{($(}\FunctionTok{ls} \VariableTok{$my\_path}\NormalTok{/genobaypass.sub}\PreprocessorTok{*} \KeywordTok{|} \FunctionTok{sed} \AttributeTok{{-}r} \StringTok{\textquotesingle{}s/\^{}.+\textbackslash{}///\textquotesingle{}}\VariableTok{))}
 \VariableTok{INPUT\_F1}\OperatorTok{=}\VariableTok{$\{FILES\_R1}\OperatorTok{[}\VariableTok{$SLURM\_ARRAY\_TASK\_ID}\OperatorTok{]}\VariableTok{\}}
 \VariableTok{OUTPUT}\OperatorTok{=}\VariableTok{$\{FILES\_R1}\OperatorTok{[}\VariableTok{$SLURM\_ARRAY\_TASK\_ID}\OperatorTok{]/}\SpecialStringTok{genobaypass}\OperatorTok{/}\NormalTok{project.output}\VariableTok{\}}
 
@@ -562,24 +564,21 @@ Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des f
 \addcontentsline{toc}{chapter}{Baypass : les résultats}
 
 Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l'analyse (crash, disque plein\ldots) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers \textbf{\emph{mat\_omega.out}} qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse. Avant de regrouper les résultats, il faut s'assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles.
-Cette comparaison se fait en évaluant un indice de distance FMD (Förstner \& Moonen, 2003) entre matrices ; plus la distance sera faible plus les matrices, donc les analyses, seront comparables.(Chunk \ref{exr:chunk4})
+Cette comparaison se fait en évaluant un indice de distance FMD (Förstner \& Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk \ref{exr:chunk4})
 
 \begin{exercise}
 \protect\hypertarget{exr:chunk4}{}\label{exr:chunk4}{Comparaison des matrices Ω}
 \end{exercise}
 
-blabla à trouver:
-blabla.
-blabla.
-blabla.
+Les fichiers de matrice sont copiés dans un dossier local puis comparés deux à deux par la fonction \textbf{\emph{fmd.dist}} des utilitaires de BayPass pour évaluer leur distances.
+Une heatmap et une décomposition en valeurs singulières de la dernière matrice sont alors affichées.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{source}\NormalTok{(}\StringTok{"C:/BayPass\_pipeline/utils/baypass\_utils.R"}\NormalTok{)}
-\NormalTok{prefix }\OtherTok{\textless{}{-}} \StringTok{"13pops{-}chr1\_STD3K\_3cov.sub"}
-\CommentTok{\#prefix \textless{}{-} "13pops{-}chr1\_RUN"}
+\FunctionTok{source}\NormalTok{(}\StringTok{"/../baypass\_utils.R"}\NormalTok{)}
+\NormalTok{prefix }\OtherTok{\textless{}{-}} \StringTok{"project.sub"}
 \CommentTok{\#liste et compte les matrices Ω du répertoire "path"}
-\NormalTok{path\_Omega }\OtherTok{\textless{}{-}} \StringTok{"C:/BayPass\_pipeline/Output/13pops/chr1/Omega3K/"}
+\NormalTok{path\_Omega }\OtherTok{\textless{}{-}} \StringTok{"/../Omega\_files/"}
 \NormalTok{listMatrix }\OtherTok{\textless{}{-}} \FunctionTok{list.files}\NormalTok{(path\_Omega, }\AttributeTok{pattern=}\StringTok{"mat\_omega.out"}\NormalTok{)}
 \NormalTok{nMatrix}\OtherTok{\textless{}{-}}\FunctionTok{length}\NormalTok{(listMatrix)}
 \FunctionTok{cat}\NormalTok{(}\StringTok{"Nbr matrix files ="}\NormalTok{, nMatrix, }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
@@ -592,11 +591,17 @@ blabla.
 \NormalTok{FMD }\OtherTok{\textless{}{-}} \FunctionTok{fmd.dist}\NormalTok{(omegaA, omegaB)}
 \NormalTok{ListFMD }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(ListFMD,FMD)}
 \NormalTok{\}}
-\NormalTok{pnames }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}pop1\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop2\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop3\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop4\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop5\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop6\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop7\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop8\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop9\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop10\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop11\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop12\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop13\textquotesingle{}}\NormalTok{))}
+
+\CommentTok{\#calcule la moyenne et la sd de toutes les distances FMD}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"FMD mean ="}\NormalTok{, }\FunctionTok{mean}\NormalTok{(ListFMD), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+\FunctionTok{cat}\NormalTok{(}\StringTok{"FMD sd ="}\NormalTok{ , }\FunctionTok{sd}\NormalTok{(ListFMD), }\StringTok{"}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{)}
+
 \CommentTok{\#heatmap de la dernière matrice Ω.}
+\NormalTok{pnames }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}pop1\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop2\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop3\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop4\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop5\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop6\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop7\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop8\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop9\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop10\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop11\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop12\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}pop13\textquotesingle{}}\NormalTok{))}
 \FunctionTok{colnames}\NormalTok{(omegaB) }\OtherTok{\textless{}{-}}\FunctionTok{c}\NormalTok{(pnames)}
 \FunctionTok{rownames}\NormalTok{(omegaB) }\OtherTok{\textless{}{-}}\FunctionTok{c}\NormalTok{(pnames)}
 \NormalTok{cor.mat}\OtherTok{=}\FunctionTok{cov2cor}\NormalTok{(omegaB)}
+\CommentTok{\#heatmap des liens génétiques entre population}
 \NormalTok{cim\_color }\OtherTok{\textless{}{-}} \FunctionTok{colorRampPalette}\NormalTok{(}\FunctionTok{rev}\NormalTok{(}\FunctionTok{brewer.pal}\NormalTok{(}\DecValTok{9}\NormalTok{, }\StringTok{"Blues"}\NormalTok{)))(}\DecValTok{16}\NormalTok{)}
 \FunctionTok{cim}\NormalTok{(cor.mat, }\AttributeTok{color =}\NormalTok{ cim\_color, }\AttributeTok{symkey =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{margins =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{), }\AttributeTok{title =} \StringTok{"Correlation map based on last "}\SpecialCharTok{\textasciitilde{}}\FunctionTok{hat}\NormalTok{(Omega))}
 \CommentTok{\#SVD de la dernière matrice Ω.}
@@ -604,6 +609,8 @@ blabla.
 \NormalTok{SVD\_omega}
 \end{Highlighting}
 \end{Shaded}
+
+Une fois la moyenne des FMD calculées il est possible de visualiser les liens génétiques entre populations représentés par la matrice Ω par un plot en heatmap ainsi que par la décomposition en valeurs singulières (SVD) d'une matrice prise au hasard.Un exemple de script pour convertir une SVD en plot ggplot2 beaucoup plus maniable et paramétrable pour une publication par exemple est donné en \protect\hyperlink{An2}{Annexe 2}
 
 \hypertarget{annexes}{%
 \chapter*{Annexes}\label{annexes}}
@@ -653,6 +660,59 @@ On peut aussi calculer et plotter des Fst multi-locus en balayant le génome ave
 \NormalTok{Fst.plot }\SpecialCharTok{+} \FunctionTok{scale\_x\_continuous}\NormalTok{() }\SpecialCharTok{+} \FunctionTok{scale\_y\_continuous}\NormalTok{() }\SpecialCharTok{+}
   \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.x=}\FunctionTok{element\_blank}\NormalTok{(), }\AttributeTok{axis.text.x=}\FunctionTok{element\_blank}\NormalTok{(), }\AttributeTok{axis.ticks.x=}\FunctionTok{element\_blank}\NormalTok{()) }\SpecialCharTok{+}
   \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{Chr, }\AttributeTok{scales =} \StringTok{\textquotesingle{}free\_x\textquotesingle{}}\NormalTok{, }\AttributeTok{strip.position =}\FunctionTok{c}\NormalTok{(}\StringTok{"bottom"}\NormalTok{)) }\CommentTok{\#affichage des chromosomes en grille}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{An2}{%
+\section*{Annexe 2}\label{An2}}
+\addcontentsline{toc}{section}{Annexe 2}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pnames }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}13{-}1{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}18{-}84{-}001{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}47{-}003{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}49{-}001{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}85{-}3{-}4{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}IT{-}ID3{-}S\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}47{-}002{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}17{-}53{-}006{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}19{-}30{-}1{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44{-}1{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44{-}2{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}44{-}3{-}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}IT{-}ID1{-}R\textquotesingle{}}\NormalTok{))}
+\NormalTok{pheno }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\NormalTok{))}
+\NormalTok{geo }\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}SE\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}SE\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}SO\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}NO\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}NO\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}IT\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}SO\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}NO\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}SE\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}NO\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}NO\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}NO\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}IT\textquotesingle{}}\NormalTok{))}
+\NormalTok{nomsU}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}SE{-}S{-}02\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{))}
+\NormalTok{nomsL}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}NO{-}S{-}02\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}IT{-}S{-}01\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}SO{-}R{-}01\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}NO{-}R{-}04\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}SE{-}R{-}01\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}IT{-}R{-}01\textquotesingle{}}\NormalTok{))}
+\NormalTok{nomsR}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}SE{-}S{-}01\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}SO{-}S{-}01\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}NO{-}S{-}01\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{))}
+\NormalTok{nomsN1}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}NO{-}R{-}01\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{))}
+\NormalTok{nomsN2}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}NO{-}R{-}02\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{))}
+\NormalTok{nomsN3}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}NO{-}R{-}03\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{} \textquotesingle{}}\NormalTok{))}
+\NormalTok{noms\_bis}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{"01"}\NormalTok{,   }\StringTok{"02"}\NormalTok{,  }\StringTok{"01"}\NormalTok{, }\StringTok{"02"}\NormalTok{,  }\StringTok{"01"}\NormalTok{, }\StringTok{"01"}\NormalTok{, }\StringTok{"01"}\NormalTok{, }\StringTok{"04"}\NormalTok{, }\StringTok{"01"}\NormalTok{, }\StringTok{"01"}\NormalTok{, }\StringTok{"02"}\NormalTok{, }\StringTok{"03"}\NormalTok{, }\StringTok{"01"}\NormalTok{))}
+\NormalTok{pos}\OtherTok{\textless{}{-}} \FunctionTok{as.character}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}T\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}T\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}T\textquotesingle{}}\NormalTok{, }\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,   }\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,  }\StringTok{\textquotesingle{}T\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{,}\StringTok{\textquotesingle{}R\textquotesingle{}}\NormalTok{))}
+\NormalTok{col\_geo}\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"\#ffc100"}\NormalTok{,   }\StringTok{"\#ffc100"}\NormalTok{,  }\StringTok{"\#69ff27"}\NormalTok{, }\StringTok{"\#00b0f0"}\NormalTok{, }\StringTok{"\#00b0f0"}\NormalTok{, }\StringTok{"\#7030a0"}\NormalTok{, }\StringTok{"\#69ff27"}\NormalTok{, }\StringTok{"\#00b0f0"}\NormalTok{,  }\StringTok{"\#ffc100"}\NormalTok{,}\StringTok{"\#00b0f0"}\NormalTok{,}\StringTok{"\#00b0f0"}\NormalTok{,}\StringTok{"\#00b0f0"}\NormalTok{,}\StringTok{"\#7030a0"}\NormalTok{)}
+\CommentTok{\# convertit en data.frame}
+\NormalTok{tab\_SVD }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{sample.id =}\NormalTok{ pnames,}
+    \AttributeTok{phenotype =} \FunctionTok{factor}\NormalTok{(pheno),}
+    \AttributeTok{region =} \FunctionTok{factor}\NormalTok{(geo),}
+    \CommentTok{\#noms = factor(noms),}
+    \AttributeTok{noms\_bis =} \FunctionTok{factor}\NormalTok{(noms\_bis),}
+    \AttributeTok{nomsUp =} \FunctionTok{factor}\NormalTok{(nomsU),}
+    \AttributeTok{nomsLeft =} \FunctionTok{factor}\NormalTok{(nomsL),}
+    \AttributeTok{nomsRight =} \FunctionTok{factor}\NormalTok{(nomsR),}
+    \AttributeTok{nomsN1 =} \FunctionTok{factor}\NormalTok{(nomsN1),}
+    \AttributeTok{nomsN2 =} \FunctionTok{factor}\NormalTok{(nomsN2),}
+    \AttributeTok{nomsN3 =} \FunctionTok{factor}\NormalTok{(nomsN3),}
+    \AttributeTok{colPop=}\NormalTok{col\_geo,}
+    \AttributeTok{pos =} \FunctionTok{factor}\NormalTok{(pos),}
+    \AttributeTok{PC =}\NormalTok{ SVD\_omega}\SpecialCharTok{$}\NormalTok{PC,    }\CommentTok{\# the first eigenvector}
+    \AttributeTok{eig =}\NormalTok{ SVD\_omega}\SpecialCharTok{$}\NormalTok{eig,    }\CommentTok{\# the second eigenvector}
+    \AttributeTok{VAR =}\NormalTok{ SVD\_omega}\SpecialCharTok{$}\NormalTok{pcent.var,    }\CommentTok{\# variance proportion for each principal component}
+    \AttributeTok{stringsAsFactors =} \ConstantTok{FALSE}\NormalTok{)}
+
+\NormalTok{ggplot\_svd }\OtherTok{=} \FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data=}\NormalTok{tab\_SVD, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{PC}\FloatTok{.1}\NormalTok{, }\AttributeTok{y=}\NormalTok{PC}\FloatTok{.2}\NormalTok{, }\AttributeTok{shape=}\NormalTok{phenotype)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{color=}\NormalTok{ region),}\AttributeTok{alpha=}\DecValTok{1}\NormalTok{, }\AttributeTok{size=}\DecValTok{10}\NormalTok{)}\SpecialCharTok{+}\FunctionTok{scale\_shape\_manual}\NormalTok{(}\AttributeTok{values =} \FunctionTok{c}\NormalTok{(}\StringTok{\textquotesingle{}Susceptible\textquotesingle{}}\OtherTok{=}\DecValTok{79}\NormalTok{, }\StringTok{\textquotesingle{}Resistant\textquotesingle{}}\OtherTok{=}\DecValTok{16}\NormalTok{))}\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}\StringTok{"Singular Value Decomposition of the covariance ("}\NormalTok{,}\FunctionTok{expression}\NormalTok{(}\StringTok{"\textbackslash{}U03A9"}\NormalTok{),}\StringTok{") matrix for Z chromosome"}\NormalTok{))}\SpecialCharTok{+}
+  \FunctionTok{scale\_colour\_manual}\NormalTok{(}\AttributeTok{name =} \StringTok{"region"}\NormalTok{,}\AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"IT"}\NormalTok{, }\StringTok{"NO"}\NormalTok{, }\StringTok{"SE"}\NormalTok{, }\StringTok{"SO"}\NormalTok{), }\AttributeTok{values =} \FunctionTok{c}\NormalTok{(}\StringTok{"\#7030a0"}\NormalTok{, }\StringTok{"\#00b0f0"}\NormalTok{, }\StringTok{"\#ffc100"}\NormalTok{,}\StringTok{"\#69ff27"}\NormalTok{ ),}\AttributeTok{guide =} \FunctionTok{guide\_legend}\NormalTok{(}\AttributeTok{override.aes =} \FunctionTok{list}\NormalTok{(}\AttributeTok{pch=}\DecValTok{126}\NormalTok{)))}
+\NormalTok{ggplot\_svd }\SpecialCharTok{+} \FunctionTok{scale\_x\_continuous}\NormalTok{() }\SpecialCharTok{+} \FunctionTok{scale\_y\_continuous}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{xlab}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"PC1 ("}\NormalTok{,}\FunctionTok{round}\NormalTok{(tab\_SVD}\SpecialCharTok{$}\NormalTok{VAR[}\DecValTok{1}\NormalTok{], }\DecValTok{2}\NormalTok{), }\StringTok{"\%)"}\NormalTok{ , }\AttributeTok{sep=}\StringTok{""}\NormalTok{)) }\SpecialCharTok{+}  \FunctionTok{ylab}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"PC2 ("}\NormalTok{, }\FunctionTok{round}\NormalTok{(tab\_SVD}\SpecialCharTok{$}\NormalTok{VAR[}\DecValTok{2}\NormalTok{], }\DecValTok{2}\NormalTok{), }\StringTok{"\%)"}\NormalTok{ , }\AttributeTok{sep=}\StringTok{""}\NormalTok{)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ nomsLeft), }\AttributeTok{nudge\_x =} \SpecialCharTok{{-}}\FloatTok{0.05}\NormalTok{,}\AttributeTok{fontface =} \StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ nomsUp), }\AttributeTok{nudge\_y =} \FloatTok{0.04}\NormalTok{,}\AttributeTok{fontface =} \StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ nomsRight), }\AttributeTok{nudge\_x =} \FloatTok{0.05}\NormalTok{,}\AttributeTok{fontface =} \StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ nomsN1), }\AttributeTok{nudge\_x =} \FloatTok{0.03}\NormalTok{, }\AttributeTok{nudge\_y =} \FloatTok{0.03}\NormalTok{, }\AttributeTok{fontface =} \StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ nomsN2), }\AttributeTok{nudge\_x =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{nudge\_y =} \FloatTok{0.00}\NormalTok{, }\AttributeTok{fontface =} \StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{geom\_text}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ nomsN3), }\AttributeTok{nudge\_x =} \FloatTok{0.03}\NormalTok{, }\AttributeTok{nudge\_y =} \SpecialCharTok{{-}}\FloatTok{0.03}\NormalTok{, }\AttributeTok{fontface =} \StringTok{\textquotesingle{}bold\textquotesingle{}}\NormalTok{)}\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.x =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =}\DecValTok{15}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{))}\SpecialCharTok{+}\FunctionTok{theme}\NormalTok{(}\AttributeTok{axis.title.y =} \FunctionTok{element\_text}\NormalTok{(}\AttributeTok{size =}\DecValTok{15}\NormalTok{, }\AttributeTok{face =} \StringTok{"bold"}\NormalTok{))}
 \end{Highlighting}
 \end{Shaded}
 

@@ -19,13 +19,16 @@ Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le sc
 #SBATCH --cpus-per-task=2   #nbr de core par job
 #SBATCH --mem-per-cpu=2G    #mémoire partagée par tous les cores
 
-module load system/R-3.4.3
-module load bioinfo/baypass_2.3
-module load compiler/intel-2018.0.128
-module load mpi/openmpi-1.8.8-intel2018.0.128
-module load compiler/gcc-9.3.0
+module purge
+module load statistics/R/4.2.2
+module load bioinfo/BayPass/2.4
+module load compilers/intel/2023.0.0    #pour i_baypass
+#module load mpi/openmpi/4.1.4
+#module load compilers/gcc/12.2.0       #pour g_baypass
 
-my_path='/BayPass/Input'
+
+#définition du chemin ciblant les fichiers genobaypass et snpdet
+my_path='/../Input/'
 FILES_R1=($(ls $my_path/genobaypass.sub* | sed -r 's/^.+\///'))
 INPUT_F1=${FILES_R1[$SLURM_ARRAY_TASK_ID]}
 OUTPUT=${FILES_R1[$SLURM_ARRAY_TASK_ID]/genobaypass/project.output}

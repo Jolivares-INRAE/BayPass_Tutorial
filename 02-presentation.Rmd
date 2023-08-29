@@ -46,7 +46,7 @@ module load bioinfo/samtools/1.12
 module load bioinfo/VarScan/2.4.2
 module load bioinfo/bcftools/1.14
 
-ls /../*.bam > BamList.txt                                                #liste tous les fichiers "bam" et leur chemin
+ls /My_path/*.bam > BamList.txt                                                #liste tous les fichiers "bam" et leur chemin
 ls /../*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt      #extrait les noms des échatillons/populations
 
 samtools mpileup -C 50 -d 5000 -q 20 \
@@ -100,12 +100,13 @@ library(mixOmics)       #"cim" pour heatmap
 library(corrplot)       #matrice de corrélation pour heat map
 library(VennDiagram)    #création de diagramme de Venn
 library(nVennR)         #extraction de données d'un diagramme de Venn
-library(tidyverse)      #manipulation de données et plots (ggplot2)
+library(tidyverse)      #manipulation de données (dplyr) et plots (ggplot2)
 
-path_vcf <- "C:/BayPass/vcf/"
-path_input <- "C:/BayPass/Input/"
-path_out <- "C:/BayPass/Output/"
-path_res <- "C:/BayPass/Resultats/"
+#définition des chemins de travail
+path_vcf <- "/../vcf/"
+path_input <- "/../Input/"
+path_out <- "/../Output/"
+path_res <- "/../Resultats/"
 ```
 
 Le filtrage du **_vcf_** et la sélection des SNPs à analyser ce fait à l'aide du package PoolFstat (Chunk \@ref(exr:chunk2)). Dans un premier temps il faut renseigner les noms des populations dans un objet **_pnames_** et les tailles haploïdes de chaque population dans un objet **_psizes_**. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d'individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d'individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1). 

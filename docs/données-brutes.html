@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-08-29" />
+<meta name="date" content="2023-08-30" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -194,6 +194,7 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An2"><i class="fa fa-check"></i>Annexe 2</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
 </ul>
@@ -231,7 +232,7 @@ Si l’on veut découper le travail en chromosomes, il est indispensable de trav
 <span id="cb1-5"><a href="données-brutes.html#cb1-5" tabindex="-1"></a><span class="ex">module</span> load bioinfo/VarScan/2.4.2</span>
 <span id="cb1-6"><a href="données-brutes.html#cb1-6" tabindex="-1"></a><span class="ex">module</span> load bioinfo/bcftools/1.14</span>
 <span id="cb1-7"><a href="données-brutes.html#cb1-7" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="données-brutes.html#cb1-8" tabindex="-1"></a><span class="fu">ls</span> /../<span class="pp">*</span>.bam <span class="op">&gt;</span> BamList.txt                                                <span class="co">#liste tous les fichiers &quot;bam&quot; et leur chemin</span></span>
+<span id="cb1-8"><a href="données-brutes.html#cb1-8" tabindex="-1"></a><span class="fu">ls</span> /My_path/<span class="pp">*</span>.bam <span class="op">&gt;</span> BamList.txt                                                <span class="co">#liste tous les fichiers &quot;bam&quot; et leur chemin</span></span>
 <span id="cb1-9"><a href="données-brutes.html#cb1-9" tabindex="-1"></a><span class="fu">ls</span> /../<span class="pp">*</span>.bam <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/^.+\///&#39;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/.bam//&#39;</span> <span class="op">&gt;</span> NameList.txt      <span class="co">#extrait les noms des échatillons/populations</span></span>
 <span id="cb1-10"><a href="données-brutes.html#cb1-10" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="données-brutes.html#cb1-11" tabindex="-1"></a><span class="ex">samtools</span> mpileup <span class="at">-C</span> 50 <span class="at">-d</span> 5000 <span class="at">-q</span> 20 <span class="dt">\</span></span>
@@ -278,12 +279,13 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 <span id="cb3-4"><a href="données-brutes.html#cb3-4" tabindex="-1"></a><span class="fu">library</span>(corrplot)       <span class="co">#matrice de corrélation pour heat map</span></span>
 <span id="cb3-5"><a href="données-brutes.html#cb3-5" tabindex="-1"></a><span class="fu">library</span>(VennDiagram)    <span class="co">#création de diagramme de Venn</span></span>
 <span id="cb3-6"><a href="données-brutes.html#cb3-6" tabindex="-1"></a><span class="fu">library</span>(nVennR)         <span class="co">#extraction de données d&#39;un diagramme de Venn</span></span>
-<span id="cb3-7"><a href="données-brutes.html#cb3-7" tabindex="-1"></a><span class="fu">library</span>(tidyverse)      <span class="co">#manipulation de données et plots (ggplot2)</span></span>
+<span id="cb3-7"><a href="données-brutes.html#cb3-7" tabindex="-1"></a><span class="fu">library</span>(tidyverse)      <span class="co">#manipulation de données (dplyr) et plots (ggplot2)</span></span>
 <span id="cb3-8"><a href="données-brutes.html#cb3-8" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="données-brutes.html#cb3-9" tabindex="-1"></a>path_vcf <span class="ot">&lt;-</span> <span class="st">&quot;C:/BayPass/vcf/&quot;</span></span>
-<span id="cb3-10"><a href="données-brutes.html#cb3-10" tabindex="-1"></a>path_input <span class="ot">&lt;-</span> <span class="st">&quot;C:/BayPass/Input/&quot;</span></span>
-<span id="cb3-11"><a href="données-brutes.html#cb3-11" tabindex="-1"></a>path_out <span class="ot">&lt;-</span> <span class="st">&quot;C:/BayPass/Output/&quot;</span></span>
-<span id="cb3-12"><a href="données-brutes.html#cb3-12" tabindex="-1"></a>path_res <span class="ot">&lt;-</span> <span class="st">&quot;C:/BayPass/Resultats/&quot;</span></span></code></pre></div>
+<span id="cb3-9"><a href="données-brutes.html#cb3-9" tabindex="-1"></a><span class="co">#définition des chemins de travail</span></span>
+<span id="cb3-10"><a href="données-brutes.html#cb3-10" tabindex="-1"></a>path_vcf <span class="ot">&lt;-</span> <span class="st">&quot;/../vcf/&quot;</span></span>
+<span id="cb3-11"><a href="données-brutes.html#cb3-11" tabindex="-1"></a>path_input <span class="ot">&lt;-</span> <span class="st">&quot;/../Input/&quot;</span></span>
+<span id="cb3-12"><a href="données-brutes.html#cb3-12" tabindex="-1"></a>path_out <span class="ot">&lt;-</span> <span class="st">&quot;/../Output/&quot;</span></span>
+<span id="cb3-13"><a href="données-brutes.html#cb3-13" tabindex="-1"></a>path_res <span class="ot">&lt;-</span> <span class="st">&quot;/../Resultats/&quot;</span></span></code></pre></div>
 <p>Le filtrage du <strong><em>vcf</em></strong> et la sélection des SNPs à analyser ce fait à l’aide du package PoolFstat (Chunk <a href="données-brutes.html#exr:chunk2">2</a>). Dans un premier temps il faut renseigner les noms des populations dans un objet <strong><em>pnames</em></strong> et les tailles haploïdes de chaque population dans un objet <strong><em>psizes</em></strong>. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d’individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d’individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1).
 La fonction <strong><em>vcf2poodata</em></strong> va balayer le fichier <strong><em>vcf</em></strong>, sélectionner les SNP bi-alléliques selon des critères définis par l’utilisateur et créer un objet <strong><em>pooldata</em></strong>.</p>
 <div class="exercise">

@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-08-29" />
+<meta name="date" content="2023-08-30" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -194,6 +194,7 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An2"><i class="fa fa-check"></i>Annexe 2</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
 </ul>
@@ -216,43 +217,47 @@ div.csl-indent {
 <div id="baypass-les-résultats" class="section level1 unnumbered hasAnchor">
 <h1>Baypass : les résultats<a href="baypass-les-résultats.html#baypass-les-résultats" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers <strong><em>mat_omega.out</em></strong> qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse. Avant de regrouper les résultats, il faut s’assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles.
-Cette comparaison se fait en évaluant un indice de distance FMD (Förstner &amp; Moonen, 2003) entre matrices ; plus la distance sera faible plus les matrices, donc les analyses, seront comparables.(Chunk <a href="baypass-les-résultats.html#exr:chunk4">4</a>)</p>
+Cette comparaison se fait en évaluant un indice de distance FMD (Förstner &amp; Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk <a href="baypass-les-résultats.html#exr:chunk4">4</a>)</p>
 <div class="exercise">
 <p><span id="exr:chunk4" class="exercise"><strong>Chunk 4  </strong></span><span style="color:darkgreen">Comparaison des matrices Ω</span></p>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
-blabla à trouver:<br>
-blabla.<br>
-blabla.<br>
-blabla.<br>
+Les fichiers de matrice sont copiés dans un dossier local puis comparés deux à deux par la fonction <strong><em>fmd.dist</em></strong> des utilitaires de BayPass pour évaluer leur distances.<br>
+Une heatmap et une décomposition en valeurs singulières de la dernière matrice sont alors affichées.<br>
 </p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="baypass-les-résultats.html#cb10-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;C:/BayPass_pipeline/utils/baypass_utils.R&quot;</span>)</span>
-<span id="cb10-2"><a href="baypass-les-résultats.html#cb10-2" tabindex="-1"></a>prefix <span class="ot">&lt;-</span> <span class="st">&quot;13pops-chr1_STD3K_3cov.sub&quot;</span></span>
-<span id="cb10-3"><a href="baypass-les-résultats.html#cb10-3" tabindex="-1"></a><span class="co">#prefix &lt;- &quot;13pops-chr1_RUN&quot;</span></span>
-<span id="cb10-4"><a href="baypass-les-résultats.html#cb10-4" tabindex="-1"></a><span class="co">#liste et compte les matrices Ω du répertoire &quot;path&quot;</span></span>
-<span id="cb10-5"><a href="baypass-les-résultats.html#cb10-5" tabindex="-1"></a>path_Omega <span class="ot">&lt;-</span> <span class="st">&quot;C:/BayPass_pipeline/Output/13pops/chr1/Omega3K/&quot;</span></span>
-<span id="cb10-6"><a href="baypass-les-résultats.html#cb10-6" tabindex="-1"></a>listMatrix <span class="ot">&lt;-</span> <span class="fu">list.files</span>(path_Omega, <span class="at">pattern=</span><span class="st">&quot;mat_omega.out&quot;</span>)</span>
-<span id="cb10-7"><a href="baypass-les-résultats.html#cb10-7" tabindex="-1"></a>nMatrix<span class="ot">&lt;-</span><span class="fu">length</span>(listMatrix)</span>
-<span id="cb10-8"><a href="baypass-les-résultats.html#cb10-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Nbr matrix files =&quot;</span>, nMatrix, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb10-9"><a href="baypass-les-résultats.html#cb10-9" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="baypass-les-résultats.html#cb10-10" tabindex="-1"></a><span class="co">#boucle sur toutes les matrices, calcule les distances FMD en pairwise et stocke le résultat</span></span>
-<span id="cb10-11"><a href="baypass-les-résultats.html#cb10-11" tabindex="-1"></a>ListFMD<span class="ot">&lt;-</span><span class="fu">c</span>()</span>
-<span id="cb10-12"><a href="baypass-les-résultats.html#cb10-12" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nMatrix) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nMatrix) <span class="cf">if</span>(i<span class="sc">!=</span>j) {</span>
-<span id="cb10-13"><a href="baypass-les-résultats.html#cb10-13" tabindex="-1"></a>omegaA<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_Omega, prefix, i,<span class="st">&quot;_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
-<span id="cb10-14"><a href="baypass-les-résultats.html#cb10-14" tabindex="-1"></a>omegaB<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_Omega, prefix, j,<span class="st">&quot;_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
-<span id="cb10-15"><a href="baypass-les-résultats.html#cb10-15" tabindex="-1"></a>FMD <span class="ot">&lt;-</span> <span class="fu">fmd.dist</span>(omegaA, omegaB)</span>
-<span id="cb10-16"><a href="baypass-les-résultats.html#cb10-16" tabindex="-1"></a>ListFMD <span class="ot">&lt;-</span> <span class="fu">c</span>(ListFMD,FMD)</span>
-<span id="cb10-17"><a href="baypass-les-résultats.html#cb10-17" tabindex="-1"></a>}</span>
-<span id="cb10-18"><a href="baypass-les-résultats.html#cb10-18" tabindex="-1"></a>pnames <span class="ot">&lt;-</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="st">&#39;pop1&#39;</span>, <span class="st">&#39;pop2&#39;</span>, <span class="st">&#39;pop3&#39;</span>, <span class="st">&#39;pop4&#39;</span>, <span class="st">&#39;pop5&#39;</span>, <span class="st">&#39;pop6&#39;</span>, <span class="st">&#39;pop7&#39;</span>, <span class="st">&#39;pop8&#39;</span>, <span class="st">&#39;pop9&#39;</span>, <span class="st">&#39;pop10&#39;</span>, <span class="st">&#39;pop11&#39;</span>, <span class="st">&#39;pop12&#39;</span>, <span class="st">&#39;pop13&#39;</span>))</span>
-<span id="cb10-19"><a href="baypass-les-résultats.html#cb10-19" tabindex="-1"></a><span class="co">#heatmap de la dernière matrice Ω.</span></span>
-<span id="cb10-20"><a href="baypass-les-résultats.html#cb10-20" tabindex="-1"></a><span class="fu">colnames</span>(omegaB) <span class="ot">&lt;-</span><span class="fu">c</span>(pnames)</span>
-<span id="cb10-21"><a href="baypass-les-résultats.html#cb10-21" tabindex="-1"></a><span class="fu">rownames</span>(omegaB) <span class="ot">&lt;-</span><span class="fu">c</span>(pnames)</span>
-<span id="cb10-22"><a href="baypass-les-résultats.html#cb10-22" tabindex="-1"></a>cor.mat<span class="ot">=</span><span class="fu">cov2cor</span>(omegaB)</span>
-<span id="cb10-23"><a href="baypass-les-résultats.html#cb10-23" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Blues&quot;</span>)))(<span class="dv">16</span>)</span>
-<span id="cb10-24"><a href="baypass-les-résultats.html#cb10-24" tabindex="-1"></a><span class="fu">cim</span>(cor.mat, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>), <span class="at">title =</span> <span class="st">&quot;Correlation map based on last &quot;</span><span class="sc">~</span><span class="fu">hat</span>(Omega))</span>
-<span id="cb10-25"><a href="baypass-les-résultats.html#cb10-25" tabindex="-1"></a><span class="co">#SVD de la dernière matrice Ω.</span></span>
-<span id="cb10-26"><a href="baypass-les-résultats.html#cb10-26" tabindex="-1"></a>SVD_omega<span class="ot">&lt;-</span><span class="fu">plot.omega</span>(<span class="at">omega=</span>omegaB, <span class="at">pop.names=</span>pnames, <span class="at">main =</span> <span class="fu">expression</span>(<span class="st">&quot;Singular Value Decomposition of last &quot;</span> <span class="sc">*</span> <span class="er">~</span><span class="fu">hat</span>(Omega)), <span class="at">pos=</span><span class="dv">3</span>)</span>
-<span id="cb10-27"><a href="baypass-les-résultats.html#cb10-27" tabindex="-1"></a>SVD_omega</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="baypass-les-résultats.html#cb10-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)</span>
+<span id="cb10-2"><a href="baypass-les-résultats.html#cb10-2" tabindex="-1"></a>prefix <span class="ot">&lt;-</span> <span class="st">&quot;project.sub&quot;</span></span>
+<span id="cb10-3"><a href="baypass-les-résultats.html#cb10-3" tabindex="-1"></a><span class="co">#liste et compte les matrices Ω du répertoire &quot;path&quot;</span></span>
+<span id="cb10-4"><a href="baypass-les-résultats.html#cb10-4" tabindex="-1"></a>path_Omega <span class="ot">&lt;-</span> <span class="st">&quot;/../Omega_files/&quot;</span></span>
+<span id="cb10-5"><a href="baypass-les-résultats.html#cb10-5" tabindex="-1"></a>listMatrix <span class="ot">&lt;-</span> <span class="fu">list.files</span>(path_Omega, <span class="at">pattern=</span><span class="st">&quot;mat_omega.out&quot;</span>)</span>
+<span id="cb10-6"><a href="baypass-les-résultats.html#cb10-6" tabindex="-1"></a>nMatrix<span class="ot">&lt;-</span><span class="fu">length</span>(listMatrix)</span>
+<span id="cb10-7"><a href="baypass-les-résultats.html#cb10-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Nbr matrix files =&quot;</span>, nMatrix, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb10-8"><a href="baypass-les-résultats.html#cb10-8" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="baypass-les-résultats.html#cb10-9" tabindex="-1"></a><span class="co">#boucle sur toutes les matrices, calcule les distances FMD en pairwise et stocke le résultat</span></span>
+<span id="cb10-10"><a href="baypass-les-résultats.html#cb10-10" tabindex="-1"></a>ListFMD<span class="ot">&lt;-</span><span class="fu">c</span>()</span>
+<span id="cb10-11"><a href="baypass-les-résultats.html#cb10-11" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nMatrix) <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nMatrix) <span class="cf">if</span>(i<span class="sc">!=</span>j) {</span>
+<span id="cb10-12"><a href="baypass-les-résultats.html#cb10-12" tabindex="-1"></a>omegaA<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_Omega, prefix, i,<span class="st">&quot;_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
+<span id="cb10-13"><a href="baypass-les-résultats.html#cb10-13" tabindex="-1"></a>omegaB<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_Omega, prefix, j,<span class="st">&quot;_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
+<span id="cb10-14"><a href="baypass-les-résultats.html#cb10-14" tabindex="-1"></a>FMD <span class="ot">&lt;-</span> <span class="fu">fmd.dist</span>(omegaA, omegaB)</span>
+<span id="cb10-15"><a href="baypass-les-résultats.html#cb10-15" tabindex="-1"></a>ListFMD <span class="ot">&lt;-</span> <span class="fu">c</span>(ListFMD,FMD)</span>
+<span id="cb10-16"><a href="baypass-les-résultats.html#cb10-16" tabindex="-1"></a>}</span>
+<span id="cb10-17"><a href="baypass-les-résultats.html#cb10-17" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="baypass-les-résultats.html#cb10-18" tabindex="-1"></a><span class="co">#calcule la moyenne et la sd de toutes les distances FMD</span></span>
+<span id="cb10-19"><a href="baypass-les-résultats.html#cb10-19" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;FMD mean =&quot;</span>, <span class="fu">mean</span>(ListFMD), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb10-20"><a href="baypass-les-résultats.html#cb10-20" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;FMD sd =&quot;</span> , <span class="fu">sd</span>(ListFMD), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb10-21"><a href="baypass-les-résultats.html#cb10-21" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="baypass-les-résultats.html#cb10-22" tabindex="-1"></a><span class="co">#heatmap de la dernière matrice Ω.</span></span>
+<span id="cb10-23"><a href="baypass-les-résultats.html#cb10-23" tabindex="-1"></a>pnames <span class="ot">&lt;-</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="st">&#39;pop1&#39;</span>, <span class="st">&#39;pop2&#39;</span>, <span class="st">&#39;pop3&#39;</span>, <span class="st">&#39;pop4&#39;</span>, <span class="st">&#39;pop5&#39;</span>, <span class="st">&#39;pop6&#39;</span>, <span class="st">&#39;pop7&#39;</span>, <span class="st">&#39;pop8&#39;</span>, <span class="st">&#39;pop9&#39;</span>, <span class="st">&#39;pop10&#39;</span>, <span class="st">&#39;pop11&#39;</span>, <span class="st">&#39;pop12&#39;</span>, <span class="st">&#39;pop13&#39;</span>))</span>
+<span id="cb10-24"><a href="baypass-les-résultats.html#cb10-24" tabindex="-1"></a><span class="fu">colnames</span>(omegaB) <span class="ot">&lt;-</span><span class="fu">c</span>(pnames)</span>
+<span id="cb10-25"><a href="baypass-les-résultats.html#cb10-25" tabindex="-1"></a><span class="fu">rownames</span>(omegaB) <span class="ot">&lt;-</span><span class="fu">c</span>(pnames)</span>
+<span id="cb10-26"><a href="baypass-les-résultats.html#cb10-26" tabindex="-1"></a>cor.mat<span class="ot">=</span><span class="fu">cov2cor</span>(omegaB)</span>
+<span id="cb10-27"><a href="baypass-les-résultats.html#cb10-27" tabindex="-1"></a><span class="co">#heatmap des liens génétiques entre population</span></span>
+<span id="cb10-28"><a href="baypass-les-résultats.html#cb10-28" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Blues&quot;</span>)))(<span class="dv">16</span>)</span>
+<span id="cb10-29"><a href="baypass-les-résultats.html#cb10-29" tabindex="-1"></a><span class="fu">cim</span>(cor.mat, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>), <span class="at">title =</span> <span class="st">&quot;Correlation map based on last &quot;</span><span class="sc">~</span><span class="fu">hat</span>(Omega))</span>
+<span id="cb10-30"><a href="baypass-les-résultats.html#cb10-30" tabindex="-1"></a><span class="co">#SVD de la dernière matrice Ω.</span></span>
+<span id="cb10-31"><a href="baypass-les-résultats.html#cb10-31" tabindex="-1"></a>SVD_omega<span class="ot">&lt;-</span><span class="fu">plot.omega</span>(<span class="at">omega=</span>omegaB, <span class="at">pop.names=</span>pnames, <span class="at">main =</span> <span class="fu">expression</span>(<span class="st">&quot;Singular Value Decomposition of last &quot;</span> <span class="sc">*</span> <span class="er">~</span><span class="fu">hat</span>(Omega)), <span class="at">pos=</span><span class="dv">3</span>)</span>
+<span id="cb10-32"><a href="baypass-les-résultats.html#cb10-32" tabindex="-1"></a>SVD_omega</span></code></pre></div>
+<p>Une fois la moyenne des FMD calculées il est possible de visualiser les liens génétiques entre populations représentés par la matrice Ω par un plot en heatmap ainsi que par la décomposition en valeurs singulières (SVD) d’une matrice prise au hasard.Un exemple de script pour convertir une SVD en plot ggplot2 beaucoup plus maniable et paramétrable pour une publication par exemple est donné en <a href="annexes.html#An2">Annexe 2</a></p>
 
 </div>
             </section>
