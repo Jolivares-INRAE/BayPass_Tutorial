@@ -36,8 +36,10 @@ Fst.plot + scale_x_continuous() + scale_y_continuous() +
 
 ## Annexe 2 {-#An2}
 
+Il peut être intéressant de convertir la SVD en graphique ggplot, afin d'avoir la main sur tous les aspects cosmétiques en vue d'une publication par exemple.
+Le principe consiste à créer une table dans laquelle on intègre les informations à ploter (noms, phenotype, couleurs) ainsi que les les 2 premiers vecteurs propres (eigen vector) et leur variance, de la matrice SVD.
 ```{r SVD, fig.width=10, fig.height=10, verbose=FALSE, eval=FALSE}
-pnames <- as.character(c('13-1-S', '18-84-001-S', '17-47-003-S', '17-49-001-S', '85-3-4-S', 'IT-ID3-S', '17-47-002-R', '17-53-006-R', '19-30-1-R', '44-1-R', '44-2-R', '44-3-R', 'IT-ID1-R'))
+# définition des phenotypes, origines, noms
 pheno <- as.character(c('Susceptible',   'Susceptible',  'Susceptible', 'Susceptible', 'Susceptible', 'Susceptible', 'Resistant', 'Resistant', 'Resistant', 'Resistant', 'Resistant','Resistant','Resistant'))
 geo <- as.character(c('SE',   'SE',  'SO', 'NO',   'NO',  'IT', 'SO',   'NO',  'SE','NO','NO','NO','IT'))
 nomsU<- as.character(c(' ',   'SE-S-02',  ' ', '',   ' ',  ' ', ' ',   ' ',  ' ',' ',' ',' ',' '))
@@ -46,7 +48,6 @@ nomsR<- as.character(c('SE-S-01',   ' ',  'SO-S-01', ' ',   'NO-S-01',  ' ', ' '
 nomsN1<- as.character(c(' ',   ' ',  ' ', ' ',   ' ',  ' ', ' ',   ' ',  ' ', 'NO-R-01', ' ', ' ', ' '))
 nomsN2<- as.character(c(' ',   ' ',  ' ', ' ',   ' ',  ' ', ' ',   ' ',  ' ', ' ', 'NO-R-02', ' ', ' '))
 nomsN3<- as.character(c(' ',   ' ',  ' ', ' ',   ' ',  ' ', ' ',   ' ',  ' ', ' ', ' ', 'NO-R-03', ' '))
-noms_bis<- as.character(c("01",   "02",  "01", "02",  "01", "01", "01", "04", "01", "01", "02", "03", "01"))
 pos<- as.character(c('R',   'T',  'R', 'T',   'R',  'T', 'R',   'R',  'T','R','R','R','R'))
 col_geo<- c("#ffc100",   "#ffc100",  "#69ff27", "#00b0f0", "#00b0f0", "#7030a0", "#69ff27", "#00b0f0",  "#ffc100","#00b0f0","#00b0f0","#00b0f0","#7030a0")
 # convertit en data.frame
@@ -69,16 +70,24 @@ tab_SVD <- data.frame(sample.id = pnames,
     stringsAsFactors = FALSE)
 
 ggplot_svd = ggplot(data=tab_SVD, aes(x=PC.1, y=PC.2, shape=phenotype)) +
-  geom_point(aes(color= region),alpha=1, size=10)+scale_shape_manual(values = c('Susceptible'=79, 'Resistant'=16))+
-  ggtitle(paste0("Singular Value Decomposition of the covariance (",expression("\U03A9"),") matrix for Z chromosome"))+
-  scale_colour_manual(name = "region",labels = c("IT", "NO", "SE", "SO"), values = c("#7030a0", "#00b0f0", "#ffc100","#69ff27" ),guide = guide_legend(override.aes = list(pch=126)))
-ggplot_svd + scale_x_continuous() + scale_y_continuous() +
-  xlab(paste("PC1 (",round(tab_SVD$VAR[1], 2), "%)" , sep="")) +  ylab(paste("PC2 (", round(tab_SVD$VAR[2], 2), "%)" , sep="")) +
+  geom_point(aes(color= region),alpha=1, size=10)+
+  scale_shape_manual(values = c('Susceptible'=79, 'Resistant'=16))+
+  scale_colour_manual(name = "region",labels = c("IT", "NO", "SE", "SO"),
+                      values = c("#7030a0", "#00b0f0", "#ffc100","#69ff27" ),
+                      guide = guide_legend(override.aes = list(pch=126)))+
+  ggtitle(paste0("Singular Value Decomposition of the covariance (",expression("\U03A9"),") matrix for Z chromosome"))
+
+ggplot_svd +
+  scale_x_continuous()+
+  scale_y_continuous()+
+  xlab(paste("PC1 (",round(tab_SVD$VAR[1], 2), "%)" , sep=""))+
+  ylab(paste("PC2 (", round(tab_SVD$VAR[2], 2), "%)" , sep=""))+
   geom_text(aes(label = nomsLeft), nudge_x = -0.05,fontface = 'bold')+
   geom_text(aes(label = nomsUp), nudge_y = 0.04,fontface = 'bold')+
   geom_text(aes(label = nomsRight), nudge_x = 0.05,fontface = 'bold')+
   geom_text(aes(label = nomsN1), nudge_x = 0.03, nudge_y = 0.03, fontface = 'bold')+
   geom_text(aes(label = nomsN2), nudge_x = 0.05, nudge_y = 0.00, fontface = 'bold')+
   geom_text(aes(label = nomsN3), nudge_x = 0.03, nudge_y = -0.03, fontface = 'bold')+
-  theme(axis.title.x = element_text(size =15, face = "bold"))+theme(axis.title.y = element_text(size =15, face = "bold"))
+  theme(axis.title.x = element_text(size =15, face = "bold"))+
+  theme(axis.title.y = element_text(size =15, face = "bold"))
 ```
