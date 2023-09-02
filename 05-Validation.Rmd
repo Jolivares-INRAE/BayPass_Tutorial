@@ -1,4 +1,5 @@
 # Baypass : les résultats {-}
+## Validation des données analysées {-}
 Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers **_mat_omega.out_** qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse.  Avant de regrouper les résultats, il faut s'assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles. 
 Cette comparaison se fait en évaluant un indice de distance FMD (Förstner & Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk \@ref(exr:chunk4))
 
@@ -33,7 +34,6 @@ cat("FMD mean =", mean(ListFMD), "\n")
 cat("FMD sd =" , sd(ListFMD), "\n")
 
 #heatmap de la dernière matrice Ω.
-pnames <- as.character(c('pop1', 'pop2', 'pop3', 'pop4', 'pop5', 'pop6', 'pop7', 'pop8', 'pop9', 'pop10', 'pop11', 'pop12', 'pop13'))
 colnames(omegaB) <-c(pnames)
 rownames(omegaB) <-c(pnames)
 cor.mat=cov2cor(omegaB)
@@ -45,3 +45,39 @@ SVD_omega<-plot.omega(omega=omegaB, pop.names=pnames, main = expression("Singula
 SVD_omega
 ```
 Une fois la moyenne des FMD calculées il est possible de visualiser les liens génétiques entre populations représentés par la matrice Ω par un plot en heatmap ainsi que par la décomposition en valeurs singulières (SVD) d'une matrice prise au hasard.Un exemple de script pour convertir une SVD en plot ggplot2 beaucoup plus maniable et paramétrable pour une publication par exemple est donné en [Annexe 2](#An2)
+Cette matrice SVD représente les distances génétiques des populations analysées.
+
+## Concaténation des résultats{-}
+Une fois la reproductibilité des analyses vérifiées, il faut concaténer tous les fichiers de résultats, l'idée étant de faire le lien entre chaque fichier de résultat et son fichier de position **_snpdet.sub_** correspondant puis de les concaténer les uns aux autres. Le script (Script \@ref(exm:script5)) est un exemple adapté aux résultats XtX.
+
+```{example, script5}
+<span style="color:darkgreen">Exemple d'un script bash pour concaténer les résultats XtX.</span>
+```
+<p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
+   Les sous-jeux de données sont analysés en parallèle 
+</p>
+```{bash scr5, eval=FALSE}
+
+Snpdet_path='/../BayPass/Input/'
+My_prefix='project_STD.sub'
+
+#on boucle sur tous les sous fichiers
+for i in {1..5}
+do
+file1=$(echo "$Snpdet_path/snpdet.sub""$i""")
+file2=$(echo "$My_prefix""$i""_summary_pi_xtx.out")
+sed -e "s/[[:space:]]\+/ /g" $file1 > SubSNP.x							#on remplace tous les séparateurs par tabulation, ça évite les bugs
+sed -e "s/[[:space:]]\+/ /g" $file2 | grep -v "MRK" - > SubData.x					#on prend tout sauf l'entête
+paste SubSNP.x SubData.x - >> tmp.xtx.merged						#on colle/incrémente dans un nouveau fichier
+done
+#on tri par chromosome et position
+awk '{for (i=1;i<=NF;i++) if ($i+0 == $i && $i ~ /e/) $2 = sprintf("%.0f", $i)} 1' tmp.xtx.merged | sort -k1,1 -k2,2n - > 8pops_M-chr1-Core.xtx		
+
+#on supprime les fichiers tmp
+rm tmp.xtx.merged
+rm SubSNP.x
+rm SubData.x
+
+#on insère l'entête du fichier
+sed -i '1i chr pos All1 All2 MRK M_P SD_P M_XtX SD_XtX XtXst log10(1/pval)' 8pops_M-chr1-Core.xtx
+```Un exemple de script bash est disponible en [Annexe 3](#An3) pour les fichiers avec l'extension 
