@@ -48,13 +48,13 @@ Une fois la moyenne des FMD calculées il est possible de visualiser les liens g
 Cette matrice SVD représente les distances génétiques des populations analysées.
 
 ## Concaténation des résultats{-}
-Une fois la reproductibilité des analyses vérifiées, il faut concaténer tous les fichiers de résultats, l'idée étant de faire le lien entre chaque fichier de résultat et son fichier de position **_snpdet.sub_** correspondant puis de les concaténer les uns aux autres. Le script (Script \@ref(exm:script5)) est un exemple adapté aux résultats XtX.
+Une fois la reproductibilité des analyses vérifiées, il faut concaténer tous les fichiers de résultats, l'idée étant de faire le lien entre chaque fichier de résultat et son fichier de position **_snpdet.sub_** correspondant puis de les concaténer les uns aux autres. Les fichiers avec l'extension **__summary_pi_xtx.out_** contiennent les resultats liés à la statistique de differenciation **_XtX_**, le script (Script \@ref(exm:script5)) est un exemple de script bash adapté à ce type de fichier.
 
 ```{example, script5}
-<span style="color:darkgreen">Exemple d'un script bash pour concaténer les résultats XtX.</span>
+<span style="color:darkgreen">Exemple d'un script bash pour concaténer les résultats _XtX_.</span>
 ```
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
-   Les sous-jeux de données sont analysés en parallèle 
+   Un boucle permet de coller chaque fichier résultat à son fichier snpdet correspondant(même numéro de subset "i"), le fichier obtenu est trié et l'entête reconstruite.
 </p>
 ```{bash scr5, eval=FALSE}
 

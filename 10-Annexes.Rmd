@@ -99,12 +99,12 @@ ggplot_svd +
 ### Concaténages des résultats Betai et contrastes.
 Valable pour le modèle standard pour Betai et pour les 3 modèles pour contraste.
 
-```{bash scr5, eval=FALSE}
+```{bash scr5A, eval=FALSE}
 
 Snpdet_path='/../BayPass/Input/'
 My_prefix='project_STD.sub'
 
-#on boucle sur toutes les covariables/contraste
+#on boucle sur toutes les covariables ou combinaisons de contraste
 for k in {1..3}
 do
 #on boucle sur tous les fichiers
@@ -121,13 +121,14 @@ awk '{for (i=1;i<=NF;i++) if ($i+0 == $i && $i ~ /e/) $2 = sprintf("%.0f", $i)} 
 
 #on vire les fichiers tmp
 rm tmp-Cov$k.merged
-rm SubSNPb
-rm SubDatab
+rm SubSNP.b
+rm SubData.b
 
 #entête pour les résultats Betai:
 sed -i '1i chr pos All1 All2 COVARIABLE MRK M_Pearson SD_Pearson M_Spearman SD_Spearman BF(dB) Beta_is SD_Beta_is eBPis' project_Betai.Cov$k 
+
 #entête pour les résultats de contraste:
 sed -i '1i chr pos All1 All2 CONTRAST MRK M_C2 SD_C2 C2_std C2_log10(1/pval)' project_contrast-C$k
 ```
 
-### Concaténages des résultats Betai.
+
