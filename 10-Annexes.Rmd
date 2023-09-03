@@ -36,7 +36,7 @@ Fst.plot + scale_x_continuous() + scale_y_continuous() +
 
 ## Annexe 2 {-#An2}
 
-### Conversion de la matrice SVD en graphique ggplot.
+### Conversion de la matrice SVD en graphique ggplot {-}
 
 Il peut être intéressant de convertir la SVD en graphique ggplot, afin d'avoir la main sur tous les aspects cosmétiques en vue d'une publication par exemple.
 Le principe consiste à créer une table dans laquelle on intègre les informations à ploter (noms, phenotype, couleurs) ainsi que les les 2 premiers vecteurs propres (eigen vector) et leur variance, de la matrice SVD.
@@ -96,7 +96,7 @@ ggplot_svd +
 
 ## Annexe 3 {-#An3}
 
-### Concaténages des résultats Betai et contrastes.
+### Concaténages des résultats Betai et contrastes {-}
 Valable pour le modèle standard pour Betai et pour les 3 modèles pour contraste.
 
 ```{bash scr5A, eval=FALSE}

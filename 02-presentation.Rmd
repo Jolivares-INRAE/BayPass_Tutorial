@@ -135,4 +135,3 @@ pooldata<-pooldata.subset(pooldata, cov.qthres.per.pool = c(0,0.99))
 ```
 
 A ce stade cet objet **_pooldata_** peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d'estimation de la structure génétique des populations déduite des Fst est donné en [Annexe 1](#An1)
-

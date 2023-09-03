@@ -1,0 +1,7 @@
+#Les résultats {-}
+
+Une fois fois regroupés les résultats sont télécharges sur un ordinateur local, la visualisation et les analyses complémentaires sont effectuées sous Rstudio.
+
+##Les résultats _XtX_: {-}
+Les colonnes **_M_P_** et **_SD_P_** correspondent, pour simplifier et pour chaque SNP, à la moyenne de la fréquence de l'allèle référence dans toutes les populations analysées et sa standard déviation. A noter que les fichiers avec les extensions **_yij_pij.out_** contiennent le détail de ces fréquences alléliques de l'allèle référence pour chacune des populations analysées.
+Les colonnes 

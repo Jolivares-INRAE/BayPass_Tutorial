@@ -80,4 +80,8 @@ rm SubData.x
 
 #on insère l'entête du fichier
 sed -i '1i chr pos All1 All2 MRK M_P SD_P M_XtX SD_XtX XtXst log10(1/pval)' 8pops_M-chr1-Core.xtx
-```Un exemple de script bash est disponible en [Annexe 3](#An3) pour les fichiers avec l'extension 
+```
+
+Les fichiers avec l'extension **__summary_betai_reg.out_** contiennent les résultats liés aux Bayes Factor, ceux avec l'extension **__summary_contrast.out_** contiennent les résultats liés à la statistique de contraste C2.
+Le script pour concaténer ces résultats est très similaire, une boucle est rajouté pour répéter l'opération autant de fois qu'il y a de covariables ou de combinaisons de contraste analysés, un exemple de script est disponible en [Annexe 3](#An3).
+

@@ -189,17 +189,22 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html"><i class="fa fa-check"></i>Baypass : les résultats</a>
 <ul>
 <li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#validation-des-données-analysées"><i class="fa fa-check"></i>Validation des données analysées</a></li>
-<li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#concaténation-des-résultats"><i class="fa fa-check"></i>Concaténation des résultats</a>
-<ul>
-<li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
+<li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#concaténation-des-résultats"><i class="fa fa-check"></i>Concaténation des résultats</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#An2"><i class="fa fa-check"></i>Annexe 2</a>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
-<li class="chapter" data-level="0.0.1" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#conversion-de-la-matrice-svd-en-graphique-ggplot."><i class="fa fa-check"></i><b>0.0.1</b> Conversion de la matrice SVD en graphique ggplot.</a></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
+<ul>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#An3"><i class="fa fa-check"></i>Annexe 3</a>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An2"><i class="fa fa-check"></i>Annexe 2</a>
 <ul>
-<li class="chapter" data-level="0.0.2" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#concaténages-des-résultats-betai-et-contrastes."><i class="fa fa-check"></i><b>0.0.2</b> Concaténages des résultats Betai et contrastes.</a></li>
+<li class="chapter" data-level="0.0.1" data-path="annexes.html"><a href="annexes.html#conversion-de-la-matrice-svd-en-graphique-ggplot."><i class="fa fa-check"></i><b>0.0.1</b> Conversion de la matrice SVD en graphique ggplot.</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An3"><i class="fa fa-check"></i>Annexe 3</a>
+<ul>
+<li class="chapter" data-level="0.0.2" data-path="annexes.html"><a href="annexes.html#concaténages-des-résultats-betai-et-contrastes."><i class="fa fa-check"></i><b>0.0.2</b> Concaténages des résultats Betai et contrastes.</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
@@ -313,7 +318,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb4-7"><a href="données-brutes.html#cb4-7" tabindex="-1"></a>pooldata <span class="ot">&lt;-</span> <span class="fu">vcf2pooldata</span>(<span class="at">vcf.file =</span> <span class="fu">paste</span>(path_vcf, <span class="st">&quot;project_chr2-28.vcf.gz&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>), <span class="at">poolsizes =</span> psizes_A, <span class="at">poolnames =</span> pnames, <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>, <span class="at">min.rc =</span> <span class="dv">2</span>, <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>, <span class="at">min.maf =</span> <span class="fl">0.05</span>, <span class="at">remove.indels =</span> <span class="cn">FALSE</span>, <span class="at">nlines.per.readblock =</span> <span class="fl">1e+06</span>)</span>
 <span id="cb4-8"><a href="données-brutes.html#cb4-8" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)</span></span>
 <span id="cb4-9"><a href="données-brutes.html#cb4-9" tabindex="-1"></a>pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
-<p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="#An1">Annexe 1</a></p>
+<p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="annexes.html#An1">Annexe 1</a></p>
 
 </div>
 </div>
