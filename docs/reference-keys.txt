@@ -10,5 +10,4 @@ exm:script3
 exm:script4
 exr:chunk4
 exm:script5
-conversion-de-la-matrice-svd-en-graphique-ggplot.
-concaténages-des-résultats-betai-et-contrastes.
+exr:chunk5

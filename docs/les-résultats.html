@@ -4,13 +4,13 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
+  <title>Les résultats | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta property="og:title" content="Les résultats | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
   <meta property="og:image" content="https://jolivares-inrae.github.io/BayPass_Tutorial/C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png" />
   <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
@@ -19,7 +19,7 @@ set in the _output.yml file.</p>" />
   <meta name="github-repo" content="https://github.com/Jolivares-INRAE/BayPass_Tutorial" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta name="twitter:title" content="Les résultats | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   
   <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
@@ -36,8 +36,8 @@ set in the _output.yml file.</p>" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="introduction.html"/>
-<link rel="next" href="données-brutes.html"/>
+<link rel="prev" href="baypass-les-résultats.html"/>
+<link rel="next" href="annexes.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -226,45 +226,36 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="présentation-du-logiciel-baypass-2.3" class="section level1 unnumbered hasAnchor">
-<h1>Présentation du logiciel BayPass 2.3<a href="présentation-du-logiciel-baypass-2.html#présentation-du-logiciel-baypass-2.3" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à l’identification de marqueurs génétiques soumis à la sélection et/ou associés à des covariables spécifiques à la population (variables environnementales, phénotypiques, quantitatives, catégorielles…). Par une approche baysienne il évalue une <strong>matrice Ω</strong> de covariance des fréquences alléliques des populations résultant de leur histoire démographique. Deux manières d’estimer ces fréquences alléliques sont disponibles soit en se basant sur les génotypes référence/mutant des individus analysés soit, lorsque l’on active le « pool-seq mode », ces fréquences alléliques sont calculées en regard de la profondeur de séquençage (reads count) et pondérées par le nombre d’individus qui ont contribué à cette profondeur. C’est cette seconde approche que nous considérerons dans cet ouvrage.</p>
-<p>BayPass propose 3 modèles statistiques d’analyse :</p>
-<div id="le-core-model" class="section level4 unnumbered hasAnchor">
-<h4>Le Core Model<a href="présentation-du-logiciel-baypass-2.html#le-core-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>C’est le modèle de base, il permet de calculer la matrice de covariance Ω et d’attribuer une statistique de différenciation <strong><em>XtX</em></strong> à chaque SNP, et ainsi de scanner le génome pour identifier les régions génomiques différenciées entre les populations.Le <em>XtX</em> est défini comme la variance des fréquences alléliques standardisées du SNP dans les population, c’est une statistique analogue au Fst mais tient compte de la co-évolution des populations grace à la matrice Ω.</p>
+<div id="les-résultats" class="section level1 unnumbered hasAnchor">
+<h1>Les résultats<a href="les-résultats.html#les-résultats" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Une fois fois regroupés les résultats sont téléchargés sur un ordinateur local, la visualisation et les analyses complémentaires sont effectuées sous Rstudio.</p>
+<p>##Les résultats <em>XtX</em>: {-}
+Les colonnes <strong><em>M_P</em></strong> et <strong><em>SD_P</em></strong> correspondent, pour simplifier et pour chaque SNP, à la moyenne de la fréquence de l’allèle référence dans toutes les populations analysées et sa standard déviation. A noter que les fichiers avec les extensions <strong><em>yij_pij.out</em></strong> contiennent le détail de ces fréquences alléliques corrigées de l’allèle référence pour chacune des populations analysées.
+La colonne <strong><em>M_xtx</em></strong> correspond aux valeurs de la statistique <em>XtX</em>, la colonne <strong><em>XtXst</em></strong> est une version recalibrée du <em>XtX</em> et <strong><em>log10(1/pval)</em></strong> sa p.value.
+Il est à noté qu’une valeur faible de <em>XtX</em> associée à un <em>log10(1/pval)</em> élevé est signe de sélection balancée, une valeur élevé de <em>XtX</em> et de <em>log10(1/pval)</em> est un signe de sélection positive.</p>
+<p>Une dernière vérification consiste à vérifier la distribution des p.values associées aux <em>XtXst</em> avec le script (Chunk <a href="les-résultats.html#exr:chunk5">5</a>)</p>
+<div class="exercise">
+<p><span id="exr:chunk5" class="exercise"><strong>Chunk 5  </strong></span><span style="color:darkgreen">Distribution des p.values</span></p>
 </div>
-<div id="le-standard-model" class="section level4 unnumbered hasAnchor">
-<h4>Le Standard Model<a href="présentation-du-logiciel-baypass-2.html#le-standard-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Ce modèle, permet, l’orsque l’on fournit une ou plusieurs covariables (environnementales, phénotypiques…), de calculer un facteur de Bayes, ou Bayes factor en anglais, (BF) pour chaque marqueur génétique représentant la force d’association avec une covariable. C’est un modèle tout en un qui intègre le calcul des XtX et de la matrice Ω, il est adapté au faible nombre de population (&lt; 15).</p>
-</div>
-<div id="lauxiliairy-model" class="section level4 unnumbered hasAnchor">
-<h4>L’Auxiliairy Model<a href="présentation-du-logiciel-baypass-2.html#lauxiliairy-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (&gt; 15), En contrepartie il nécessite que l’on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.</p>
-<p>Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement qualitative ou binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.</p>
-</div>
-<div id="présentation-générale-de-lanalyse" class="section level2 unnumbered hasAnchor">
-<h2>Présentation générale de l’analyse :<a href="présentation-du-logiciel-baypass-2.html#présentation-générale-de-lanalyse" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>La Figure <a href="présentation-du-logiciel-baypass-2.html#fig:Fig1">1</a> est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l’analyse BayPass se déroulent soit dans l’environnement Linux du cluster de calcul, les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
-La première étape part des fichiers d’alignement au format « <strong><em>bam</em></strong> » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « *<strong><em>vcf</em></strong> » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier <strong><em>vcf</em></strong> sert d’entrée au package « PoolFstat » <span class="citation">(<a href="références.html#ref-gautier_f-statistics_2022">Gautier et al. 2022</a>)</span> qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts qui seront visualisées par différents plots.</p>
-<div class="figure"><span style="display:block;" id="fig:Fig1"></span>
-<p class="caption">
-Figure 1: Pipeline d’analyse BayPass
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+L’’histogramme de la colonne <em>log10(1/pval)</em> du fichier de résultat permet d’avoir une idée immédiate de la distribution normale ou non des p.values de l’analyse.<br>
 </p>
-<img src="images/Analyse2.jpg" alt="Pipeline d'analyse BayPass" width="708" />
-</div>
-<p style="font-family: calibri; font-size:11pt; font-style:italic">
-Le pipeline d’analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l’analyse des résultats.
-</p>
-</div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="les-résultats.html#cb12-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;C:/BayPass_pipeline/utils/baypass_utils.R&quot;</span>)</span>
+<span id="cb12-2"><a href="les-résultats.html#cb12-2" tabindex="-1"></a>XtX.res<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste</span>(path_out,<span class="st">&quot;project.XtX&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">h=</span>T)</span>
+<span id="cb12-3"><a href="les-résultats.html#cb12-3" tabindex="-1"></a><span class="fu">hist</span>(<span class="dv">10</span><span class="sc">**</span>(<span class="sc">-</span><span class="dv">1</span><span class="sc">*</span>XtX.res<span class="sc">$</span>log10.<span class="fl">1.</span>pval.),<span class="at">freq=</span>F,<span class="at">breaks=</span><span class="dv">50</span>)</span>
+<span id="cb12-4"><a href="les-résultats.html#cb12-4" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h=</span><span class="dv">1</span>)</span></code></pre></div>
+<p>Une explication de comment interpréter cet histogramme de distribution est disponible à l’adresse:
+<a href="http://varianceexplained.org/statistics/interpreting-pvalue-histogram/" class="uri">http://varianceexplained.org/statistics/interpreting-pvalue-histogram/</a>
+Si cette distribution n’est pas normale il est souhaitable de calibrer les résultats avec un jeu de données simulées POD (voir <a href="#An4">Annexe 4</a>) afin de définir des seuils de significativités fiables.</p>
+
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="introduction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="données-brutes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="baypass-les-résultats.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="annexes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -295,7 +286,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-presentation.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/06-Resultats.Rmd",
 "text": "Edit"
 },
 "history": {

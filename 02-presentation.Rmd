@@ -4,7 +4,7 @@ Le logiciel BayPass est un logiciel de génomique des populations qui vise princ
 BayPass propose 3 modèles statistiques d’analyse :
 
 #### Le Core Model {-}
-C'est le modèle de base, il permet de calculer la matrice de covariance Ω et d’attribuer une statistique de différenciation XtX à chaque SNP, et ainsi de scanner le génome pour identifier les régions génomiques différenciées entre les populations.Le XtX est une statistique analogue au Fst mais tient compte de la co-évolution des populations grace à la matrice Ω.
+C'est le modèle de base, il permet de calculer la matrice de covariance Ω et d’attribuer une statistique de différenciation **_XtX_** à chaque SNP, et ainsi de scanner le génome pour identifier les régions génomiques différenciées entre les populations.Le _XtX_ est défini comme la variance des fréquences alléliques standardisées du SNP dans les population, c'est une statistique analogue au Fst mais tient compte de la co-évolution des populations grace à la matrice Ω.
 
 
 #### Le Standard Model {-}

@@ -131,4 +131,39 @@ sed -i '1i chr pos All1 All2 COVARIABLE MRK M_Pearson SD_Pearson M_Spearman SD_S
 sed -i '1i chr pos All1 All2 CONTRAST MRK M_C2 SD_C2 C2_std C2_log10(1/pval)' project_contrast-C$k
 ```
 
+## Annexe 4 {-#An4}
 
+### Création et analyse d'un jeu de données pseudo-observées (POD) {-}
+La fonction geno2YN extrait les données de comptages brutes en « Pseudo-Observed Data » (POD) et la fonction simulate.baypass génère un jeu de données simulées à partir de la matrice Ω déjà calculée (omegaB) ainsi qu'un constante Pi.beta que l'on récupère dans un des fichiers de sorties.
+```{r POD data}
+source("/../baypass_utils.R")
+#extrait les données de comptage
+POD.data=geno2YN(paste(path_input, "genobaypass", sep=""))
+#Extrait le beta pi moyen
+pi.betaK=read.table(paste(path_out, "project.sub3_summary_beta_params.out", sep=""),h=T)$Mean
+#créé un jeu de données de 10 000 SNPs
+POD_BayPass<-simulate.baypass(omega.mat=omegaB, nsnp = 10000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="project.POD" )
+```
+Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copier sur le cluster de calcul. Le fichier G.project.POD sera analysé de la même manière que le jeu de données initial (contraste, ecotype…) sans qu'il soit nécéssaire de le subdiviser.
+
+#Analyse des résultats POD:
+Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
+```{r Thresholds}
+source("/../baypass_utils.R")
+POD.omega=as.matrix(read.table(paste(path_POD, "project.POD_mat_omega.out", sep="")))
+plot(POD.omega,omegaB) ; abline(a=0,b=1)
+FMD.POD <- fmd.dist(POD.omega,omegaB)
+cat("Distance FMD =", FMD.POD, "\n")
+
+#Seuil XtX top 1%
+POD.XtX=read.table(paste(path_POD, "project.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
+thresh.XtX=quantile(POD.XtX,probs=0.99)
+cat("Seuil XtX =", thresh.XtX, "(Max=", max(POD.XtX) ,")", "\n")
+
+#Seuil C2 top 1%
+POD.C2=read.table(paste(path_POD, "project.POD_summary_contrast.out", sep=""),h=T)$M_C2
+thresh.C2=quantile(POD.C2, probs=0.99)
+cat("Seuil de contraste C2 = ", thresh.C2, "(Max=", max(POD.C2) ,")", "\n")
+
+```
+La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc. Enfin on affiche un plot de la corrélation entre les deux matrice Ω, le seuil calculé pour la statistique XtX et pour toutes les combinaisons de contraste C2. Le calcul d'un seuil pour le les Bayes Factors n'est pas pertinent.

@@ -1,7 +1,26 @@
-#Les résultats {-}
+# BayPass: exploitation des résultats {-}
 
-Une fois fois regroupés les résultats sont télécharges sur un ordinateur local, la visualisation et les analyses complémentaires sont effectuées sous Rstudio.
+Une fois fois regroupés les résultats sont téléchargés sur un ordinateur local, la visualisation et les analyses complémentaires sont effectuées sous Rstudio.
 
 ##Les résultats _XtX_: {-}
-Les colonnes **_M_P_** et **_SD_P_** correspondent, pour simplifier et pour chaque SNP, à la moyenne de la fréquence de l'allèle référence dans toutes les populations analysées et sa standard déviation. A noter que les fichiers avec les extensions **_yij_pij.out_** contiennent le détail de ces fréquences alléliques de l'allèle référence pour chacune des populations analysées.
-Les colonnes 
+Les colonnes **_M_P_** et **_SD_P_** correspondent, pour simplifier et pour chaque SNP, à la moyenne de la fréquence de l'allèle référence dans toutes les populations analysées et sa standard déviation. A noter que les fichiers avec les extensions **_yij_pij.out_** contiennent le détail de ces fréquences alléliques corrigées de l'allèle référence pour chacune des populations analysées.
+La colonne **_M_xtx_** correspond aux valeurs de la statistique _XtX_, la colonne **_XtXst_** est une version recalibrée du _XtX_ et **_log10(1/pval)_** sa p.value.
+Il est à noté qu'une valeur faible de _XtX_ associée à un _log10(1/pval)_ élevé est signe de sélection balancée, une valeur élevé de _XtX_ et de _log10(1/pval)_ est un signe de sélection positive.
+
+Une dernière vérification consiste à vérifier la distribution des p.values associées aux _XtXst_ avec le script (Chunk \@ref(exr:chunk5))
+
+```{exercise, chunk5}
+<span style="color:darkgreen">Distribution des p.values</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+L''histogramme de la colonne _log10(1/pval)_ du fichier de résultat permet d'avoir une idée immédiate de la distribution normale ou non des p.values de l'analyse.<br>
+</p>
+```{r Distribution-XtX, eval=FALSE}
+source("C:/BayPass_pipeline/utils/baypass_utils.R")
+XtX.res=read.table(paste(path_out,"project.XtX", sep=""),h=T)
+hist(10**(-1*XtX.res$log10.1.pval.),freq=F,breaks=50)
+abline(h=1)
+```
+Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
+http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
+Si cette distribution n’est pas normale il est souhaitable de calibrer les  résultats avec un jeu de données simulées POD (voir [Annexe 4](#An4)) afin de définir des seuils de significativités fiables.
