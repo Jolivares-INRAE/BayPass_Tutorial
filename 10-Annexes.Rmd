@@ -135,20 +135,25 @@ sed -i '1i chr pos All1 All2 CONTRAST MRK M_C2 SD_C2 C2_std C2_log10(1/pval)' pr
 
 ### Création et analyse d'un jeu de données pseudo-observées (POD) {-}
 La fonction geno2YN extrait les données de comptages brutes en « Pseudo-Observed Data » (POD) et la fonction simulate.baypass génère un jeu de données simulées à partir de la matrice Ω déjà calculée (omegaB) ainsi qu'un constante Pi.beta que l'on récupère dans un des fichiers de sorties.
-```{r POD data}
+```{r POD data, eval=FALSE}
 source("/../baypass_utils.R")
 #extrait les données de comptage
 POD.data=geno2YN(paste(path_input, "genobaypass", sep=""))
 #Extrait le beta pi moyen
-pi.betaK=read.table(paste(path_out, "project.sub3_summary_beta_params.out", sep=""),h=T)$Mean
+pi.betaK=read.table(paste0(path_out, "project.sub3_summary_beta_params.out"),h=T)$Mean
 #créé un jeu de données de 10 000 SNPs
-POD_BayPass<-simulate.baypass(omega.mat=omegaB, nsnp = 10000, beta.coef = NA, beta.pi = pi.betaK, sample.size=POD.data$NN, pi.maf=0, suffix="project.POD" )
+POD_BayPass<-simulate.baypass(omega.mat=omegaB,
+                              nsnp = 10000,
+                              beta.coef = NA,
+                              beta.pi = pi.betaK,
+                              sample.size=POD.data$NN,
+                              pi.maf=0, suffix="project.POD" )
 ```
 Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copier sur le cluster de calcul. Le fichier G.project.POD sera analysé de la même manière que le jeu de données initial (contraste, ecotype…) sans qu'il soit nécéssaire de le subdiviser.
 
 #Analyse des résultats POD:
 Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
-```{r Thresholds}
+```{r Thresholds, eval=FALSE}
 source("/../baypass_utils.R")
 POD.omega=as.matrix(read.table(paste(path_POD, "project.POD_mat_omega.out", sep="")))
 plot(POD.omega,omegaB) ; abline(a=0,b=1)

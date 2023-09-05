@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-05" />
+<meta name="date" content="2023-09-06" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -191,7 +191,7 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#validation-des-données-analysées"><i class="fa fa-check"></i>Validation des données analysées</a></li>
 <li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#concaténation-des-résultats"><i class="fa fa-check"></i>Concaténation des résultats</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="les-résultats.html"><a href="les-résultats.html"><i class="fa fa-check"></i>Les résultats</a></li>
+<li class="chapter" data-level="" data-path="baypass-exploitation-des-résultats.html"><a href="baypass-exploitation-des-résultats.html"><i class="fa fa-check"></i>BayPass: exploitation des résultats</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
@@ -206,6 +206,10 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An3"><i class="fa fa-check"></i>Annexe 3</a>
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#concaténages-des-résultats-betai-et-contrastes"><i class="fa fa-check"></i>Concaténages des résultats Betai et contrastes</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An4"><i class="fa fa-check"></i>Annexe 4</a>
+<ul>
+<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#création-et-analyse-dun-jeu-de-données-pseudo-observées-pod"><i class="fa fa-check"></i>Création et analyse d’un jeu de données pseudo-observées (POD)</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
@@ -311,14 +315,24 @@ max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpo
 min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire pour qu’un SNP soit retenu.<br>
 </p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="données-brutes.html#cb4-1" tabindex="-1"></a><span class="co">#Infos sur les pops</span></span>
-<span id="cb4-2"><a href="données-brutes.html#cb4-2" tabindex="-1"></a>pnames <span class="ot">&lt;-</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="st">&#39;pop01&#39;</span>, <span class="st">&#39;pop02&#39;</span>, <span class="st">&#39;pop03&#39;</span>, <span class="st">&#39;pop04&#39;</span>, <span class="st">&#39;pop05&#39;</span>, <span class="st">&#39;pop06&#39;</span>, <span class="st">&#39;pop07&#39;</span>, <span class="st">&#39;pop08&#39;</span>, <span class="st">&#39;pop09&#39;</span>, <span class="st">&#39;pop10&#39;</span>, <span class="st">&#39;pop11&#39;</span>, <span class="st">&#39;pop12&#39;</span>, <span class="st">&#39;pop13&#39;</span>))</span>
-<span id="cb4-3"><a href="données-brutes.html#cb4-3" tabindex="-1"></a>psizes_A <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">c</span>(<span class="st">&#39;150&#39;</span>, <span class="st">&#39;180&#39;</span>, <span class="st">&#39;24&#39;</span>, <span class="st">&#39;114&#39;</span>, <span class="st">&#39;180&#39;</span>, <span class="st">&#39;44&#39;</span>,<span class="st">&#39;180&#39;</span>, <span class="st">&#39;160&#39;</span>, <span class="st">&#39;200&#39;</span>, <span class="st">&#39;74&#39;</span>, <span class="st">&#39;80&#39;</span>, <span class="st">&#39;52&#39;</span>, <span class="st">&#39;72&#39;</span>))   <span class="co">#ploydie autosome</span></span>
-<span id="cb4-4"><a href="données-brutes.html#cb4-4" tabindex="-1"></a>psizes_X <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">c</span>(<span class="st">&#39;120&#39;</span>, <span class="st">&#39;135&#39;</span>, <span class="st">&#39;16&#39;</span>, <span class="st">&#39;86&#39;</span>, <span class="st">&#39;135&#39;</span>, <span class="st">&#39;30&#39;</span>,<span class="st">&#39;135&#39;</span>, <span class="st">&#39;120&#39;</span>, <span class="st">&#39;150&#39;</span>, <span class="st">&#39;60&#39;</span>, <span class="st">&#39;63&#39;</span>, <span class="st">&#39;42&#39;</span>, <span class="st">&#39;53&#39;</span>))    <span class="co">#ploydie X/Z</span></span>
-<span id="cb4-5"><a href="données-brutes.html#cb4-5" tabindex="-1"></a>psizes_Y <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">c</span>(<span class="st">&#39;30&#39;</span>, <span class="st">&#39;45&#39;</span>, <span class="st">&#39;8&#39;</span>, <span class="st">&#39;28&#39;</span>, <span class="st">&#39;45&#39;</span>, <span class="st">&#39;14&#39;</span>,<span class="st">&#39;45&#39;</span>, <span class="st">&#39;40&#39;</span>, <span class="st">&#39;50&#39;</span>, <span class="st">&#39;14&#39;</span>, <span class="st">&#39;17&#39;</span>, <span class="st">&#39;10&#39;</span>, <span class="st">&#39;19&#39;</span>))           <span class="co">#ploydie Y/W</span></span>
+<span id="cb4-2"><a href="données-brutes.html#cb4-2" tabindex="-1"></a>pnames <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;pop1S&quot;</span>, <span class="st">&quot;pop2S&quot;</span>, <span class="st">&quot;pop3S&quot;</span>, <span class="st">&quot;pop1R&quot;</span>, <span class="st">&quot;pop2R&quot;</span>, <span class="st">&quot;pop3R&quot;</span>)</span>
+<span id="cb4-3"><a href="données-brutes.html#cb4-3" tabindex="-1"></a>psizes_A <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;114&#39;</span>, <span class="st">&#39;180&#39;</span>, <span class="st">&#39;160&#39;</span>, <span class="st">&#39;180&#39;</span>, <span class="st">&#39;200&#39;</span>, <span class="st">&#39;120&#39;</span>)   <span class="co">#ploydie autosome</span></span>
+<span id="cb4-4"><a href="données-brutes.html#cb4-4" tabindex="-1"></a>psizes_X <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;86&#39;</span>, <span class="st">&#39;135&#39;</span>, <span class="st">&#39;120&#39;</span>, <span class="st">&#39;135&#39;</span>, <span class="st">&#39;150&#39;</span>, <span class="st">&#39;90&#39;</span>)     <span class="co">#ploydie X/Z</span></span>
+<span id="cb4-5"><a href="données-brutes.html#cb4-5" tabindex="-1"></a>psizes_Y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;28&#39;</span>, <span class="st">&#39;45&#39;</span>, <span class="st">&#39;40&#39;</span>, <span class="st">&#39;45&#39;</span>, <span class="st">&#39;50&#39;</span>, <span class="st">&#39;30&#39;</span>)         <span class="co">#ploydie Y/W</span></span>
 <span id="cb4-6"><a href="données-brutes.html#cb4-6" tabindex="-1"></a><span class="co">#conversion du .vcf</span></span>
-<span id="cb4-7"><a href="données-brutes.html#cb4-7" tabindex="-1"></a>pooldata <span class="ot">&lt;-</span> <span class="fu">vcf2pooldata</span>(<span class="at">vcf.file =</span> <span class="fu">paste</span>(path_vcf, <span class="st">&quot;project_chr2-28.vcf.gz&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>), <span class="at">poolsizes =</span> psizes_A, <span class="at">poolnames =</span> pnames, <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>, <span class="at">min.rc =</span> <span class="dv">2</span>, <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>, <span class="at">min.maf =</span> <span class="fl">0.05</span>, <span class="at">remove.indels =</span> <span class="cn">FALSE</span>, <span class="at">nlines.per.readblock =</span> <span class="fl">1e+06</span>)</span>
-<span id="cb4-8"><a href="données-brutes.html#cb4-8" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert (région très dupliquée, biais de séquençage...)</span></span>
-<span id="cb4-9"><a href="données-brutes.html#cb4-9" tabindex="-1"></a>pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
+<span id="cb4-7"><a href="données-brutes.html#cb4-7" tabindex="-1"></a>pooldata <span class="ot">&lt;-</span> <span class="fu">vcf2pooldata</span>(<span class="at">vcf.file =</span> <span class="fu">paste</span>(path_vcf, <span class="st">&quot;project.vcf.gz&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),</span>
+<span id="cb4-8"><a href="données-brutes.html#cb4-8" tabindex="-1"></a>                         <span class="at">poolsizes =</span> psizes_A,</span>
+<span id="cb4-9"><a href="données-brutes.html#cb4-9" tabindex="-1"></a>                         <span class="at">poolnames =</span> pnames,</span>
+<span id="cb4-10"><a href="données-brutes.html#cb4-10" tabindex="-1"></a>                         <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>,</span>
+<span id="cb4-11"><a href="données-brutes.html#cb4-11" tabindex="-1"></a>                         <span class="at">min.rc =</span> <span class="dv">2</span>,</span>
+<span id="cb4-12"><a href="données-brutes.html#cb4-12" tabindex="-1"></a>                         <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>,</span>
+<span id="cb4-13"><a href="données-brutes.html#cb4-13" tabindex="-1"></a>                         <span class="at">min.maf =</span> <span class="fl">0.05</span>,</span>
+<span id="cb4-14"><a href="données-brutes.html#cb4-14" tabindex="-1"></a>                         <span class="at">remove.indels =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-15"><a href="données-brutes.html#cb4-15" tabindex="-1"></a>                         <span class="at">nlines.per.readblock =</span> <span class="fl">1e+06</span>)</span>
+<span id="cb4-16"><a href="données-brutes.html#cb4-16" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
+<span id="cb4-17"><a href="données-brutes.html#cb4-17" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
+<span id="cb4-18"><a href="données-brutes.html#cb4-18" tabindex="-1"></a>pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
+<p><img src="images/vcf2.jpg" width="922" /></p>
 <p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="annexes.html#An1">Annexe 1</a></p>
 
 </div>
