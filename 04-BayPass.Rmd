@@ -23,8 +23,6 @@ module purge
 module load statistics/R/4.2.2
 module load bioinfo/BayPass/2.4
 module load compilers/intel/2023.0.0    #pour i_baypass
-#module load mpi/openmpi/4.1.4
-#module load compilers/gcc/12.2.0       #pour g_baypass
 
 
 #définition du chemin ciblant les fichiers genobaypass et snpdet

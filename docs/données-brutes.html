@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-06" />
+<meta name="date" content="2023-09-08" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -332,7 +332,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb4-16"><a href="données-brutes.html#cb4-16" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
 <span id="cb4-17"><a href="données-brutes.html#cb4-17" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
 <span id="cb4-18"><a href="données-brutes.html#cb4-18" tabindex="-1"></a>pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
-<p><img src="images/vcf2.jpg" width="922" /></p>
+<p><img src="images/vcf2.jpg" width="884" style="border:1px solid black;" /></p>
 <p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="annexes.html#An1">Annexe 1</a></p>
 
 </div>

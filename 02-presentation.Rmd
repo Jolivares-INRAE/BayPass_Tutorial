@@ -46,11 +46,13 @@ module load bioinfo/samtools/1.12
 module load bioinfo/VarScan/2.4.2
 module load bioinfo/bcftools/1.14
 
-ls /My_path/*.bam > BamList.txt                                                #liste tous les fichiers "bam" et leur chemin
-ls /../*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt      #extrait les noms des échatillons/populations
+#liste tous les fichiers "bam" et leur chemin
+ls /../*.bam > BamList.txt
+#extrait les noms des échantillons/populations
+ls /../*.bam | sed -r 's/^.+\///' | sed -r 's/.bam//' > NameList.txt      
 
 samtools mpileup -C 50 -d 5000 -q 20 \
--r chr${SLURM_ARRAY_TASK_ID} \                                            #attribut un chr à chaque indice de l'array : chr1, chr2 ...
+-r chr${SLURM_ARRAY_TASK_ID} \    #attribut un chr à chaque indice de l'array : chr1, chr2 ...
 -f /../ref_genome.fas -b /../BamList.txt | \
 java -Xmx2G -jar $VARSCAN mpileup2cns \
 --variants --min-coverage 10 \
@@ -75,7 +77,8 @@ A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concat�
 module load bioinfo/bcftools/1.14
 my_path='/../'
 
-# une boucle "for" itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable
+# une boucle "for" itére sur les numéros des autosomes de 2 à 28
+# et ajoute chaque fichier vcf et son chemin dans une variable
 for ((i=2; i<=28; i++))
 do
     files+=" $my_path/project_chr${i}.vcf.gz"  
@@ -151,7 +154,7 @@ pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project.vcf.gz", sep=""),
 #(région très dupliquée, biais de séquençage...)
 pooldata<-pooldata.subset(pooldata, cov.qthres.per.pool = c(0,0.99))
 ```
-```{r Fig2, echo=FALSE}
+```{r Fig2, echo=FALSE, out.extra = 'style="border:1px solid black;"'}
 knitr::include_graphics("C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/vcf2.jpg")
 ```
 

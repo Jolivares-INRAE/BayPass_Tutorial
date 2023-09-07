@@ -101,9 +101,9 @@ La découpe en sous jeux de données des fichier genobaypass et snpdet se fait s
 <span style="color:darkgreen">Exemple d'une commande de subsampling.</span>
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
-   La commande **_sed_** prélève une ligne toutes les 100 et les copies dans un fichier **_.sub_** et s'exécute 100 fois pour ballayer tous le fichier initial et créer ainsi 100 fichiers de sous-jeux de données.
+   La commande **_sed_** prélève une ligne toutes les 6 et les copies dans un fichier **_.sub_** et s'exécute 6 fois pour balayer tous le fichier initial et créer ainsi 6 fichiers de sous-jeux de données.
 </p>
 ```{bash scr3, eval=FALSE}
-for i in {1..100}; do sed -n "$i~100p" genobaypass > genobaypass.sub$i; sed -n "$i~100p" snpdet > snpdet.sub$i; done
+for i in {1..6}; do sed -n "$i~6p" genobaypass > genobaypass.sub$i; sed -n "$i~6p" snpdet > snpdet.sub$i; done
 ```
 Le nombre de fichiers **_.sub_** à créer dépend du nombre total de SNP à analyser, une taille finale de 80 000 à 120 000 SNPs par fichier de sous-jeux de données est un bon compromis entre qualité d'analyse et temps de calcul.
