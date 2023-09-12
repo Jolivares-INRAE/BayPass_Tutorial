@@ -1,27 +1,14 @@
 # Annexes {-}
 
 ## Annexe 1 {-#An1}
-
-Le package R **_poolfstat_** peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de **_poolfstat_** : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf), parmis ceux-ci on trouve l'analyse des Fst.
-
-### Pairwise {-}
-Calcul des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
-```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE, eval=FALSE}
-#Calcul des pairwise Fst 
-PairWise.fst <- compute.pairwiseFST(pooldata, method = "Anova", min.cov.per.pool = 4, max.cov.per.pool = 1e+06, min.maf = 0.05, output.snp.values = FALSE)
-#conversion en matrice de distance
-df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
-#heatmap
-cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(9)
-cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatmap des pairwise Fst entre les populations")
-```
-
-On peut aussi calculer et plotter des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une région génomique très différenciée apparaitra sous la forme d'une éruption de points colorés.
+Il est possible de calculer des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une fois ploter, une région génomique très différenciée apparaîtra sous la forme d'une éruption de points colorés.
 
 ### Fst en fenêtre glissante {-}
 ```{r plot-sliding-Fst, verbose=FALSE, eval=FALSE}
 #calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .
-Multi.Loc.fst <- computeFST(pooldata, method = "Anova", sliding.window.size = 100)
+Multi.Loc.fst <- computeFST(pooldata,
+                            method = "Anova",
+                            sliding.window.size = 100)
 #conversion en objet data frame
 df.fst<-as.data.frame(Multi.Loc.fst$sliding.windows.fst, h=T)
 #plot.
@@ -29,7 +16,8 @@ Fst.plot = ggplot(data=df.fst, aes(x=CumulatedPosition/1e6, y=MultiLocusFst)) +
   geom_point(aes(color=Chr), alpha=0.8, size=1.5) +
   ggtitle("Fst en fenêtres glissantes") +
   geom_hline(yintercept=Multi.Loc.fst$FST,lty=2) #le seuil indique la Fst globale estimée à l'échelle du génome
-Fst.plot + scale_x_continuous() + scale_y_continuous() +
+Fst.plot + scale_x_continuous() +
+  scale_y_continuous() +
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
   facet_wrap(~Chr, scales = 'free_x', strip.position =c("bottom")) #affichage des chromosomes en grille
 ```
@@ -55,7 +43,8 @@ tab_SVD <- data.frame(sample.id = pnames,
 ggplot_svd = ggplot(data=tab_SVD, aes(x=PC.1, y=PC.2, shape=phenotype, color= col_geo)) +
   geom_point(alpha=1, size=5)+
   scale_shape_manual(values = c('Sensible'=79, 'Resistant'=16))+
-  scale_colour_manual(name = "region",labels = c("sud", "nord", "est"),
+  scale_colour_manual(name = "region",
+                      labels = c("sud", "nord", "est"),
                       values = col_geo)+
   ggtitle(paste0("Singular Value Decomposition of the covariance (",expression("\U03A9"),") matrix"))
 
@@ -124,23 +113,25 @@ POD_BayPass<-simulate.baypass(omega.mat=omegaB,
 ```
 Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copier sur le cluster de calcul. Le fichier G.project.POD sera analysé de la même manière que le jeu de données initial (contraste, ecotype…) sans qu'il soit nécéssaire de le subdiviser.
 
-#Analyse des résultats POD:
-Les fichiers résultats POD_mat_omega, POD_summary_pi_xtx.out, sont copiés tel quel en local, le fichier POD_summary_contrast.out s’il contient les résultats de plusieurs contrastes doit être subdivisé par contraste (et renommés en ..POD_1..; ..POD2.. Etc…) au préalable pour obtenir une sortie par combinaison C2 qui seront aussi copiées en local.
+###Analyse des résultats POD:
+Les fichiers résultats _*mat_omega_, _*summary_pi_xtx.out_, sont copiés tel quel en local, le fichier _*summary_contrast.out_, si il contient les résultats de plusieurs combinaison de contrastes, doit être subdivisé par combinaison au préalable et aussi copiées en local.
+La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc.
+Ces seuils seront utilisé comme seuil de significativité pour le jeu de données réel.
+
 ```{r Thresholds, eval=FALSE}
 POD.omega=as.matrix(read.table(paste(path_POD, "project.POD_mat_omega.out", sep="")))
 plot(POD.omega,omegaB) ; abline(a=0,b=1)
 FMD.POD <- fmd.dist(POD.omega,omegaB)
 cat("Distance FMD =", FMD.POD, "\n")
 
-#Seuil XtX top 1%
+#Extrait la colonne des XtX et calcule un seuil correspondant au quantile que l'on souhaite
 POD.XtX=read.table(paste(path_POD, "project.POD_summary_pi_xtx.out", sep=""),h=T)$M_XtX
 thresh.XtX=quantile(POD.XtX,probs=0.99)
 cat("Seuil XtX =", thresh.XtX, "(Max=", max(POD.XtX) ,")", "\n")
 
-#Seuil C2 top 1%
+#Extrait la colonne des C2 et calcule un seuil correspondant au quantile que l'on souhaite
 POD.C2=read.table(paste(path_POD, "project.POD_summary_contrast.out", sep=""),h=T)$M_C2
 thresh.C2=quantile(POD.C2, probs=0.99)
 cat("Seuil de contraste C2 = ", thresh.C2, "(Max=", max(POD.C2) ,")", "\n")
 
 ```
-La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc. Enfin on affiche un plot de la corrélation entre les deux matrice Ω, le seuil calculé pour la statistique XtX et pour toutes les combinaisons de contraste C2. Le calcul d'un seuil pour le les Bayes Factors n'est pas pertinent.

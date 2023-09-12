@@ -13,14 +13,35 @@ Une dernière vérification consiste à vérifier la distribution des p.values a
 <span style="color:darkgreen">Distribution des p.values</span>
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
-L''histogramme de la colonne _log10(1/pval)_ du fichier de résultat permet d'avoir une idée immédiate de la distribution normale ou non des p.values de l'analyse.<br>
+L'histogramme de la colonne _log10(1/pval)_ du fichier de résultat permet d'avoir une idée immédiate de la distribution normale ou non des p.values de l'analyse.<br>
 </p>
 ```{r Distribution-XtX, eval=FALSE}
-source("C:/BayPass_pipeline/utils/baypass_utils.R")
-XtX.res=read.table(paste(path_out,"project.XtX", sep=""),h=T)
+XtX.res=read.table(paste0(path_out,"project.XtX"),h=T)
 hist(10**(-1*XtX.res$log10.1.pval.),freq=F,breaks=50)
 abline(h=1)
 ```
 Une explication de comment interpréter cet histogramme de distribution est disponible à l'adresse:
 http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
 Si cette distribution n’est pas normale il est souhaitable de calibrer les  résultats avec un jeu de données simulées POD (voir [Annexe 4](#An4)) afin de définir des seuils de significativités fiables.
+
+Un Manhattan plot simple des valeurs de XtX permet de visualiser les régions génomiques différentiées des populations analysées (Chunk \@ref(exr:chunk6)).
+Les valeurs de XtX les plus élevés indiquent une différentiation significative entre les populations, parmi ces SNP ceux qui ont une valeur _log10(1/pval)_ élevée indique une signature de sélection positive.
+
+```{exercise, chunk6}
+<span style="color:darkgreen">Exploitation des XtX</span>
+```
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Différents plots permettent de visualiser les données contenues dans l'objet XtX.res.<br>
+L'orsque l'on analyse un génome entier, ce fichier peut être lourd à traiter, se concentrer sur les valeurs<br>
+dans le quantile 90 permet de limiter le volume et le bruit de fond des données.<br>
+</p>
+```{r Distribution-XtX, eval=FALSE}
+Manplot.XtX = ggplot(data=XtX.res, aes(x=pos, y=M_XtX)) +
+  geom_point(aes(color=chr), alpha=0.8, size=0.25) +
+  ggtitle("Plot XtX versus position")
+Manplot.XtX + scale_x_continuous() +
+  scale_y_continuous() +
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+
+  facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
+  #facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+```

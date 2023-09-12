@@ -101,6 +101,8 @@ library(poolfstat)      #filtrage du vcf et création des fichiers d'entrées Ba
 library(RColorBrewer)   #gestion couleur des heatmaps
 library(mixOmics)       #"cim" pour heatmap
 library(corrplot)       #matrice de corrélation pour heat map
+library(mvtnorm)        #pour jeu de données POD
+library(geigen)         #pour calcul des FMD
 library(VennDiagram)    #création de diagramme de Venn
 library(nVennR)         #extraction de données d'un diagramme de Venn
 library(tidyverse)      #manipulation de données (dplyr) et plots (ggplot2)
@@ -110,6 +112,7 @@ path_vcf <- "/../vcf/"
 path_input <- "/../Input/"
 path_out <- "/../Output/"
 path_res <- "/../Resultats/"
+source("/../baypass_utils.R")   #fonctions utilitaires de BayPass
 ```
 
 ```{r work-space, echo=FALSE}
@@ -118,7 +121,6 @@ path_input <- "C:/BayPass/Input/13pops/chr1/"
 path_out <- "C:/BayPass/Output/13pops/chr1/"
 path_POD <- "C:/BayPass/POD/13pops/"
 path_res <- "C:/BayPass/Resultats/13pops/chr1/"
-path_utils <- "C:/BayPass/utils/"
 ```
 
 Le filtrage du **_vcf_** et la sélection des SNPs à analyser ce fait à l'aide du package PoolFstat (Chunk \@ref(exr:chunk2)). Dans un premier temps il faut renseigner les noms des populations dans un objet **_pnames_** et les tailles haploïdes de chaque population dans un objet **_psizes_**. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d'individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d'individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1). 
@@ -129,7 +131,6 @@ La fonction **_vcf2poodata_** va balayer le fichier **_vcf_**, sélectionner les
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les options à renseigner sont:<br>
-min.rc =  minimum de reads qu'un allèle doit avoir pour être retenu.<br>
 min.cov.per.pool = Si au moins un pool n'est pas couvert par au moins au moins min.cov.perpool reads, le SNP est rejeté.<br>
 max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpool reads, le SNP est rejeté.<br>
 min.maf = fréquence allélique minimale autorisée pour l'allèle minoritaire pour qu'un SNP soit retenu.<br>
@@ -145,7 +146,6 @@ pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project.vcf.gz", sep=""),
                          poolsizes = psizes_A,
                          poolnames = pnames,
                          min.cov.per.pool = 4,
-                         min.rc = 2,
                          max.cov.per.pool = 1e+06,
                          min.maf = 0.05,
                          remove.indels = FALSE,
@@ -158,4 +158,20 @@ pooldata<-pooldata.subset(pooldata, cov.qthres.per.pool = c(0,0.99))
 knitr::include_graphics("C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/vcf2.jpg")
 ```
 
-A ce stade cet objet **_pooldata_** peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d'estimation de la structure génétique des populations déduite des Fst est donné en [Annexe 1](#An1)
+A ce stade cet objet **_pooldata_** peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de **_poolfstat_** : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf), parmis ceux-ci on trouve l'analyse des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
+```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE, eval=FALSE}
+#Calcul des pairwise Fst 
+PairWise.fst <- compute.pairwiseFST(pooldata,
+                                    method = "Anova",
+                                    min.cov.per.pool = 4,
+                                    max.cov.per.pool = 1e+06,
+                                    min.maf = 0.05,
+                                    output.snp.values = FALSE)
+#conversion en matrice de distance
+df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
+#heatmap
+cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(9)
+cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatmap des pairwise Fst entre les populations")
+```
+
+un exemple d'estimation de la structure génétique des populations déduite des Fst est donné en [Annexe 1](#An1)
