@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-08" />
+<meta name="date" content="2023-09-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -196,7 +196,6 @@ div.csl-indent {
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
 <ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An2"><i class="fa fa-check"></i>Annexe 2</a>
@@ -248,20 +247,22 @@ Si l’on veut découper le travail en chromosomes, il est indispensable de trav
 <span id="cb1-5"><a href="données-brutes.html#cb1-5" tabindex="-1"></a><span class="ex">module</span> load bioinfo/VarScan/2.4.2</span>
 <span id="cb1-6"><a href="données-brutes.html#cb1-6" tabindex="-1"></a><span class="ex">module</span> load bioinfo/bcftools/1.14</span>
 <span id="cb1-7"><a href="données-brutes.html#cb1-7" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="données-brutes.html#cb1-8" tabindex="-1"></a><span class="fu">ls</span> /My_path/<span class="pp">*</span>.bam <span class="op">&gt;</span> BamList.txt                                                <span class="co">#liste tous les fichiers &quot;bam&quot; et leur chemin</span></span>
-<span id="cb1-9"><a href="données-brutes.html#cb1-9" tabindex="-1"></a><span class="fu">ls</span> /../<span class="pp">*</span>.bam <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/^.+\///&#39;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/.bam//&#39;</span> <span class="op">&gt;</span> NameList.txt      <span class="co">#extrait les noms des échatillons/populations</span></span>
-<span id="cb1-10"><a href="données-brutes.html#cb1-10" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="données-brutes.html#cb1-11" tabindex="-1"></a><span class="ex">samtools</span> mpileup <span class="at">-C</span> 50 <span class="at">-d</span> 5000 <span class="at">-q</span> 20 <span class="dt">\</span></span>
-<span id="cb1-12"><a href="données-brutes.html#cb1-12" tabindex="-1"></a>-r chr<span class="va">${SLURM_ARRAY_TASK_ID}</span> <span class="dt">\ </span>                                           <span class="co">#attribut un chr à chaque indice de l&#39;array : chr1, chr2 ...</span></span>
-<span id="cb1-13"><a href="données-brutes.html#cb1-13" tabindex="-1"></a><span class="ex">-f</span> /../ref_genome.fas <span class="at">-b</span> /../BamList.txt <span class="kw">|</span> <span class="dt">\</span></span>
-<span id="cb1-14"><a href="données-brutes.html#cb1-14" tabindex="-1"></a><span class="ex">java</span> <span class="at">-Xmx2G</span> <span class="at">-jar</span> <span class="va">$VARSCAN</span> mpileup2cns <span class="dt">\</span></span>
-<span id="cb1-15"><a href="données-brutes.html#cb1-15" tabindex="-1"></a>--variants <span class="at">--min-coverage</span> 10 <span class="dt">\</span></span>
-<span id="cb1-16"><a href="données-brutes.html#cb1-16" tabindex="-1"></a>--min-avg-qual 20 <span class="at">--min-var-freq</span> 0.05 <span class="dt">\</span></span>
-<span id="cb1-17"><a href="données-brutes.html#cb1-17" tabindex="-1"></a>--p-value 0.5 <span class="at">--output-vcf</span> 1 <span class="dt">\</span></span>
-<span id="cb1-18"><a href="données-brutes.html#cb1-18" tabindex="-1"></a>--vcf-sample-list NameList.txt <span class="op">&gt;</span> /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span>
-<span id="cb1-19"><a href="données-brutes.html#cb1-19" tabindex="-1"></a></span>
-<span id="cb1-20"><a href="données-brutes.html#cb1-20" tabindex="-1"></a><span class="ex">bgzip</span> /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span>
-<span id="cb1-21"><a href="données-brutes.html#cb1-21" tabindex="-1"></a><span class="ex">bcftools</span> index /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span></code></pre></div>
+<span id="cb1-8"><a href="données-brutes.html#cb1-8" tabindex="-1"></a><span class="co">#liste tous les fichiers &quot;bam&quot; et leur chemin</span></span>
+<span id="cb1-9"><a href="données-brutes.html#cb1-9" tabindex="-1"></a><span class="fu">ls</span> /../<span class="pp">*</span>.bam <span class="op">&gt;</span> BamList.txt</span>
+<span id="cb1-10"><a href="données-brutes.html#cb1-10" tabindex="-1"></a><span class="co">#extrait les noms des échantillons/populations</span></span>
+<span id="cb1-11"><a href="données-brutes.html#cb1-11" tabindex="-1"></a><span class="fu">ls</span> /../<span class="pp">*</span>.bam <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/^.+\///&#39;</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/.bam//&#39;</span> <span class="op">&gt;</span> NameList.txt      </span>
+<span id="cb1-12"><a href="données-brutes.html#cb1-12" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="données-brutes.html#cb1-13" tabindex="-1"></a><span class="ex">samtools</span> mpileup <span class="at">-C</span> 50 <span class="at">-d</span> 5000 <span class="at">-q</span> 20 <span class="dt">\</span></span>
+<span id="cb1-14"><a href="données-brutes.html#cb1-14" tabindex="-1"></a>-r chr<span class="va">${SLURM_ARRAY_TASK_ID}</span> <span class="dt">\ </span>   <span class="co">#attribut un chr à chaque indice de l&#39;array : chr1, chr2 ...</span></span>
+<span id="cb1-15"><a href="données-brutes.html#cb1-15" tabindex="-1"></a><span class="ex">-f</span> /../ref_genome.fas <span class="at">-b</span> /../BamList.txt <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb1-16"><a href="données-brutes.html#cb1-16" tabindex="-1"></a><span class="ex">java</span> <span class="at">-Xmx2G</span> <span class="at">-jar</span> <span class="va">$VARSCAN</span> mpileup2cns <span class="dt">\</span></span>
+<span id="cb1-17"><a href="données-brutes.html#cb1-17" tabindex="-1"></a>--variants <span class="at">--min-coverage</span> 10 <span class="dt">\</span></span>
+<span id="cb1-18"><a href="données-brutes.html#cb1-18" tabindex="-1"></a>--min-avg-qual 20 <span class="at">--min-var-freq</span> 0.05 <span class="dt">\</span></span>
+<span id="cb1-19"><a href="données-brutes.html#cb1-19" tabindex="-1"></a>--p-value 0.5 <span class="at">--output-vcf</span> 1 <span class="dt">\</span></span>
+<span id="cb1-20"><a href="données-brutes.html#cb1-20" tabindex="-1"></a>--vcf-sample-list NameList.txt <span class="op">&gt;</span> /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span>
+<span id="cb1-21"><a href="données-brutes.html#cb1-21" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="données-brutes.html#cb1-22" tabindex="-1"></a><span class="ex">bgzip</span> /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span>
+<span id="cb1-23"><a href="données-brutes.html#cb1-23" tabindex="-1"></a><span class="ex">bcftools</span> index /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span></code></pre></div>
 <p>A l’issue du variant calling les fichiers <strong><em>vcf</em></strong> des autosomes seront concaténés (Script <a href="données-brutes.html#exm:script2">2</a>), les chromosomes sexuels ayant une ségrégation, une histoire démographique et une ploïdie différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.</p>
 <div class="example">
 <p><span id="exm:script2" class="example"><strong>Script 2  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour concaténer des fichiers <strong><em>vcf</em></strong></span></p>
@@ -273,14 +274,15 @@ On peut utiliser les bcftools pour concaténer les fichier <strong><em>vcf</em><
 <span id="cb2-2"><a href="données-brutes.html#cb2-2" tabindex="-1"></a><span class="ex">module</span> load bioinfo/bcftools/1.14</span>
 <span id="cb2-3"><a href="données-brutes.html#cb2-3" tabindex="-1"></a><span class="va">my_path</span><span class="op">=</span><span class="st">&#39;/../&#39;</span></span>
 <span id="cb2-4"><a href="données-brutes.html#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="données-brutes.html#cb2-5" tabindex="-1"></a><span class="co"># une boucle &quot;for&quot; itére sur les numéros des autosomes de 2 à 28 et ajoute chaque fichier vcf et son chemin dans une variable</span></span>
-<span id="cb2-6"><a href="données-brutes.html#cb2-6" tabindex="-1"></a><span class="cf">for</span> <span class="kw">((</span><span class="va">i</span><span class="op">=</span><span class="dv">2</span><span class="kw">;</span> <span class="va">i</span><span class="op">&lt;=</span><span class="dv">28</span><span class="kw">;</span> <span class="va">i</span><span class="op">++</span><span class="kw">))</span></span>
-<span id="cb2-7"><a href="données-brutes.html#cb2-7" tabindex="-1"></a><span class="cf">do</span></span>
-<span id="cb2-8"><a href="données-brutes.html#cb2-8" tabindex="-1"></a>    <span class="va">files</span><span class="op">+=</span><span class="st">&quot; </span><span class="va">$my_path</span><span class="st">/project_chr</span><span class="va">${i}</span><span class="st">.vcf.gz&quot;</span>  </span>
-<span id="cb2-9"><a href="données-brutes.html#cb2-9" tabindex="-1"></a><span class="cf">done</span></span>
-<span id="cb2-10"><a href="données-brutes.html#cb2-10" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="données-brutes.html#cb2-11" tabindex="-1"></a><span class="co"># bcftools concatène la liste des vcf contenu dans la variable $file</span></span>
-<span id="cb2-12"><a href="données-brutes.html#cb2-12" tabindex="-1"></a><span class="ex">bcftools</span> concat <span class="va">$files</span> <span class="at">-O</span> z <span class="at">-o</span> <span class="va">$my_path</span>/project_chr2-28.vcf.gz</span></code></pre></div>
+<span id="cb2-5"><a href="données-brutes.html#cb2-5" tabindex="-1"></a><span class="co"># une boucle &quot;for&quot; itére sur les numéros des autosomes de 2 à 28</span></span>
+<span id="cb2-6"><a href="données-brutes.html#cb2-6" tabindex="-1"></a><span class="co"># et ajoute chaque fichier vcf et son chemin dans une variable</span></span>
+<span id="cb2-7"><a href="données-brutes.html#cb2-7" tabindex="-1"></a><span class="cf">for</span> <span class="kw">((</span><span class="va">i</span><span class="op">=</span><span class="dv">2</span><span class="kw">;</span> <span class="va">i</span><span class="op">&lt;=</span><span class="dv">28</span><span class="kw">;</span> <span class="va">i</span><span class="op">++</span><span class="kw">))</span></span>
+<span id="cb2-8"><a href="données-brutes.html#cb2-8" tabindex="-1"></a><span class="cf">do</span></span>
+<span id="cb2-9"><a href="données-brutes.html#cb2-9" tabindex="-1"></a>    <span class="va">files</span><span class="op">+=</span><span class="st">&quot; </span><span class="va">$my_path</span><span class="st">/project_chr</span><span class="va">${i}</span><span class="st">.vcf.gz&quot;</span>  </span>
+<span id="cb2-10"><a href="données-brutes.html#cb2-10" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb2-11"><a href="données-brutes.html#cb2-11" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="données-brutes.html#cb2-12" tabindex="-1"></a><span class="co"># bcftools concatène la liste des vcf contenu dans la variable $file</span></span>
+<span id="cb2-13"><a href="données-brutes.html#cb2-13" tabindex="-1"></a><span class="ex">bcftools</span> concat <span class="va">$files</span> <span class="at">-O</span> z <span class="at">-o</span> <span class="va">$my_path</span>/project_chr2-28.vcf.gz</span></code></pre></div>
 </div>
 <div id="filtrage-des-données-brutes" class="section level2 unnumbered hasAnchor">
 <h2>Filtrage des données brutes<a href="données-brutes.html#filtrage-des-données-brutes" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -301,7 +303,8 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 <span id="cb3-10"><a href="données-brutes.html#cb3-10" tabindex="-1"></a>path_vcf <span class="ot">&lt;-</span> <span class="st">&quot;/../vcf/&quot;</span></span>
 <span id="cb3-11"><a href="données-brutes.html#cb3-11" tabindex="-1"></a>path_input <span class="ot">&lt;-</span> <span class="st">&quot;/../Input/&quot;</span></span>
 <span id="cb3-12"><a href="données-brutes.html#cb3-12" tabindex="-1"></a>path_out <span class="ot">&lt;-</span> <span class="st">&quot;/../Output/&quot;</span></span>
-<span id="cb3-13"><a href="données-brutes.html#cb3-13" tabindex="-1"></a>path_res <span class="ot">&lt;-</span> <span class="st">&quot;/../Resultats/&quot;</span></span></code></pre></div>
+<span id="cb3-13"><a href="données-brutes.html#cb3-13" tabindex="-1"></a>path_res <span class="ot">&lt;-</span> <span class="st">&quot;/../Resultats/&quot;</span></span>
+<span id="cb3-14"><a href="données-brutes.html#cb3-14" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)   <span class="co">#fonctions utilitaires de BayPass</span></span></code></pre></div>
 <p>Le filtrage du <strong><em>vcf</em></strong> et la sélection des SNPs à analyser ce fait à l’aide du package PoolFstat (Chunk <a href="données-brutes.html#exr:chunk2">2</a>). Dans un premier temps il faut renseigner les noms des populations dans un objet <strong><em>pnames</em></strong> et les tailles haploïdes de chaque population dans un objet <strong><em>psizes</em></strong>. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d’individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d’individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1).
 La fonction <strong><em>vcf2poodata</em></strong> va balayer le fichier <strong><em>vcf</em></strong>, sélectionner les SNP bi-alléliques selon des critères définis par l’utilisateur et créer un objet <strong><em>pooldata</em></strong>.</p>
 <div class="exercise">
@@ -309,7 +312,6 @@ La fonction <strong><em>vcf2poodata</em></strong> va balayer le fichier <strong>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les options à renseigner sont:<br>
-min.rc = minimum de reads qu’un allèle doit avoir pour être retenu.<br>
 min.cov.per.pool = Si au moins un pool n’est pas couvert par au moins au moins min.cov.perpool reads, le SNP est rejeté.<br>
 max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpool reads, le SNP est rejeté.<br>
 min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire pour qu’un SNP soit retenu.<br>
@@ -324,16 +326,28 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb4-8"><a href="données-brutes.html#cb4-8" tabindex="-1"></a>                         <span class="at">poolsizes =</span> psizes_A,</span>
 <span id="cb4-9"><a href="données-brutes.html#cb4-9" tabindex="-1"></a>                         <span class="at">poolnames =</span> pnames,</span>
 <span id="cb4-10"><a href="données-brutes.html#cb4-10" tabindex="-1"></a>                         <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>,</span>
-<span id="cb4-11"><a href="données-brutes.html#cb4-11" tabindex="-1"></a>                         <span class="at">min.rc =</span> <span class="dv">2</span>,</span>
-<span id="cb4-12"><a href="données-brutes.html#cb4-12" tabindex="-1"></a>                         <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>,</span>
-<span id="cb4-13"><a href="données-brutes.html#cb4-13" tabindex="-1"></a>                         <span class="at">min.maf =</span> <span class="fl">0.05</span>,</span>
-<span id="cb4-14"><a href="données-brutes.html#cb4-14" tabindex="-1"></a>                         <span class="at">remove.indels =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb4-15"><a href="données-brutes.html#cb4-15" tabindex="-1"></a>                         <span class="at">nlines.per.readblock =</span> <span class="fl">1e+06</span>)</span>
-<span id="cb4-16"><a href="données-brutes.html#cb4-16" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
-<span id="cb4-17"><a href="données-brutes.html#cb4-17" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
-<span id="cb4-18"><a href="données-brutes.html#cb4-18" tabindex="-1"></a>pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
+<span id="cb4-11"><a href="données-brutes.html#cb4-11" tabindex="-1"></a>                         <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>,</span>
+<span id="cb4-12"><a href="données-brutes.html#cb4-12" tabindex="-1"></a>                         <span class="at">min.maf =</span> <span class="fl">0.05</span>,</span>
+<span id="cb4-13"><a href="données-brutes.html#cb4-13" tabindex="-1"></a>                         <span class="at">remove.indels =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-14"><a href="données-brutes.html#cb4-14" tabindex="-1"></a>                         <span class="at">nlines.per.readblock =</span> <span class="fl">1e+06</span>)</span>
+<span id="cb4-15"><a href="données-brutes.html#cb4-15" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
+<span id="cb4-16"><a href="données-brutes.html#cb4-16" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
+<span id="cb4-17"><a href="données-brutes.html#cb4-17" tabindex="-1"></a>pooldata<span class="ot">&lt;-</span><span class="fu">pooldata.subset</span>(pooldata, <span class="at">cov.qthres.per.pool =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">0.99</span>))</span></code></pre></div>
 <p><img src="images/vcf2.jpg" width="884" style="border:1px solid black;" /></p>
-<p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques couremment utilisées dans les études de génomique des populations, un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="annexes.html#An1">Annexe 1</a></p>
+<p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de <strong><em>poolfstat</em></strong> : (<a href="https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf" class="uri">https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf</a>), parmis ceux-ci on trouve l’analyse des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="données-brutes.html#cb5-1" tabindex="-1"></a><span class="co">#Calcul des pairwise Fst </span></span>
+<span id="cb5-2"><a href="données-brutes.html#cb5-2" tabindex="-1"></a>PairWise.fst <span class="ot">&lt;-</span> <span class="fu">compute.pairwiseFST</span>(pooldata,</span>
+<span id="cb5-3"><a href="données-brutes.html#cb5-3" tabindex="-1"></a>                                    <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>,</span>
+<span id="cb5-4"><a href="données-brutes.html#cb5-4" tabindex="-1"></a>                                    <span class="at">min.cov.per.pool =</span> <span class="dv">4</span>,</span>
+<span id="cb5-5"><a href="données-brutes.html#cb5-5" tabindex="-1"></a>                                    <span class="at">max.cov.per.pool =</span> <span class="fl">1e+06</span>,</span>
+<span id="cb5-6"><a href="données-brutes.html#cb5-6" tabindex="-1"></a>                                    <span class="at">min.maf =</span> <span class="fl">0.05</span>,</span>
+<span id="cb5-7"><a href="données-brutes.html#cb5-7" tabindex="-1"></a>                                    <span class="at">output.snp.values =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb5-8"><a href="données-brutes.html#cb5-8" tabindex="-1"></a><span class="co">#conversion en matrice de distance</span></span>
+<span id="cb5-9"><a href="données-brutes.html#cb5-9" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">t</span>(PairWise.fst<span class="sc">@</span>PairwiseFSTmatrix)))</span>
+<span id="cb5-10"><a href="données-brutes.html#cb5-10" tabindex="-1"></a><span class="co">#heatmap</span></span>
+<span id="cb5-11"><a href="données-brutes.html#cb5-11" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Reds&quot;</span>)))(<span class="dv">9</span>)</span>
+<span id="cb5-12"><a href="données-brutes.html#cb5-12" tabindex="-1"></a><span class="fu">cim</span>(df, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>),  <span class="at">title =</span> <span class="st">&quot;heatmap des pairwise Fst entre les populations&quot;</span>)</span></code></pre></div>
+<p>un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="annexes.html#An1">Annexe 1</a></p>
 
 </div>
 </div>

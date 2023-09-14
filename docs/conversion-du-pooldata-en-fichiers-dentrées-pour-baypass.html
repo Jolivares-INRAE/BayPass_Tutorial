@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-08" />
+<meta name="date" content="2023-09-15" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -196,7 +196,6 @@ div.csl-indent {
 <ul>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
 <ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#pairwise"><i class="fa fa-check"></i>Pairwise</a></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An2"><i class="fa fa-check"></i>Annexe 2</a>
@@ -238,7 +237,7 @@ div.csl-indent {
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 </p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb5-1" tabindex="-1"></a><span class="fu">pooldata2genobaypass</span>(pooldata, <span class="at">writing.dir =</span> path_input, <span class="at">subsamplesize =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">subsamplingmethod =</span> <span class="st">&quot;thinning&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb6-1" tabindex="-1"></a><span class="fu">pooldata2genobaypass</span>(pooldata, <span class="at">writing.dir =</span> path_input, <span class="at">subsamplesize =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">subsamplingmethod =</span> <span class="st">&quot;thinning&quot;</span>)</span></code></pre></div>
 <p>On récupère dans le répertoire <strong><em>path_input</em></strong> trois fichiers: un fichier “<strong><em>genobaypass</em></strong>” qui contient les données filtrées de génotypage, un fichier “<strong><em>snpdet</em></strong>” qui contient la liste des positions correspondantes et un fichier “<strong><em>poolsize</em></strong>”, qui est une copie de l’objet <strong><em>psizes</em></strong>.</p>
 <div id="design-de-lanalyse-baypass" class="section level2 unnumbered hasAnchor">
 <h2>Design de l’analyse BayPass<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#design-de-lanalyse-baypass" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -395,9 +394,9 @@ La découpe en sous jeux de données des fichier genobaypass et snpdet se fait s
 <p><span id="exm:script3" class="example"><strong>Script 3  </strong></span><span style="color:darkgreen">Exemple d’une commande de subsampling.</span></p>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
-La commande <strong><em>sed</em></strong> prélève une ligne toutes les 100 et les copies dans un fichier <strong><em>.sub</em></strong> et s’exécute 100 fois pour ballayer tous le fichier initial et créer ainsi 100 fichiers de sous-jeux de données.
+La commande <strong><em>sed</em></strong> prélève une ligne toutes les 6 et les copies dans un fichier <strong><em>.sub</em></strong> et s’exécute 6 fois pour balayer tous le fichier initial et créer ainsi 6 fichiers de sous-jeux de données.
 </p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb6-1" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">100</span><span class="dt">}</span><span class="kw">;</span> <span class="cf">do</span> <span class="fu">sed</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$i</span><span class="st">~100p&quot;</span> genobaypass <span class="op">&gt;</span> genobaypass.sub<span class="va">$i</span><span class="kw">;</span> <span class="fu">sed</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$i</span><span class="st">~100p&quot;</span> snpdet <span class="op">&gt;</span> snpdet.sub<span class="va">$i</span><span class="kw">;</span> <span class="cf">done</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html#cb7-1" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">6</span><span class="dt">}</span><span class="kw">;</span> <span class="cf">do</span> <span class="fu">sed</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$i</span><span class="st">~6p&quot;</span> genobaypass <span class="op">&gt;</span> genobaypass.sub<span class="va">$i</span><span class="kw">;</span> <span class="fu">sed</span> <span class="at">-n</span> <span class="st">&quot;</span><span class="va">$i</span><span class="st">~6p&quot;</span> snpdet <span class="op">&gt;</span> snpdet.sub<span class="va">$i</span><span class="kw">;</span> <span class="cf">done</span></span></code></pre></div>
 <p>Le nombre de fichiers <strong><em>.sub</em></strong> à créer dépend du nombre total de SNP à analyser, une taille finale de 80 000 à 120 000 SNPs par fichier de sous-jeux de données est un bon compromis entre qualité d’analyse et temps de calcul.</p>
 
 </div>

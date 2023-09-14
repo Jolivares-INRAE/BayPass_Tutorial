@@ -96,13 +96,11 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 <span style="color:darkgreen">Chargement des packages et chemins</span>
 ```
 
-```{r load-Packages, message=FALSE, warning=FALSE}
+```{r load-Packages, message=FALSE, warning=FALSE, eval=FALSE}
 library(poolfstat)      #filtrage du vcf et création des fichiers d'entrées BayPass
 library(RColorBrewer)   #gestion couleur des heatmaps
 library(mixOmics)       #"cim" pour heatmap
 library(corrplot)       #matrice de corrélation pour heat map
-library(mvtnorm)        #pour jeu de données POD
-library(geigen)         #pour calcul des FMD
 library(VennDiagram)    #création de diagramme de Venn
 library(nVennR)         #extraction de données d'un diagramme de Venn
 library(tidyverse)      #manipulation de données (dplyr) et plots (ggplot2)
@@ -115,7 +113,7 @@ path_res <- "/../Resultats/"
 source("/../baypass_utils.R")   #fonctions utilitaires de BayPass
 ```
 
-```{r work-space, echo=FALSE}
+```{r work-space, echo=FALSE, eval=FALSE}
 path_vcf <- "C:/BayPass/vcf/"
 path_input <- "C:/BayPass/Input/13pops/chr1/"
 path_out <- "C:/BayPass/Output/13pops/chr1/"

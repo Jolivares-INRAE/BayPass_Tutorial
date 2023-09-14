@@ -11,3 +11,5 @@ exm:script4
 exr:chunk4
 exm:script5
 exr:chunk5
+exr:chunk6
+exr:chunk7
