@@ -7,7 +7,8 @@ bookdown::gitbook:
       after: NULL #| #<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
     edit: https://github.com/USERNAME/REPO/edit/BRANCH/%s
     download: ["pdf", "epub"]
-bookdown::html_document2: 
+bookdown::html_document2:
+  css: my_style.css
   includes:
     in_header: preamble.tex
   latex_engine: xelatex

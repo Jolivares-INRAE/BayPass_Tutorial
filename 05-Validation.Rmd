@@ -1,9 +1,9 @@
 # Baypass : les résultats {-}
 ## Validation des données analysées {-}
 Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers **_mat_omega.out_** qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse.  Avant de regrouper les résultats, il faut s'assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles. 
-Cette comparaison se fait en évaluant un indice de distance FMD (Förstner & Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk \@ref(exr:chunk4))
+Cette comparaison se fait en évaluant un indice de distance FMD (Förstner & Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk \@ref(exr:chunk5))
 
-```{exercise, chunk4}
+```{exercise, chunk5}
 <span style="color:darkgreen">Comparaison des matrices Ω</span>
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
@@ -11,10 +11,10 @@ Les fichiers de matrice sont copiés dans un dossier local puis comparés deux �
 Une heatmap et une décomposition en valeurs singulières de la  dernière matrice sont alors affichées.<br>
 </p>
 
-```{r validation-matrice-omega, fig.width=24, fig.height=18, eval=FALSE}
+```{r validation-matrice-omega, fig.width=24, fig.height=18, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
 source("/../baypass_utils.R")
 prefix <- "project.sub"
-#liste et compte les matrices Ω du répertoire "path"
+#liste et compte les matrices Ω du répertoire "path_Omega"
 path_Omega <- "/../Omega_files/"
 listMatrix <- list.files(path_Omega, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
@@ -56,7 +56,7 @@ Une fois la reproductibilité des analyses vérifiées, il faut concaténer tous
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
    Un boucle permet de coller chaque fichier résultat à son fichier snpdet correspondant(même numéro de subset "i"), le fichier obtenu est trié et l'entête reconstruite.
 </p>
-```{bash scr5, eval=FALSE}
+```{bash scr5, eval=FALSE, class.source='bg-linux'}
 
 Snpdet_path='/../BayPass/Input/'
 My_prefix='project_STD.sub'

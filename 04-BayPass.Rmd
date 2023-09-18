@@ -13,7 +13,7 @@ Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le sc
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
    Les sous-jeux de données sont analysés en parallèle 
 </p>
-```{bash scr4, eval=FALSE}
+```{bash scr4, eval=FALSE, class.source='bg-linux'}
 #!/bin/bash
 #SBATCH --array=0-99        #création de l'array: un élément/indice par job prévu (indice base 0)
 #SBATCH --cpus-per-task=2   #nbr de core par job
@@ -41,13 +41,13 @@ i_baypass \
 ```
 
 Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables  quantitatives:
-```{bash scr4.2, eval=FALSE}
+```{bash scr4.2, eval=FALSE, class.source='bg-linux'}
 -efile $my_path/ecotype \                    #calcul des Bayes Factors: modèle standard & auxiliaire
 -contrastfile $my_path/contrast \            #calcul du contraste C2: modèle core, standard & auxiliaire
 ```
 
 Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:
-```{bash scr4.3, eval=FALSE}
+```{bash scr4.3, eval=FALSE, class.source='bg-linux'}
 -auxmodel \                               #active le modèle auxiliaire
 -omegafile $my_path/omega.mat \           #matrice Ω modèle standard (optionnel) & auxiliaire (obligatoire)
 -auxPbetaprior 0.02 1.98                  #ajuste le Pi beta prior 

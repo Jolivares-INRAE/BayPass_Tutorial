@@ -38,7 +38,7 @@ Les étapes de contrôle qualité et d’alignement des données de séquençage
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
    Si l’on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d’utiliser l’option -r/--region qui tire profit de cet index.
 </p>
-```{bash scr1, eval=FALSE, highlight=TRUE}
+```{bash scr1, eval=FALSE, highlight=TRUE, class.source='bg-linux'}
 #!/bin/bash
 #SBATCH --array=1-29            #création de l'array: un élément/indice par chromosome
 
@@ -72,7 +72,7 @@ A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concat�
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
    On peut utiliser les bcftools pour concaténer les fichier **_vcf_**, la liste des fichiers à traiter est contenue dans une variable alimentée par une boucle "for".
 </p>
-```{bash scr2, eval=FALSE}
+```{bash scr2, eval=FALSE, class.source='bg-linux'}
 #!/bin/bash
 module load bioinfo/bcftools/1.14
 my_path='/../'
@@ -96,7 +96,7 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 <span style="color:darkgreen">Chargement des packages et chemins</span>
 ```
 
-```{r load-Packages, message=FALSE, warning=FALSE, eval=FALSE}
+```{r load-Packages, message=FALSE, warning=FALSE, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
 library(poolfstat)      #filtrage du vcf et création des fichiers d'entrées BayPass
 library(RColorBrewer)   #gestion couleur des heatmaps
 library(mixOmics)       #"cim" pour heatmap
@@ -113,12 +113,21 @@ path_res <- "/../Resultats/"
 source("/../baypass_utils.R")   #fonctions utilitaires de BayPass
 ```
 
-```{r work-space, echo=FALSE, eval=FALSE}
+```{r work-space, echo=FALSE, verbose=FALSE, message=FALSE, warning=FALSE}
+library(poolfstat)      #filtrage du vcf et création des fichiers d'entrées BayPass
+library(RColorBrewer)   #gestion couleur des heatmaps
+library(mixOmics)       #"cim" pour heatmap
+library(corrplot)       #matrice de corrélation pour heat map
+library(VennDiagram)    #création de diagramme de Venn
+library(nVennR)         #extraction de données d'un diagramme de Venn
+library(tidyverse)      #manipulation de données (dplyr) et plots (ggplot2)
+source("C:/BayPass/utils/baypass_utils.R")
+source("C:/BayPass/utils/Fenetres_glissantes.R")
 path_vcf <- "C:/BayPass/vcf/"
-path_input <- "C:/BayPass/Input/13pops/chr1/"
-path_out <- "C:/BayPass/Output/13pops/chr1/"
-path_POD <- "C:/BayPass/POD/13pops/"
-path_res <- "C:/BayPass/Resultats/13pops/chr1/"
+path_input <- "C:/BayPass/Input/"
+path_out <- "C:/BayPass/Output/"
+path_POD <- "C:/BayPass/POD/"
+path_res <- "C:/BayPass/Resultats/"
 ```
 
 Le filtrage du **_vcf_** et la sélection des SNPs à analyser ce fait à l'aide du package PoolFstat (Chunk \@ref(exr:chunk2)). Dans un premier temps il faut renseigner les noms des populations dans un objet **_pnames_** et les tailles haploïdes de chaque population dans un objet **_psizes_**. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d'individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d'individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1). 
@@ -133,14 +142,14 @@ min.cov.per.pool = Si au moins un pool n'est pas couvert par au moins au moins m
 max.cov.per.pool = Si au moins un pool est couvert par plus de que max.cov.perpool reads, le SNP est rejeté.<br>
 min.maf = fréquence allélique minimale autorisée pour l'allèle minoritaire pour qu'un SNP soit retenu.<br>
 </p>
-```{r conversion-pooldata, eval=FALSE}
+```{r conversion-pooldata, class.source='bg-chunk', class.output='bg-output'}
 #Infos sur les pops
 pnames <- c("pop1S", "pop2S", "pop3S", "pop1R", "pop2R", "pop3R")
 psizes_A <- c('114', '180', '160', '180', '200', '120')   #ploydie autosome
 psizes_X <- c('86', '135', '120', '135', '150', '90')     #ploydie X/Z
 psizes_Y <- c('28', '45', '40', '45', '50', '30')         #ploydie Y/W
 #conversion du .vcf
-pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project.vcf.gz", sep=""),
+pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "test_data.vcf.gz", sep=""),
                          poolsizes = psizes_A,
                          poolnames = pnames,
                          min.cov.per.pool = 4,
@@ -152,23 +161,28 @@ pooldata <- vcf2pooldata(vcf.file = paste(path_vcf, "project.vcf.gz", sep=""),
 #(région très dupliquée, biais de séquençage...)
 pooldata<-pooldata.subset(pooldata, cov.qthres.per.pool = c(0,0.99))
 ```
-```{r Fig2, echo=FALSE, out.extra = 'style="border:1px solid black;"'}
+```{r Fig2, echo=FALSE, eval=FALSE, out.extra = 'style="border:1px solid black;"'}
 knitr::include_graphics("C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/images/vcf2.jpg")
 ```
 
-A ce stade cet objet **_pooldata_** peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de **_poolfstat_** : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf), parmis ceux-ci on trouve l'analyse des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations.
-```{r heatmap-PW-fst, fig.width=10, fig.height=10, verbose=FALSE, eval=FALSE}
+A ce stade cet objet **_pooldata_** peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de **_poolfstat_** : (https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf), parmis ceux-ci on trouve l'analyse des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations(Chunk \@ref(exr:chunk3)).
+
+```{exercise, chunk3}
+<span style="color:darkgreen">Pairwise Fst</span>
+```
+```{r heatmap-PW-fst, fig.width=8, fig.height=8, verbose=FALSE, message=FALSE, warning=FALSE, class.source='bg-chunk', class.output='bg-output'}
 #Calcul des pairwise Fst 
 PairWise.fst <- compute.pairwiseFST(pooldata,
                                     method = "Anova",
                                     min.cov.per.pool = 4,
                                     max.cov.per.pool = 1e+06,
                                     min.maf = 0.05,
-                                    output.snp.values = FALSE)
+                                    output.snp.values = FALSE,
+                                    verbose = FALSE)
 #conversion en matrice de distance
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
 #heatmap
-cim_color <- colorRampPalette(rev(brewer.pal(9, "Reds")))(9)
+cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(9)
 cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatmap des pairwise Fst entre les populations")
 ```
 

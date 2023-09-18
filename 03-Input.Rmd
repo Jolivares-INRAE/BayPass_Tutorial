@@ -1,13 +1,13 @@
 # Conversion du pooldata en fichiers d'entrées pour BayPass {-}
-La fonction **_pooldata2genobaypass_** (Chunk \@ref(exr:chunk3)) convertit l'ogbjet **_pooldata_** en fichier d'entrée pour BayPass:
+La fonction **_pooldata2genobaypass_** (Chunk \@ref(exr:chunk4)) convertit l'ogbjet **_pooldata_** en fichier d'entrée pour BayPass:
 
-```{exercise, chunk3}
+```{exercise, chunk4}
 <span style="color:darkgreen">Création des fichiers input de BayPass</span>
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
   
 </p>
-```{r Input-BayPass, eval=FALSE}
+```{r Input-BayPass, class.source='bg-chunk', class.output='bg-output', message=FALSE}
 pooldata2genobaypass(pooldata, writing.dir = path_input, subsamplesize = -1, subsamplingmethod = "thinning")
 ```
 On récupère dans le répertoire **_path_input_** trois fichiers: un fichier "**_genobaypass_**" qui contient les données filtrées de génotypage, un fichier "**_snpdet_**" qui contient la liste des positions correspondantes et un fichier "**_poolsize_**", qui est une copie de l'objet **_psizes_**.
@@ -101,9 +101,9 @@ La découpe en sous jeux de données des fichier genobaypass et snpdet se fait s
 <span style="color:darkgreen">Exemple d'une commande de subsampling.</span>
 ```
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
-   La commande **_sed_** prélève une ligne toutes les 6 et les copies dans un fichier **_.sub_** et s'exécute 6 fois pour balayer tous le fichier initial et créer ainsi 6 fichiers de sous-jeux de données.
+   La commande **_sed_** prélève une ligne toutes les 10 et les copies dans un fichier **_.sub_** et s'exécute 10 fois pour balayer tous le fichier initial et créer ainsi 10 fichiers de sous-jeux de données.
 </p>
-```{bash scr3, eval=FALSE}
-for i in {1..6}; do sed -n "$i~6p" genobaypass > genobaypass.sub$i; sed -n "$i~6p" snpdet > snpdet.sub$i; done
+```{bash scr3, eval=FALSE, class.source='bg-linux'}
+for i in {1..10}; do sed -n "$i~10p" genobaypass > genobaypass.sub$i; sed -n "$i~10p" snpdet > snpdet.sub$i; done
 ```
 Le nombre de fichiers **_.sub_** à créer dépend du nombre total de SNP à analyser, une taille finale de 80 000 à 120 000 SNPs par fichier de sous-jeux de données est un bon compromis entre qualité d'analyse et temps de calcul.

@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-15" />
+<meta name="date" content="2023-09-18" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -191,24 +191,22 @@ div.csl-indent {
 <li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#validation-des-données-analysées"><i class="fa fa-check"></i>Validation des données analysées</a></li>
 <li class="chapter" data-level="" data-path="baypass-les-résultats.html"><a href="baypass-les-résultats.html#concaténation-des-résultats"><i class="fa fa-check"></i>Concaténation des résultats</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="baypass-exploitation-des-résultats.html"><a href="baypass-exploitation-des-résultats.html"><i class="fa fa-check"></i>BayPass: exploitation des résultats</a></li>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html"><i class="fa fa-check"></i>Annexes</a>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html"><i class="fa fa-check"></i>Exploitation des résultats</a>
 <ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An1"><i class="fa fa-check"></i>Annexe 1</a>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#les-résultats-de-différentiation-xtx"><i class="fa fa-check"></i>Les résultats de différentiation <em>XtX</em>:</a></li>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#les-résultats-de-bayes-factor-bf"><i class="fa fa-check"></i>Les résultats de Bayes Factor <em>BF</em>:</a></li>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#les-résultats-de-contraste-c2"><i class="fa fa-check"></i>Les résultats de Contraste <em>C2</em>:</a></li>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#An2"><i class="fa fa-check"></i>Annexe 2</a>
 <ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#fst-en-fenêtre-glissante"><i class="fa fa-check"></i>Fst en fenêtre glissante</a></li>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#conversion-de-la-matrice-svd-en-graphique-ggplot"><i class="fa fa-check"></i>Conversion de la matrice SVD en graphique ggplot</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An2"><i class="fa fa-check"></i>Annexe 2</a>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#An3"><i class="fa fa-check"></i>Annexe 3</a>
 <ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#conversion-de-la-matrice-svd-en-graphique-ggplot"><i class="fa fa-check"></i>Conversion de la matrice SVD en graphique ggplot</a></li>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#concaténages-des-résultats-betai-et-contrastes"><i class="fa fa-check"></i>Concaténages des résultats Betai et contrastes</a></li>
 </ul></li>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An3"><i class="fa fa-check"></i>Annexe 3</a>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#An4"><i class="fa fa-check"></i>Annexe 4</a>
 <ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#concaténages-des-résultats-betai-et-contrastes"><i class="fa fa-check"></i>Concaténages des résultats Betai et contrastes</a></li>
-</ul></li>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#An4"><i class="fa fa-check"></i>Annexe 4</a>
-<ul>
-<li class="chapter" data-level="" data-path="annexes.html"><a href="annexes.html#création-et-analyse-dun-jeu-de-données-pseudo-observées-pod"><i class="fa fa-check"></i>Création et analyse d’un jeu de données pseudo-observées (POD)</a></li>
+<li class="chapter" data-level="" data-path="exploitation-des-résultats.html"><a href="exploitation-des-résultats.html#création-et-analyse-dun-jeu-de-données-pseudo-observées-pod"><i class="fa fa-check"></i>Création et analyse d’un jeu de données pseudo-observées (POD)</a></li>
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="références.html"><a href="références.html"><i class="fa fa-check"></i>Références</a></li>
@@ -242,37 +240,37 @@ Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le sc
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les sous-jeux de données sont analysés en parallèle
 </p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="baypass-lanalyse-poolseq.html#cb8-1" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
-<span id="cb8-2"><a href="baypass-lanalyse-poolseq.html#cb8-2" tabindex="-1"></a><span class="co">#SBATCH --array=0-99        #création de l&#39;array: un élément/indice par job prévu (indice base 0)</span></span>
-<span id="cb8-3"><a href="baypass-lanalyse-poolseq.html#cb8-3" tabindex="-1"></a><span class="co">#SBATCH --cpus-per-task=2   #nbr de core par job</span></span>
-<span id="cb8-4"><a href="baypass-lanalyse-poolseq.html#cb8-4" tabindex="-1"></a><span class="co">#SBATCH --mem-per-cpu=2G    #mémoire partagée par tous les cores</span></span>
-<span id="cb8-5"><a href="baypass-lanalyse-poolseq.html#cb8-5" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="baypass-lanalyse-poolseq.html#cb8-6" tabindex="-1"></a><span class="ex">module</span> purge</span>
-<span id="cb8-7"><a href="baypass-lanalyse-poolseq.html#cb8-7" tabindex="-1"></a><span class="ex">module</span> load statistics/R/4.2.2</span>
-<span id="cb8-8"><a href="baypass-lanalyse-poolseq.html#cb8-8" tabindex="-1"></a><span class="ex">module</span> load bioinfo/BayPass/2.4</span>
-<span id="cb8-9"><a href="baypass-lanalyse-poolseq.html#cb8-9" tabindex="-1"></a><span class="ex">module</span> load compilers/intel/2023.0.0    <span class="co">#pour i_baypass</span></span>
-<span id="cb8-10"><a href="baypass-lanalyse-poolseq.html#cb8-10" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="baypass-lanalyse-poolseq.html#cb8-11" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="baypass-lanalyse-poolseq.html#cb8-12" tabindex="-1"></a><span class="co">#définition du chemin ciblant les fichiers genobaypass et snpdet</span></span>
-<span id="cb8-13"><a href="baypass-lanalyse-poolseq.html#cb8-13" tabindex="-1"></a><span class="va">my_path</span><span class="op">=</span><span class="st">&#39;/../Input/&#39;</span></span>
-<span id="cb8-14"><a href="baypass-lanalyse-poolseq.html#cb8-14" tabindex="-1"></a><span class="va">FILES_R1</span><span class="op">=</span><span class="va">($(</span><span class="fu">ls</span> <span class="va">$my_path</span>/genobaypass.sub<span class="pp">*</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/^.+\///&#39;</span><span class="va">))</span></span>
-<span id="cb8-15"><a href="baypass-lanalyse-poolseq.html#cb8-15" tabindex="-1"></a><span class="va">INPUT_F1</span><span class="op">=</span><span class="va">${FILES_R1</span><span class="op">[</span><span class="va">$SLURM_ARRAY_TASK_ID</span><span class="op">]</span><span class="va">}</span></span>
-<span id="cb8-16"><a href="baypass-lanalyse-poolseq.html#cb8-16" tabindex="-1"></a><span class="va">OUTPUT</span><span class="op">=</span><span class="va">${FILES_R1</span><span class="op">[</span><span class="va">$SLURM_ARRAY_TASK_ID</span><span class="op">]/</span><span class="ss">genobaypass</span><span class="op">/</span>project.output<span class="va">}</span></span>
-<span id="cb8-17"><a href="baypass-lanalyse-poolseq.html#cb8-17" tabindex="-1"></a></span>
-<span id="cb8-18"><a href="baypass-lanalyse-poolseq.html#cb8-18" tabindex="-1"></a><span class="ex">i_baypass</span> <span class="dt">\</span></span>
-<span id="cb8-19"><a href="baypass-lanalyse-poolseq.html#cb8-19" tabindex="-1"></a>-gfile <span class="va">$my_path</span>/<span class="va">$INPUT_F1</span> <span class="dt">\ </span>                 <span class="co">#fichiers genobaypass.sub*</span></span>
-<span id="cb8-20"><a href="baypass-lanalyse-poolseq.html#cb8-20" tabindex="-1"></a><span class="ex">-poolsizefile</span> <span class="va">$my_path</span>/poolsize <span class="dt">\ </span>           <span class="co">#active le mode poolseq</span></span>
-<span id="cb8-21"><a href="baypass-lanalyse-poolseq.html#cb8-21" tabindex="-1"></a><span class="ex">-d0yij</span> 40 <span class="dt">\ </span>                              <span class="co">#1/5e de la valeur la plus faible du poolsize</span></span>
-<span id="cb8-22"><a href="baypass-lanalyse-poolseq.html#cb8-22" tabindex="-1"></a><span class="ex">-seed</span> 5001 <span class="dt">\</span></span>
-<span id="cb8-23"><a href="baypass-lanalyse-poolseq.html#cb8-23" tabindex="-1"></a>-nthreads 2 <span class="dt">\</span></span>
-<span id="cb8-24"><a href="baypass-lanalyse-poolseq.html#cb8-24" tabindex="-1"></a>-outprefix <span class="va">$OUTPUT</span> <span class="dt">\</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="baypass-lanalyse-poolseq.html#cb13-1" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb13-2"><a href="baypass-lanalyse-poolseq.html#cb13-2" tabindex="-1"></a><span class="co">#SBATCH --array=0-99        #création de l&#39;array: un élément/indice par job prévu (indice base 0)</span></span>
+<span id="cb13-3"><a href="baypass-lanalyse-poolseq.html#cb13-3" tabindex="-1"></a><span class="co">#SBATCH --cpus-per-task=2   #nbr de core par job</span></span>
+<span id="cb13-4"><a href="baypass-lanalyse-poolseq.html#cb13-4" tabindex="-1"></a><span class="co">#SBATCH --mem-per-cpu=2G    #mémoire partagée par tous les cores</span></span>
+<span id="cb13-5"><a href="baypass-lanalyse-poolseq.html#cb13-5" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="baypass-lanalyse-poolseq.html#cb13-6" tabindex="-1"></a><span class="ex">module</span> purge</span>
+<span id="cb13-7"><a href="baypass-lanalyse-poolseq.html#cb13-7" tabindex="-1"></a><span class="ex">module</span> load statistics/R/4.2.2</span>
+<span id="cb13-8"><a href="baypass-lanalyse-poolseq.html#cb13-8" tabindex="-1"></a><span class="ex">module</span> load bioinfo/BayPass/2.4</span>
+<span id="cb13-9"><a href="baypass-lanalyse-poolseq.html#cb13-9" tabindex="-1"></a><span class="ex">module</span> load compilers/intel/2023.0.0    <span class="co">#pour i_baypass</span></span>
+<span id="cb13-10"><a href="baypass-lanalyse-poolseq.html#cb13-10" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="baypass-lanalyse-poolseq.html#cb13-11" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="baypass-lanalyse-poolseq.html#cb13-12" tabindex="-1"></a><span class="co">#définition du chemin ciblant les fichiers genobaypass et snpdet</span></span>
+<span id="cb13-13"><a href="baypass-lanalyse-poolseq.html#cb13-13" tabindex="-1"></a><span class="va">my_path</span><span class="op">=</span><span class="st">&#39;/../Input/&#39;</span></span>
+<span id="cb13-14"><a href="baypass-lanalyse-poolseq.html#cb13-14" tabindex="-1"></a><span class="va">FILES_R1</span><span class="op">=</span><span class="va">($(</span><span class="fu">ls</span> <span class="va">$my_path</span>/genobaypass.sub<span class="pp">*</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/^.+\///&#39;</span><span class="va">))</span></span>
+<span id="cb13-15"><a href="baypass-lanalyse-poolseq.html#cb13-15" tabindex="-1"></a><span class="va">INPUT_F1</span><span class="op">=</span><span class="va">${FILES_R1</span><span class="op">[</span><span class="va">$SLURM_ARRAY_TASK_ID</span><span class="op">]</span><span class="va">}</span></span>
+<span id="cb13-16"><a href="baypass-lanalyse-poolseq.html#cb13-16" tabindex="-1"></a><span class="va">OUTPUT</span><span class="op">=</span><span class="va">${FILES_R1</span><span class="op">[</span><span class="va">$SLURM_ARRAY_TASK_ID</span><span class="op">]/</span><span class="ss">genobaypass</span><span class="op">/</span>project.output<span class="va">}</span></span>
+<span id="cb13-17"><a href="baypass-lanalyse-poolseq.html#cb13-17" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="baypass-lanalyse-poolseq.html#cb13-18" tabindex="-1"></a><span class="ex">i_baypass</span> <span class="dt">\</span></span>
+<span id="cb13-19"><a href="baypass-lanalyse-poolseq.html#cb13-19" tabindex="-1"></a>-gfile <span class="va">$my_path</span>/<span class="va">$INPUT_F1</span> <span class="dt">\ </span>                 <span class="co">#fichiers genobaypass.sub*</span></span>
+<span id="cb13-20"><a href="baypass-lanalyse-poolseq.html#cb13-20" tabindex="-1"></a><span class="ex">-poolsizefile</span> <span class="va">$my_path</span>/poolsize <span class="dt">\ </span>           <span class="co">#active le mode poolseq</span></span>
+<span id="cb13-21"><a href="baypass-lanalyse-poolseq.html#cb13-21" tabindex="-1"></a><span class="ex">-d0yij</span> 40 <span class="dt">\ </span>                              <span class="co">#1/5e de la valeur la plus faible du poolsize</span></span>
+<span id="cb13-22"><a href="baypass-lanalyse-poolseq.html#cb13-22" tabindex="-1"></a><span class="ex">-seed</span> 5001 <span class="dt">\</span></span>
+<span id="cb13-23"><a href="baypass-lanalyse-poolseq.html#cb13-23" tabindex="-1"></a>-nthreads 2 <span class="dt">\</span></span>
+<span id="cb13-24"><a href="baypass-lanalyse-poolseq.html#cb13-24" tabindex="-1"></a>-outprefix <span class="va">$OUTPUT</span> <span class="dt">\</span></span></code></pre></div>
 <p>Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="baypass-lanalyse-poolseq.html#cb9-1" tabindex="-1"></a><span class="ex">-efile</span> <span class="va">$my_path</span>/ecotype <span class="dt">\ </span>                   <span class="co">#calcul des Bayes Factors: modèle standard &amp; auxiliaire</span></span>
-<span id="cb9-2"><a href="baypass-lanalyse-poolseq.html#cb9-2" tabindex="-1"></a><span class="ex">-contrastfile</span> <span class="va">$my_path</span>/contrast <span class="dt">\ </span>           <span class="co">#calcul du contraste C2: modèle core, standard &amp; auxiliaire</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="baypass-lanalyse-poolseq.html#cb14-1" tabindex="-1"></a><span class="ex">-efile</span> <span class="va">$my_path</span>/ecotype <span class="dt">\ </span>                   <span class="co">#calcul des Bayes Factors: modèle standard &amp; auxiliaire</span></span>
+<span id="cb14-2"><a href="baypass-lanalyse-poolseq.html#cb14-2" tabindex="-1"></a><span class="ex">-contrastfile</span> <span class="va">$my_path</span>/contrast <span class="dt">\ </span>           <span class="co">#calcul du contraste C2: modèle core, standard &amp; auxiliaire</span></span></code></pre></div>
 <p>Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="baypass-lanalyse-poolseq.html#cb10-1" tabindex="-1"></a><span class="ex">-auxmodel</span> <span class="dt">\ </span>                              <span class="co">#active le modèle auxiliaire</span></span>
-<span id="cb10-2"><a href="baypass-lanalyse-poolseq.html#cb10-2" tabindex="-1"></a><span class="ex">-omegafile</span> <span class="va">$my_path</span>/omega.mat <span class="dt">\ </span>          <span class="co">#matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)</span></span>
-<span id="cb10-3"><a href="baypass-lanalyse-poolseq.html#cb10-3" tabindex="-1"></a><span class="ex">-auxPbetaprior</span> 0.02 1.98                  <span class="co">#ajuste le Pi beta prior </span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="baypass-lanalyse-poolseq.html#cb15-1" tabindex="-1"></a><span class="ex">-auxmodel</span> <span class="dt">\ </span>                              <span class="co">#active le modèle auxiliaire</span></span>
+<span id="cb15-2"><a href="baypass-lanalyse-poolseq.html#cb15-2" tabindex="-1"></a><span class="ex">-omegafile</span> <span class="va">$my_path</span>/omega.mat <span class="dt">\ </span>          <span class="co">#matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)</span></span>
+<span id="cb15-3"><a href="baypass-lanalyse-poolseq.html#cb15-3" tabindex="-1"></a><span class="ex">-auxPbetaprior</span> 0.02 1.98                  <span class="co">#ajuste le Pi beta prior </span></span></code></pre></div>
 
 </div>
             </section>
