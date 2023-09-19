@@ -1,5 +1,5 @@
 # bookdown::gitbook:
-#   css: https://github.com/Jolivares-INRAE/BayPass_Tutorial/style.css
+#   css: "style.css"
 #   split_bib: false
 #   config:
 #     toc:
