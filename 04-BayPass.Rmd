@@ -15,7 +15,7 @@ Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le sc
 </p>
 ```{bash scr4, eval=FALSE, class.source='bg-linux'}
 #!/bin/bash
-#SBATCH --array=0-99        #création de l'array: un élément/indice par job prévu (indice base 0)
+#SBATCH --array=0-9        #création de l'array: un élément/indice par job prévu (indice base 0)
 #SBATCH --cpus-per-task=2   #nbr de core par job
 #SBATCH --mem-per-cpu=2G    #mémoire partagée par tous les cores
 

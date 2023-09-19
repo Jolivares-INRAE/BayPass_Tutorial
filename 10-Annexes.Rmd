@@ -4,7 +4,7 @@
 Il est possible de calculer des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d'une demi fenêtre, une fois ploter, une région génomique très différenciée apparaîtra sous la forme d'une éruption de points colorés.
 
 ### Fst en fenêtre glissante {-}
-```{r plot-sliding-Fst, verbose=FALSE, eval=FALSE}
+```{r plot-sliding-Fst, verbose=FALSE, class.source='bg-chunk', class.output='bg-output'}
 #calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .
 Multi.Loc.fst <- computeFST(pooldata,
                             method = "Anova",

@@ -335,7 +335,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 ## (N.B., positions with more than one alternate allele will be ignored)
 ## Parsing allele counts
 ## 1e+06  lines processed in 0 h  0 m  20 s : 577119 SNPs found
-## 1810324  lines processed in 0 h  0 m  32 s : 1066980 SNPs found
+## 1810324  lines processed in 0 h  0 m  33 s : 1066980 SNPs found
 ## Data consists of 1066980 SNPs for 6 Pools</code></pre>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb6-1"><a href="données-brutes.html#cb6-1" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
 <span id="cb6-2"><a href="données-brutes.html#cb6-2" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
@@ -354,7 +354,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb8-7"><a href="données-brutes.html#cb8-7" tabindex="-1"></a>                                    <span class="at">output.snp.values =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb8-8"><a href="données-brutes.html#cb8-8" tabindex="-1"></a>                                    <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <pre class="bg-output"><code>## 
-## Overall Analysis Time: 0 h 0 m 5 s</code></pre>
+## Overall Analysis Time: 0 h 0 m 6 s</code></pre>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb10-1"><a href="données-brutes.html#cb10-1" tabindex="-1"></a><span class="co">#conversion en matrice de distance</span></span>
 <span id="cb10-2"><a href="données-brutes.html#cb10-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">t</span>(PairWise.fst<span class="sc">@</span>PairwiseFSTmatrix)))</span>
 <span id="cb10-3"><a href="données-brutes.html#cb10-3" tabindex="-1"></a><span class="co">#heatmap</span></span>
