@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-18" />
+<meta name="date" content="2023-09-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -152,7 +152,7 @@ div.csl-indent {
 }
 </style>
 
-<link rel="stylesheet" href="style.css" type="text/css" />
+<link rel="stylesheet" href="my_style.css" type="text/css" />
 </head>
 
 <body>
@@ -232,15 +232,15 @@ div.csl-indent {
 <div id="validation-des-données-analysées" class="section level2 unnumbered hasAnchor">
 <h2>Validation des données analysées<a href="baypass-les-résultats.html#validation-des-données-analysées" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers <strong><em>mat_omega.out</em></strong> qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse. Avant de regrouper les résultats, il faut s’assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles.
-Cette comparaison se fait en évaluant un indice de distance FMD (Förstner &amp; Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk <a href="baypass-les-résultats.html#exr:chunk4">4</a>)</p>
+Cette comparaison se fait en évaluant un indice de distance FMD (Förstner &amp; Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk <a href="baypass-les-résultats.html#exr:chunk5">5</a>)</p>
 <div class="exercise">
-<p><span id="exr:chunk4" class="exercise"><strong>Chunk 4  </strong></span><span style="color:darkgreen">Comparaison des matrices Ω</span></p>
+<p><span id="exr:chunk5" class="exercise"><strong>Chunk 5  </strong></span><span style="color:darkgreen">Comparaison des matrices Ω</span></p>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les fichiers de matrice sont copiés dans un dossier local puis comparés deux à deux par la fonction <strong><em>fmd.dist</em></strong> des utilitaires de BayPass pour évaluer leur distances.<br>
 Une heatmap et une décomposition en valeurs singulières de la dernière matrice sont alors affichées.<br>
 </p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="baypass-les-résultats.html#cb16-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)</span>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb16-1"><a href="baypass-les-résultats.html#cb16-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)</span>
 <span id="cb16-2"><a href="baypass-les-résultats.html#cb16-2" tabindex="-1"></a>prefix <span class="ot">&lt;-</span> <span class="st">&quot;project.sub&quot;</span></span>
 <span id="cb16-3"><a href="baypass-les-résultats.html#cb16-3" tabindex="-1"></a><span class="co">#liste et compte les matrices Ω du répertoire &quot;path_Omega&quot;</span></span>
 <span id="cb16-4"><a href="baypass-les-résultats.html#cb16-4" tabindex="-1"></a>path_Omega <span class="ot">&lt;-</span> <span class="st">&quot;/../Omega_files/&quot;</span></span>
@@ -283,7 +283,7 @@ Cette matrice SVD représente les distances génétiques des populations analys�
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Un boucle permet de coller chaque fichier résultat à son fichier snpdet correspondant(même numéro de subset “i”), le fichier obtenu est trié et l’entête reconstruite.
 </p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="baypass-les-résultats.html#cb17-1" tabindex="-1"></a></span>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash bg-linux"><code class="sourceCode bash"><span id="cb17-1"><a href="baypass-les-résultats.html#cb17-1" tabindex="-1"></a></span>
 <span id="cb17-2"><a href="baypass-les-résultats.html#cb17-2" tabindex="-1"></a><span class="va">Snpdet_path</span><span class="op">=</span><span class="st">&#39;/../BayPass/Input/&#39;</span></span>
 <span id="cb17-3"><a href="baypass-les-résultats.html#cb17-3" tabindex="-1"></a><span class="va">My_prefix</span><span class="op">=</span><span class="st">&#39;project_STD.sub&#39;</span></span>
 <span id="cb17-4"><a href="baypass-les-résultats.html#cb17-4" tabindex="-1"></a></span>
