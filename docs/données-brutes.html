@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-09-19" />
+<meta name="date" content="2023-09-20" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -152,7 +152,7 @@ div.csl-indent {
 }
 </style>
 
-<link rel="stylesheet" href="my_style.css" type="text/css" />
+<link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
 <body>
@@ -354,11 +354,11 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb8-7"><a href="données-brutes.html#cb8-7" tabindex="-1"></a>                                    <span class="at">output.snp.values =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb8-8"><a href="données-brutes.html#cb8-8" tabindex="-1"></a>                                    <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <pre class="bg-output"><code>## 
-## Overall Analysis Time: 0 h 0 m 6 s</code></pre>
+## Overall Analysis Time: 0 h 0 m 5 s</code></pre>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb10-1"><a href="données-brutes.html#cb10-1" tabindex="-1"></a><span class="co">#conversion en matrice de distance</span></span>
 <span id="cb10-2"><a href="données-brutes.html#cb10-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">t</span>(PairWise.fst<span class="sc">@</span>PairwiseFSTmatrix)))</span>
 <span id="cb10-3"><a href="données-brutes.html#cb10-3" tabindex="-1"></a><span class="co">#heatmap</span></span>
-<span id="cb10-4"><a href="données-brutes.html#cb10-4" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Blues&quot;</span>)))(<span class="dv">9</span>)</span>
+<span id="cb10-4"><a href="données-brutes.html#cb10-4" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Reds&quot;</span>)))(<span class="dv">9</span>)</span>
 <span id="cb10-5"><a href="données-brutes.html#cb10-5" tabindex="-1"></a><span class="fu">cim</span>(df, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>),  <span class="at">title =</span> <span class="st">&quot;heatmap des pairwise Fst entre les populations&quot;</span>)</span></code></pre></div>
 <p><img src="BayPass_Fr_files/figure-html/heatmap-PW-fst-1.png" width="768" /></p>
 <p>un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="#An1">Annexe 1</a></p>
