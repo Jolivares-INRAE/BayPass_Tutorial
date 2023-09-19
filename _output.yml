@@ -1,5 +1,5 @@
 # bookdown::gitbook:
-#   css: my_style.css
+#   css: style.css
 #   split_bib: false
 #   config:
 #     toc:
@@ -8,14 +8,14 @@
 #     edit: https://github.com/USERNAME/REPO/edit/BRANCH/%s
 #     download: ["pdf", "epub"]
 bookdown::html_document2:
-  css: my_style.css
+  css: style.css
   includes:
     in_header: preamble.tex
   latex_engine: xelatex
   citation_package: natbib
   keep_tex: yes
 # #bookdown::epub_book:
-#   #css: my_style.css
+#   #css: style.css
 # bookdown::pdf_document2: 
 #   css: my_style.css
 #   includes:
