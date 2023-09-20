@@ -152,6 +152,7 @@ div.csl-indent {
 }
 </style>
 
+<link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
 <body>
@@ -230,9 +231,9 @@ div.csl-indent {
 <h1>Données brutes<a href="données-brutes.html#données-brutes" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <div id="obtention-dun-fichier-poolseq.vcf" class="section level2 unnumbered hasAnchor">
 <h2>Obtention d’un fichier Poolseq.vcf :<a href="données-brutes.html#obtention-dun-fichier-poolseq.vcf" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Les étapes de contrôle qualité et d’alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d’alignement <strong><em>bam</em></strong>. La première étape consiste à regrouper les fichiers <strong><em>bam</em></strong> de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l’utilisation des Samtools <span class="citation">(<a href="#ref-li_sequence_2009">Li et al. 2009</a>)</span> et de Varscan 2 <span class="citation">(<a href="#ref-koboldt_varscan_2012">Koboldt et al. 2012</a>)</span> avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l’espace de travail (Script <a href="données-brutes.html#exm:script1">1</a>). Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.</p>
+<p>Les étapes de contrôle qualité et d’alignement des données de séquençage sont largement documentés par ailleurs, et ne serons donc pas documenter ici, et nous partirons directement des fichiers d’alignement <strong><em>bam</em></strong>. La première étape consiste à regrouper les fichiers <strong><em>bam</em></strong> de toutes les populations en un seul fichier puis à effectuer le variant calling avec un logiciel dédié compatible avec le séquençage en pool afin de conserver les informations de profondeur. Nous recommandons l’utilisation des Samtools <span class="citation">(<a href="références.html#ref-li_sequence_2009">Li et al. 2009</a>)</span> et de Varscan 2 <span class="citation">(<a href="références.html#ref-koboldt_varscan_2012">Koboldt et al. 2012</a>)</span> avec une instruction pipe entre les deux pour éviter les fichiers intermédiaires et économiser l’espace de travail (Script <a href="données-brutes.html#exm:script1">1</a>). Les commandes sont effectuées avec les paramètres de base, sauf la p-value qui est montée à 0.5 pour être le moins stringent possible à ce stade. On peut découper le travail en plusieurs chromosomes pour réduire les temps de calculs.</p>
 <div class="example">
-<p><span id="exm:script1" class="example"><strong>Script 1  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour effectuer un variant calling</span></p>
+<p><span id="exm:script1" class="example"><strong>Example 1  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour effectuer un variant calling</span></p>
 </div>
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Si l’on veut découper le travail en chromosomes, il est indispensable de travailler sur des fichiers bam correctement indexés et d’utiliser l’option -r/–region qui tire profit de cet index.
@@ -262,7 +263,7 @@ Si l’on veut découper le travail en chromosomes, il est indispensable de trav
 <span id="cb1-23"><a href="données-brutes.html#cb1-23" tabindex="-1"></a><span class="ex">bcftools</span> index /../project_chr<span class="va">${SLURM_ARRAY_TASK_ID}</span>.vcf</span></code></pre></div>
 <p>A l’issue du variant calling les fichiers <strong><em>vcf</em></strong> des autosomes seront concaténés (Script <a href="données-brutes.html#exm:script2">2</a>), les chromosomes sexuels ayant une ségrégation, une histoire démographique et une ploïdie différente des autosomes il conviendra, lorsque cela est possible, de les analyser à part.</p>
 <div class="example">
-<p><span id="exm:script2" class="example"><strong>Script 2  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour concaténer des fichiers <strong><em>vcf</em></strong></span></p>
+<p><span id="exm:script2" class="example"><strong>Example 2  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour concaténer des fichiers <strong><em>vcf</em></strong></span></p>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 On peut utiliser les bcftools pour concaténer les fichier <strong><em>vcf</em></strong>, la liste des fichiers à traiter est contenue dans une variable alimentée par une boucle “for”.
@@ -286,7 +287,7 @@ On peut utiliser les bcftools pour concaténer les fichier <strong><em>vcf</em><
 <p>Le fichier <strong><em>vcf</em></strong>, éventuellement compressé, est téléchargé sur un ordinateur local pour être analysé sous Rstudio.
 Dans un premier temps il faut charger les packages nécessaires et définir les chemins des différents dossiers qui seront utilisés (Chunk <a href="données-brutes.html#exr:chunk1">1</a>)</p>
 <div class="exercise">
-<p><span id="exr:chunk1" class="exercise"><strong>Chunk 1  </strong></span><span style="color:darkgreen">Chargement des packages et chemins</span></p>
+<p><span id="exr:chunk1" class="exercise"><strong>Exercise 1  </strong></span><span style="color:darkgreen">Chargement des packages et chemins</span></p>
 </div>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb3-1"><a href="données-brutes.html#cb3-1" tabindex="-1"></a><span class="fu">library</span>(poolfstat)      <span class="co">#filtrage du vcf et création des fichiers d&#39;entrées BayPass</span></span>
 <span id="cb3-2"><a href="données-brutes.html#cb3-2" tabindex="-1"></a><span class="fu">library</span>(RColorBrewer)   <span class="co">#gestion couleur des heatmaps</span></span>
@@ -305,7 +306,7 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 <p>Le filtrage du <strong><em>vcf</em></strong> et la sélection des SNPs à analyser ce fait à l’aide du package PoolFstat (Chunk <a href="données-brutes.html#exr:chunk2">2</a>). Dans un premier temps il faut renseigner les noms des populations dans un objet <strong><em>pnames</em></strong> et les tailles haploïdes de chaque population dans un objet <strong><em>psizes</em></strong>. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d’individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d’individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1).
 La fonction <strong><em>vcf2poodata</em></strong> va balayer le fichier <strong><em>vcf</em></strong>, sélectionner les SNP bi-alléliques selon des critères définis par l’utilisateur et créer un objet <strong><em>pooldata</em></strong>.</p>
 <div class="exercise">
-<p><span id="exr:chunk2" class="exercise"><strong>Chunk 2  </strong></span><span style="color:darkgreen">Filtrage et sélection des SNPs</span></p>
+<p><span id="exr:chunk2" class="exercise"><strong>Exercise 2  </strong></span><span style="color:darkgreen">Filtrage et sélection des SNPs</span></p>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les options à renseigner sont:<br>
@@ -333,8 +334,8 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 ## for the alternate allele and RD field for the reference allele
 ## (N.B., positions with more than one alternate allele will be ignored)
 ## Parsing allele counts
-## 1e+06  lines processed in 0 h  0 m  19 s : 577119 SNPs found
-## 1810324  lines processed in 0 h  0 m  32 s : 1066980 SNPs found
+## 1e+06  lines processed in 0 h  0 m  20 s : 577119 SNPs found
+## 1810324  lines processed in 0 h  0 m  33 s : 1066980 SNPs found
 ## Data consists of 1066980 SNPs for 6 Pools</code></pre>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb6-1"><a href="données-brutes.html#cb6-1" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
 <span id="cb6-2"><a href="données-brutes.html#cb6-2" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
@@ -342,7 +343,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <pre class="bg-output"><code>## Data consists of 1041408 SNPs for 6 Pools</code></pre>
 <p>A ce stade cet objet <strong><em>pooldata</em></strong> peut être utilisé pour calculer diverses statistiques utilisées dans les études de génomique des populations, ces outils sont décrits et exemplifiés dans la vignette de <strong><em>poolfstat</em></strong> : (<a href="https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf" class="uri">https://cran.r-project.org/web/packages/poolfstat/vignettes/vignette.pdf</a>), parmis ceux-ci on trouve l’analyse des Fst entre les populations deux à deux (pairwise) afin de visualiser la proximité génétique entre populations(Chunk <a href="données-brutes.html#exr:chunk3">3</a>).</p>
 <div class="exercise">
-<p><span id="exr:chunk3" class="exercise"><strong>Chunk 3  </strong></span><span style="color:darkgreen">Pairwise Fst</span></p>
+<p><span id="exr:chunk3" class="exercise"><strong>Exercise 3  </strong></span><span style="color:darkgreen">Pairwise Fst</span></p>
 </div>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb8-1"><a href="données-brutes.html#cb8-1" tabindex="-1"></a><span class="co">#Calcul des pairwise Fst </span></span>
 <span id="cb8-2"><a href="données-brutes.html#cb8-2" tabindex="-1"></a>PairWise.fst <span class="ot">&lt;-</span> <span class="fu">compute.pairwiseFST</span>(pooldata,</span>
@@ -359,18 +360,9 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb10-3"><a href="données-brutes.html#cb10-3" tabindex="-1"></a><span class="co">#heatmap</span></span>
 <span id="cb10-4"><a href="données-brutes.html#cb10-4" tabindex="-1"></a>cim_color <span class="ot">&lt;-</span> <span class="fu">colorRampPalette</span>(<span class="fu">rev</span>(<span class="fu">brewer.pal</span>(<span class="dv">9</span>, <span class="st">&quot;Reds&quot;</span>)))(<span class="dv">9</span>)</span>
 <span id="cb10-5"><a href="données-brutes.html#cb10-5" tabindex="-1"></a><span class="fu">cim</span>(df, <span class="at">color =</span> cim_color, <span class="at">symkey =</span> <span class="cn">FALSE</span>, <span class="at">margins =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>),  <span class="at">title =</span> <span class="st">&quot;heatmap des pairwise Fst entre les populations&quot;</span>)</span></code></pre></div>
-<p><img src="BayPass_Fr_files/figure-html/heatmap-PW-fst-1.png" width="768" /></p>
+<p><img src="_main_files/figure-html/heatmap-PW-fst-1.png" width="768" /></p>
 <p>un exemple d’estimation de la structure génétique des populations déduite des Fst est donné en <a href="#An1">Annexe 1</a></p>
 
-</div>
-</div>
-<h3>References</h3>
-<div id="refs" class="references csl-bib-body hanging-indent">
-<div id="ref-koboldt_varscan_2012" class="csl-entry">
-Koboldt, Daniel C., Qunyuan Zhang, David E. Larson, Dong Shen, Michael D. McLellan, Ling Lin, Christopher A. Miller, Elaine R. Mardis, Li Ding, and Richard K. Wilson. 2012. <span>“<span>VarScan</span> 2: <span>Somatic</span> Mutation and Copy Number Alteration Discovery in Cancer by Exome Sequencing.”</span> <em>Genome Research</em> 22 (3): 568–76. <a href="https://doi.org/10.1101/gr.129684.111">https://doi.org/10.1101/gr.129684.111</a>.
-</div>
-<div id="ref-li_sequence_2009" class="csl-entry">
-Li, Heng, Bob Handsaker, Alec Wysoker, Tim Fennell, Jue Ruan, Nils Homer, Gabor Marth, Goncalo Abecasis, Richard Durbin, and 1000 Genome Project Data Processing Subgroup. 2009. <span>“The <span>Sequence</span> <span>Alignment</span>/<span>Map</span> Format and <span>SAMtools</span>.”</span> <em>Bioinformatics</em> 25 (16): 2078–79. <a href="https://doi.org/10.1093/bioinformatics/btp352">https://doi.org/10.1093/bioinformatics/btp352</a>.
 </div>
 </div>
             </section>
@@ -410,8 +402,8 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": null,
-"text": null
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-presentation.Rmd",
+"text": "Edit"
 },
 "history": {
 "link": null,
@@ -421,7 +413,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["BayPass_Fr.pdf", "BayPass_Fr.epub"],
+"download": ["_main.pdf", "_main.epub"],
 "search": {
 "engine": "fuse",
 "options": null

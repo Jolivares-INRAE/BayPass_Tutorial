@@ -4,13 +4,13 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
+  <title>Baypass : l’analyse poolseq | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta property="og:title" content="Baypass : l’analyse poolseq | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
   <meta property="og:image" content="https://jolivares-inrae.github.io/BayPass_Tutorial/C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png" />
   <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
@@ -19,7 +19,7 @@ set in the _output.yml file.</p>" />
   <meta name="github-repo" content="https://github.com/Jolivares-INRAE/BayPass_Tutorial" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Présentation du logiciel BayPass 2.3 | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta name="twitter:title" content="Baypass : l’analyse poolseq | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   
   <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
@@ -36,8 +36,8 @@ set in the _output.yml file.</p>" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="introduction.html"/>
-<link rel="next" href="données-brutes.html"/>
+<link rel="prev" href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html"/>
+<link rel="next" href="baypass-les-résultats.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -227,45 +227,59 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="présentation-du-logiciel-baypass-2.3" class="section level1 unnumbered hasAnchor">
-<h1>Présentation du logiciel BayPass 2.3<a href="présentation-du-logiciel-baypass-2.html#présentation-du-logiciel-baypass-2.3" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Le logiciel BayPass est un logiciel de génomique des populations qui vise principalement à l’identification de marqueurs génétiques soumis à la sélection et/ou associés à des covariables spécifiques à la population (variables environnementales, phénotypiques, quantitatives, catégorielles…). Par une approche baysienne il évalue une <strong>matrice Ω</strong> de covariance des fréquences alléliques des populations résultant de leur histoire démographique. Deux manières d’estimer ces fréquences alléliques sont disponibles soit en se basant sur les génotypes référence/mutant des individus analysés soit, lorsque l’on active le « pool-seq mode », ces fréquences alléliques sont calculées en regard de la profondeur de séquençage (reads count) et pondérées par le nombre d’individus qui ont contribué à cette profondeur. C’est cette seconde approche que nous considérerons dans cet ouvrage.</p>
-<p>BayPass propose 3 modèles statistiques d’analyse :</p>
-<div id="le-core-model" class="section level4 unnumbered hasAnchor">
-<h4>Le Core Model<a href="présentation-du-logiciel-baypass-2.html#le-core-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>C’est le modèle de base, il permet de calculer la matrice de covariance Ω et d’attribuer une statistique de différenciation <strong><em>XtX</em></strong> à chaque SNP, et ainsi de scanner le génome pour identifier les régions génomiques différenciées entre les populations.Le <em>XtX</em> est défini comme la variance des fréquences alléliques standardisées du SNP dans les population, c’est une statistique analogue au Fst mais tient compte de la co-évolution des populations grace à la matrice Ω.</p>
+<div id="baypass-lanalyse-poolseq" class="section level1 unnumbered hasAnchor">
+<h1>Baypass : l’analyse poolseq<a href="baypass-lanalyse-poolseq.html#baypass-lanalyse-poolseq" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>La commande est la même pour les différents modèles employés par BayPass (Script <a href="baypass-lanalyse-poolseq.html#exm:script4">4</a>), ce sont les fichiers optionnels qui définissent le modèle :
+l’option poolsize active le mode Pool-Seq, pour le core model, seuls les fichiers genobaypass et snpdet sont nécessaires, on peut néanmoins faire une analyse de la statistique de contraste C2 avec le fichier de covariable qualitative <strong><em>contraste</em></strong>.
+Le modèle standard est activé par l’option <strong><em>-efile</em></strong>, le fichier de covariable quantitative <strong><em>ecotype</em></strong>.</p>
+<p>Il est recommandé dans le cadre d’une analyse Pool-Seq d’utiliser et fixer le paramètre -d0yij à 1/5e de la valeur la plus faible du poolsize. (voir page 22 et 39 du manuel de BayPass).
+Tous les fichiers de résultats cibleront le dossier dans lequel se trouve le script.</p>
+<div class="example">
+<p><span id="exm:script4" class="example"><strong>Example 4  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour lancer une analyse BayPass</span></p>
 </div>
-<div id="le-standard-model" class="section level4 unnumbered hasAnchor">
-<h4>Le Standard Model<a href="présentation-du-logiciel-baypass-2.html#le-standard-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Ce modèle, permet, l’orsque l’on fournit une ou plusieurs covariables (environnementales, phénotypiques…), de calculer un facteur de Bayes, ou Bayes factor en anglais, (BF) pour chaque marqueur génétique représentant la force d’association avec une covariable. C’est un modèle tout en un qui intègre le calcul des XtX et de la matrice Ω, il est adapté au faible nombre de population (&lt; 15).</p>
-</div>
-<div id="lauxiliairy-model" class="section level4 unnumbered hasAnchor">
-<h4>L’Auxiliairy Model<a href="présentation-du-logiciel-baypass-2.html#lauxiliairy-model" class="anchor-section" aria-label="Anchor link to header"></a></h4>
-<p>Ce modèle a une approche différente dans le calcul de la statistique BF, sans entrer dans le détail il est plus adapté au grand nombre de population (&gt; 15), En contrepartie il nécessite que l’on fournisse une matrice Ω déjà calculée par une analyse Core Model précédente, il recalcule alors les XtX et la statistique BF.</p>
-<p>Ces covariables évoquées doivent être distribuées en gradient entre les populations (différence de température, d’altitude…), en complément, dans le cas où la covariable étudiée serait purement qualitative ou binaire (sensible/résistant, gros/petit…), les modèles Standard et Auxiliaire peuvent calculer une statistique C2 qui évalue le contraste de différence des fréquences alléliques de chaque marqueur entre 2 groupes de populations.</p>
-</div>
-<div id="présentation-générale-de-lanalyse" class="section level2 unnumbered hasAnchor">
-<h2>Présentation générale de l’analyse :<a href="présentation-du-logiciel-baypass-2.html#présentation-générale-de-lanalyse" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>La Figure <a href="présentation-du-logiciel-baypass-2.html#fig:Fig1">1</a> est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l’analyse BayPass se déroulent soit dans l’environnement Linux du cluster de calcul, les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
-La première étape part des fichiers d’alignement au format « <strong><em>bam</em></strong> » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « *<strong><em>vcf</em></strong> » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier <strong><em>vcf</em></strong> sert d’entrée au package « PoolFstat » <span class="citation">(<a href="références.html#ref-gautier_f-statistics_2022">Gautier et al. 2022</a>)</span> qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts qui seront visualisées par différents plots.</p>
-<div class="figure"><span style="display:block;" id="fig:Fig1"></span>
-<p class="caption">
-Figure 1: Pipeline d’analyse BayPass
+<p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Les sous-jeux de données sont analysés en parallèle
 </p>
-<img src="images/Analyse2.jpg" alt="Pipeline d'analyse BayPass" width="708" />
-</div>
-<p style="font-family: calibri; font-size:11pt; font-style:italic">
-Le pipeline d’analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l’analyse des résultats.
-</p>
-</div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash bg-linux"><code class="sourceCode bash"><span id="cb13-1"><a href="baypass-lanalyse-poolseq.html#cb13-1" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb13-2"><a href="baypass-lanalyse-poolseq.html#cb13-2" tabindex="-1"></a><span class="co">#SBATCH --array=0-9        #création de l&#39;array: un élément/indice par job prévu (indice base 0)</span></span>
+<span id="cb13-3"><a href="baypass-lanalyse-poolseq.html#cb13-3" tabindex="-1"></a><span class="co">#SBATCH --cpus-per-task=2   #nbr de core par job</span></span>
+<span id="cb13-4"><a href="baypass-lanalyse-poolseq.html#cb13-4" tabindex="-1"></a><span class="co">#SBATCH --mem-per-cpu=2G    #mémoire partagée par tous les cores</span></span>
+<span id="cb13-5"><a href="baypass-lanalyse-poolseq.html#cb13-5" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="baypass-lanalyse-poolseq.html#cb13-6" tabindex="-1"></a><span class="ex">module</span> purge</span>
+<span id="cb13-7"><a href="baypass-lanalyse-poolseq.html#cb13-7" tabindex="-1"></a><span class="ex">module</span> load statistics/R/4.2.2</span>
+<span id="cb13-8"><a href="baypass-lanalyse-poolseq.html#cb13-8" tabindex="-1"></a><span class="ex">module</span> load bioinfo/BayPass/2.4</span>
+<span id="cb13-9"><a href="baypass-lanalyse-poolseq.html#cb13-9" tabindex="-1"></a><span class="ex">module</span> load compilers/intel/2023.0.0    <span class="co">#pour i_baypass</span></span>
+<span id="cb13-10"><a href="baypass-lanalyse-poolseq.html#cb13-10" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="baypass-lanalyse-poolseq.html#cb13-11" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="baypass-lanalyse-poolseq.html#cb13-12" tabindex="-1"></a><span class="co">#définition du chemin ciblant les fichiers genobaypass et snpdet</span></span>
+<span id="cb13-13"><a href="baypass-lanalyse-poolseq.html#cb13-13" tabindex="-1"></a><span class="va">my_path</span><span class="op">=</span><span class="st">&#39;/../Input/&#39;</span></span>
+<span id="cb13-14"><a href="baypass-lanalyse-poolseq.html#cb13-14" tabindex="-1"></a><span class="va">FILES_R1</span><span class="op">=</span><span class="va">($(</span><span class="fu">ls</span> <span class="va">$my_path</span>/genobaypass.sub<span class="pp">*</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="at">-r</span> <span class="st">&#39;s/^.+\///&#39;</span><span class="va">))</span></span>
+<span id="cb13-15"><a href="baypass-lanalyse-poolseq.html#cb13-15" tabindex="-1"></a><span class="va">INPUT_F1</span><span class="op">=</span><span class="va">${FILES_R1</span><span class="op">[</span><span class="va">$SLURM_ARRAY_TASK_ID</span><span class="op">]</span><span class="va">}</span></span>
+<span id="cb13-16"><a href="baypass-lanalyse-poolseq.html#cb13-16" tabindex="-1"></a><span class="va">OUTPUT</span><span class="op">=</span><span class="va">${FILES_R1</span><span class="op">[</span><span class="va">$SLURM_ARRAY_TASK_ID</span><span class="op">]/</span><span class="ss">genobaypass</span><span class="op">/</span>project.output<span class="va">}</span></span>
+<span id="cb13-17"><a href="baypass-lanalyse-poolseq.html#cb13-17" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="baypass-lanalyse-poolseq.html#cb13-18" tabindex="-1"></a><span class="ex">i_baypass</span> <span class="dt">\</span></span>
+<span id="cb13-19"><a href="baypass-lanalyse-poolseq.html#cb13-19" tabindex="-1"></a>-gfile <span class="va">$my_path</span>/<span class="va">$INPUT_F1</span> <span class="dt">\ </span>                 <span class="co">#fichiers genobaypass.sub*</span></span>
+<span id="cb13-20"><a href="baypass-lanalyse-poolseq.html#cb13-20" tabindex="-1"></a><span class="ex">-poolsizefile</span> <span class="va">$my_path</span>/poolsize <span class="dt">\ </span>           <span class="co">#active le mode poolseq</span></span>
+<span id="cb13-21"><a href="baypass-lanalyse-poolseq.html#cb13-21" tabindex="-1"></a><span class="ex">-d0yij</span> 40 <span class="dt">\ </span>                              <span class="co">#1/5e de la valeur la plus faible du poolsize</span></span>
+<span id="cb13-22"><a href="baypass-lanalyse-poolseq.html#cb13-22" tabindex="-1"></a><span class="ex">-seed</span> 5001 <span class="dt">\</span></span>
+<span id="cb13-23"><a href="baypass-lanalyse-poolseq.html#cb13-23" tabindex="-1"></a>-nthreads 2 <span class="dt">\</span></span>
+<span id="cb13-24"><a href="baypass-lanalyse-poolseq.html#cb13-24" tabindex="-1"></a>-outprefix <span class="va">$OUTPUT</span> <span class="dt">\</span></span></code></pre></div>
+<p>Pour le modèle standard, il faut rajouter au script précédent le fichier contenant les covariables quantitatives:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash bg-linux"><code class="sourceCode bash"><span id="cb14-1"><a href="baypass-lanalyse-poolseq.html#cb14-1" tabindex="-1"></a><span class="ex">-efile</span> <span class="va">$my_path</span>/ecotype <span class="dt">\ </span>                   <span class="co">#calcul des Bayes Factors: modèle standard &amp; auxiliaire</span></span>
+<span id="cb14-2"><a href="baypass-lanalyse-poolseq.html#cb14-2" tabindex="-1"></a><span class="ex">-contrastfile</span> <span class="va">$my_path</span>/contrast <span class="dt">\ </span>           <span class="co">#calcul du contraste C2: modèle core, standard &amp; auxiliaire</span></span></code></pre></div>
+<p>Pour le modèle auxiliaire, il faut rajouter au script précédent en plus des fichiers covariables:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode bash bg-linux"><code class="sourceCode bash"><span id="cb15-1"><a href="baypass-lanalyse-poolseq.html#cb15-1" tabindex="-1"></a><span class="ex">-auxmodel</span> <span class="dt">\ </span>                              <span class="co">#active le modèle auxiliaire</span></span>
+<span id="cb15-2"><a href="baypass-lanalyse-poolseq.html#cb15-2" tabindex="-1"></a><span class="ex">-omegafile</span> <span class="va">$my_path</span>/omega.mat <span class="dt">\ </span>          <span class="co">#matrice Ω modèle standard (optionnel) &amp; auxiliaire (obligatoire)</span></span>
+<span id="cb15-3"><a href="baypass-lanalyse-poolseq.html#cb15-3" tabindex="-1"></a><span class="ex">-auxPbetaprior</span> 0.02 1.98                  <span class="co">#ajuste le Pi beta prior </span></span></code></pre></div>
+
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="introduction.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="données-brutes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="conversion-du-pooldata-en-fichiers-dentrées-pour-baypass.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="baypass-les-résultats.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -296,7 +310,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-presentation.Rmd",
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/04-BayPass.Rmd",
 "text": "Edit"
 },
 "history": {

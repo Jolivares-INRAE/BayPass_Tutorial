@@ -152,6 +152,7 @@ div.csl-indent {
 }
 </style>
 
+<link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
 <body>
@@ -233,7 +234,7 @@ div.csl-indent {
 <p>Chaque sous jeu de données analysé va produire 8 fichiers de résultats avec des extensions différentes, un premier contrôle visuel utile est de vérifier que tous les fichiers partageant la même extension soient de taille identique en kilo ou méga-octets. Des différences manifestes sont signes de problèmes lors de l’analyse (crash, disque plein…) conduisant à des fichiers incomplets. Ceux qui vont focaliser notre attention en premier lieu sont les fichiers <strong><em>mat_omega.out</em></strong> qui contiennent la matrice Omega (Ω) de covariance des fréquences alléliques des populations qui est calculée à chaque analyse. Avant de regrouper les résultats, il faut s’assurer que chaque fichier du sous jeu de données a été analysé de la même manière que tous les autres, en comparant les matrices Ω entre elles.
 Cette comparaison se fait en évaluant un indice de distance FMD (Förstner &amp; Moonen, 2003) entre matrices ; plus la distance sera faible (idéalement inférieure à 1) plus les matrices, donc les analyses, seront comparables.(Chunk <a href="baypass-les-résultats.html#exr:chunk5">5</a>)</p>
 <div class="exercise">
-<p><span id="exr:chunk5" class="exercise"><strong>Chunk 5  </strong></span><span style="color:darkgreen">Comparaison des matrices Ω</span></p>
+<p><span id="exr:chunk5" class="exercise"><strong>Exercise 5  </strong></span><span style="color:darkgreen">Comparaison des matrices Ω</span></p>
 </div>
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Les fichiers de matrice sont copiés dans un dossier local puis comparés deux à deux par la fonction <strong><em>fmd.dist</em></strong> des utilitaires de BayPass pour évaluer leur distances.<br>
@@ -277,7 +278,7 @@ Cette matrice SVD représente les distances génétiques des populations analys�
 <h2>Concaténation des résultats<a href="baypass-les-résultats.html#concaténation-des-résultats" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Une fois la reproductibilité des analyses vérifiées, il faut concaténer tous les fichiers de résultats, l’idée étant de faire le lien entre chaque fichier de résultat et son fichier de position <strong><em>snpdet.sub</em></strong> correspondant puis de les concaténer les uns aux autres. Les fichiers avec l’extension **__summary_pi_xtx.out_** contiennent les resultats liés à la statistique de differenciation <strong><em>XtX</em></strong>, le script (Script <a href="baypass-les-résultats.html#exm:script5">5</a>) est un exemple de script bash adapté à ce type de fichier.</p>
 <div class="example">
-<p><span id="exm:script5" class="example"><strong>Script 5  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour concaténer les résultats <em>XtX</em>.</span></p>
+<p><span id="exm:script5" class="example"><strong>Example 5  </strong></span><span style="color:darkgreen">Exemple d’un script bash pour concaténer les résultats <em>XtX</em>.</span></p>
 </div>
 <p style="font-family:calibri; font-size:11pt; font-style:italic; color:darkgreen">
 Un boucle permet de coller chaque fichier résultat à son fichier snpdet correspondant(même numéro de subset “i”), le fichier obtenu est trié et l’entête reconstruite.
@@ -347,8 +348,8 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": null,
-"text": null
+"link": "https://github.com/USERNAME/REPO/edit/BRANCH/05-Validation.Rmd",
+"text": "Edit"
 },
 "history": {
 "link": null,
@@ -358,7 +359,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["BayPass_Fr.pdf", "BayPass_Fr.epub"],
+"download": ["_main.pdf", "_main.epub"],
 "search": {
 "engine": "fuse",
 "options": null

@@ -5,7 +5,9 @@ author:
 date: "`r Sys.Date()`"
 
 site: bookdown::bookdown_site
-output: bookdown::html_document2
+output:
+  bookdown::html_document2:
+    css: "style.css"
 documentclass: book
 classoption: openany
 urlcolor: blue

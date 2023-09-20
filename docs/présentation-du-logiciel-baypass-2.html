@@ -152,7 +152,6 @@ div.csl-indent {
 }
 </style>
 
-<link rel="stylesheet" href="https://github.com/Jolivares-INRAE/BayPass_Tutorial/style.css" type="text/css" />
 </head>
 
 <body>
@@ -247,7 +246,7 @@ div.csl-indent {
 <div id="présentation-générale-de-lanalyse" class="section level2 unnumbered hasAnchor">
 <h2>Présentation générale de l’analyse :<a href="présentation-du-logiciel-baypass-2.html#présentation-générale-de-lanalyse" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>La Figure <a href="présentation-du-logiciel-baypass-2.html#fig:Fig1">1</a> est une vision simplifiée des différentes étapes nécessaire à l’analyses de données poolseq. Les étapes nécessittant une importante puissance de calcul comme le variant calling ou l’analyse BayPass se déroulent soit dans l’environnement Linux du cluster de calcul, les étapes de filtrage, manipulation de données et de résultats se font sur ordinateur local sous Rstudio.
-La première étape part des fichiers d’alignement au format « <strong><em>bam</em></strong> » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « *<strong><em>vcf</em></strong> » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier <strong><em>vcf</em></strong> sert d’entrée au package « PoolFstat » <span class="citation">(<a href="références.html#ref-gautier_f-statistics_2022">Gautier et al. 2022</a>)</span> qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts qui seront visualisées par différents plots.</p>
+La première étape part des fichiers d’alignement au format « <strong><em>bam</em></strong> » de chaque population à analyser et consiste à effectuer une recherche de variants (variant calling) pour obtenir un fichier au format « *<strong><em>vcf</em></strong> » regroupant tous les points de mutations ou SNP de toutes les populations qui sont autant de marqueurs génétiques à analyser. Ce fichier <strong><em>vcf</em></strong> sert d’entrée au package « PoolFstat » <span class="citation">(<a href="#ref-gautier_f-statistics_2022">Gautier et al. 2022</a>)</span> qui va permettre de filtrer les SNPs à analyser et générer les fichiers nécessaires au bon fonctionnement de BayPass mais aussi de faire une première analyse des Fst entre populations par exemple. Ces fichiers d’entrées pouvant contenir plusieurs millions de SNP, ils sont découpés en plusieurs dizaines de sous jeux de données (sub sampling) afin de réduire les temps de calculs. Une fois que BayPass a analysé tous les sous jeux de données, l’homogénéité des résultats entre eux est analysée sous Rstudio puis les résultats peuvent être regroupés, filtrés et analysés afin de déterminer les marqueurs génétiques et les régions chromosomiques d’intérêts qui seront visualisées par différents plots.</p>
 <div class="figure"><span style="display:block;" id="fig:Fig1"></span>
 <p class="caption">
 Figure 1: Pipeline d’analyse BayPass
@@ -257,6 +256,12 @@ Figure 1: Pipeline d’analyse BayPass
 <p style="font-family: calibri; font-size:11pt; font-style:italic">
 Le pipeline d’analyse est décomposé en plusieurs étapes se déroulant soit en environnement Linux pour celles nécessitant une importante capacité de calcul, soit sous Rstudio pour le filtrage et l’analyse des résultats.
 </p>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-gautier_f-statistics_2022" class="csl-entry">
+Gautier, Mathieu, Renaud Vitalis, Laurence Flori, and Arnaud Estoup. 2022. <span>“F-Statistics Estimation and Admixture Graph Construction with <span>Pool</span>-<span>Seq</span> or Allele Count Data Using the <span>R</span> Package Poolfstat.”</span>
 </div>
 </div>
             </section>
@@ -296,8 +301,8 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/USERNAME/REPO/edit/BRANCH/02-presentation.Rmd",
-"text": "Edit"
+"link": null,
+"text": null
 },
 "history": {
 "link": null,
