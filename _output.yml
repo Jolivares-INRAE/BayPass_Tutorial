@@ -1,3 +1,7 @@
+bookdown::gitbook:
+  css: style.css
+  split_bib: false
+
 bookdown::html_document2:
   css: "style.css"
   includes:

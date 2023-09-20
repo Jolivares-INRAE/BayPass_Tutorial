@@ -182,7 +182,7 @@ PairWise.fst <- compute.pairwiseFST(pooldata,
 #conversion en matrice de distance
 df <- as.matrix(dist(t(PairWise.fst@PairwiseFSTmatrix)))
 #heatmap
-cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(9)
+cim_color <- colorRampPalette(rev(brewer.pal(9, "Greens")))(9)
 cim(df, color = cim_color, symkey = FALSE, margins = c(10, 10),  title = "heatmap des pairwise Fst entre les populations")
 ```
 

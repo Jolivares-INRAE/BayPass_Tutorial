@@ -1,4 +1,3 @@
----
 book_filename: "BayPass_Fr"
 css: "style.css"
 delete_merged_file: true
@@ -10,4 +9,3 @@ language:
     exm: "Script "
     exr: "Chunk "
     def: "Table "
----
