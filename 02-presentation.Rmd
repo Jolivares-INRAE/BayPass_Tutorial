@@ -72,7 +72,7 @@ A l'issue du variant calling les fichiers **_vcf_** des autosomes seront concat�
 <p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
    On peut utiliser les bcftools pour concaténer les fichier **_vcf_**, la liste des fichiers à traiter est contenue dans une variable alimentée par une boucle "for".
 </p>
-```{bash scr2, eval=FALSE, class.source='bg-linux'}
+```{bash scr2, eval=FALSE, class.source="bg-linux"}
 #!/bin/bash
 module load bioinfo/bcftools/1.14
 my_path='/../'

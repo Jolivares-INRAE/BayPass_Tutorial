@@ -11,20 +11,19 @@ Les fichiers de matrice sont copiés dans un dossier local puis comparés deux �
 Une heatmap et une décomposition en valeurs singulières de la  dernière matrice sont alors affichées.<br>
 </p>
 
-```{r validation-matrice-omega, fig.width=24, fig.height=18, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
-source("/../baypass_utils.R")
-prefix <- "project.sub"
+```{r validation-matrice-omega, fig.width=8, fig.height=8, , verbose=FALSE, message=FALSE, warning=FALSE, class.source='bg-chunk', class.output='bg-output'}
+prefix <- "test_data.sub"
 #liste et compte les matrices Ω du répertoire "path_Omega"
-path_Omega <- "/../Omega_files/"
-listMatrix <- list.files(path_Omega, pattern="mat_omega.out")
+
+listMatrix <- list.files(path_out, pattern="mat_omega.out")
 nMatrix<-length(listMatrix)
 cat("Nbr matrix files =", nMatrix, "\n")
 
 #boucle sur toutes les matrices, calcule les distances FMD en pairwise et stocke le résultat
 ListFMD<-c()
 for (i in 1:nMatrix) for (j in 1:nMatrix) if(i!=j) {
-omegaA=as.matrix(read.table(paste(path_Omega, prefix, i,"_mat_omega.out", sep="")))
-omegaB=as.matrix(read.table(paste(path_Omega, prefix, j,"_mat_omega.out", sep="")))
+omegaA=as.matrix(read.table(paste0(path_out, prefix, i,"_mat_omega.out")))
+omegaB=as.matrix(read.table(paste0(path_out, prefix, j,"_mat_omega.out")))
 FMD <- fmd.dist(omegaA, omegaB)
 ListFMD <- c(ListFMD,FMD)
 }
@@ -42,7 +41,7 @@ cim_color <- colorRampPalette(rev(brewer.pal(9, "Blues")))(16)
 cim(cor.mat, color = cim_color, symkey = FALSE, margins = c(10, 10), title = "Correlation map based on last "~hat(Omega))
 #SVD de la dernière matrice Ω.
 SVD_omega<-plot.omega(omega=omegaB, pop.names=pnames, main = expression("Singular Value Decomposition of last " * ~hat(Omega)), pos=3)
-SVD_omega
+
 ```
 Une fois la moyenne des FMD calculées il est possible de visualiser les liens génétiques entre populations représentés par la matrice Ω par un plot en heatmap ainsi que par la décomposition en valeurs singulières (SVD) d'une matrice prise au hasard.Un exemple de script pour convertir une SVD en plot ggplot2 beaucoup plus maniable et paramétrable pour une publication par exemple est donné en [Annexe 2](#An2)
 Cette matrice SVD représente les distances génétiques des populations analysées.
