@@ -53,12 +53,12 @@ Les valeurs de _XtX_ sont contenues dans la colonne **_M_XtX_**<br>
 L'affichage des chromosomes peut se faire en grille (facet_wrap) ou en ligne (facet_grid).<br>
 </p>
 ```{r plot_XtX, class.source='bg-chunk', class.output='bg-output'}
-Manplot.XtX = ggplot(data=XtX.res, aes(x=pos, y=M_XtX)) +
+Manplot.XtX = ggplot(data=Full.res, aes(x=pos, y=M_XtX)) +
   geom_point(aes(color=chr), alpha=0.8, size=0.25) +
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
 
-Manplot.XtX + ggtitle("Plot simple XtX versus position (facet wrap)")
-+ facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
+Manplot.XtX + ggtitle("Plot simple XtX versus position (facet wrap)")+
+  facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
 Manplot.XtX + ggtitle("Plot simple des XtX versus position (facet grid)")+
   facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
@@ -78,18 +78,15 @@ Un Manhattan plot simple des valeurs de _BF_ permet de visualiser les SNPs et le
 Les valeurs de Bayes Factors sont contenues dans la colonne **_BF.dB._**<br>
 L'affichage des chromosomes peut se faire en grille (facet_wrap) ou en ligne (facet_grid).<br>
 </p>
-```{r plot_BF, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
-#import results
-BF.res=read.table(paste0(path_out,"project.Cov1"),h=T)
+```{r plot_BF, class.source='bg-chunk', class.output='bg-output'}
 #plot
-Manplot.BF = ggplot(data=BF.res, aes(x=pos, y=BF.dB.)) +
+Manplot.BF = ggplot(data=Full.res, aes(x=pos, y=BF.dB.)) +
   geom_point(aes(color=chr), alpha=0.8, size=0.25) +
-  ggtitle("Plot Bayes Factors versus position")
-Manplot.BF + scale_x_continuous() +
-  scale_y_continuous() +
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
+Manplot.BF + ggtitle("Plot Bayes Factors versus position")+
   facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
-  #facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Manplot.BF + ggtitle("Plot Bayes Factors versus position")+
+  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
 
 ## Les résultats de Contraste _C2_: {-}
@@ -104,27 +101,25 @@ Un Manhattan plot simple des valeurs de la colonne _M_C2_ permet de visualiser l
 Les valeurs de contraste sont contenues dans la colonne **_M_C2_**<br>
 L'affichage des chromosomes peut se faire en grille (facet_wrap) ou en ligne (facet_grid).<br>
 </p>
-```{r plot_C2, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
-#import results
-C2.res=read.table(paste0(path_out,"project.Contrast1"),h=T)
+```{r plot_C2, class.source='bg-chunk', class.output='bg-output'}
 #plot
-Manplot.BF = ggplot(data=C2.res, aes(x=pos, y=M_C2)) +
+Manplot.BF = ggplot(data=Full.res, aes(x=pos, y=M_C2)) +
   geom_point(aes(color=chr), alpha=0.8, size=0.25) +
-  ggtitle("Plot contrast values versus position")
-Manplot.BF + scale_x_continuous() +
-  scale_y_continuous() +
-  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())+
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
+Manplot.BF +
+  ggtitle("Plot contrast values versus position")+
   facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
-  #facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
+Manplot.BF +
+  ggtitle("Plot contrast values versus position")+
+  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
 
 #Comparaison par diagramme de Venn:
-```{r Listes, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
+```{r Listes, class.source='bg-chunk', class.output='bg-output'}
 #Filtrage selon conditions
-thresh.BF2<-c(10)
-Datmp1 = subset(Joined.res1, M_XtX> thresh.XtX )
-Datmp2 = subset(Joined.res1, M_C2>thresh.C2)
-Datmp3 = subset(Joined.res1, BF.dB.>thresh.BF2)
+Datmp1 = subset(Full.res, M_XtX > quantile(Full.res$M_XtX, probs=0.99 ))
+Datmp2 = subset(Full.res, log10.1.pval. >quantile(Full.res$log10.1.pval., probs=0.99))
+Datmp3 = subset(Full.res, BF.dB.>= 15)
 
 #Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
 List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
@@ -134,10 +129,10 @@ List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
 ```
 
 
-```{r venn, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
+```{r venn, class.source='bg-chunk', class.output='bg-output'}
 #Diagramme de Venn
 #cat.col = c("darkgreen", "black", "darkblue")
-vd0 <- venn.diagram(x=list("XtX top1%" = List.SNP1, "C2 top 1%" = List.SNP2, "BF >50" = List.SNP3), fill = c("blue", "green", "red"), cat.col = c("blue", "green", "red"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd0 <- venn.diagram(x=list("XtX top1%" = List.SNP1, "log10.1.pval. top 1%" = List.SNP2, "BF >=15" = List.SNP3), fill = c("blue", "green", "red"), cat.col = c("blue", "green", "red"), cat.cex = 1.5, fontface = "bold", filename = NULL)
 grid.newpage()
 grid.draw(vd0)
 
