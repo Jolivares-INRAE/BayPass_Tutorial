@@ -3,10 +3,11 @@ title: "BayPass 2.3: tutoriel de génomique d'association adapté au séquençag
 author:
 - Jérôme OLIVARES^[INRAE, UR-1115 PSH, 228 route de l’aérodrome, 84914 Avignon, France]
 date: "`r Sys.Date()`"
+cover-image: "C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/cover.jpg"
 
 site: bookdown::bookdown_site
 output:
-  bookdown::html_document2:
+  bookdown::gitbook:
     css: "style.css"
 documentclass: book
 classoption: openany
@@ -14,7 +15,6 @@ urlcolor: blue
 bibliography: "BayPass.bib"
 geometry: "left=3cm,right=3cm,top=1cm,bottom=2cm"
 url: https://jolivares-inrae.github.io/BayPass_Tutorial/
-cover-image: "C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/_book/images/icone3.png"
 description: |
   This is a minimal example of using the bookdown package to write a book.
   The HTML output format for this example is bookdown::gitbook,

@@ -59,8 +59,6 @@ Manplot.XtX = ggplot(data=Full.res, aes(x=pos, y=M_XtX)) +
 
 Manplot.XtX + ggtitle("Plot simple XtX versus position (facet wrap)")+
   facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
-Manplot.XtX + ggtitle("Plot simple des XtX versus position (facet grid)")+
-  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
 
 Dans l'exemple précédent on peut voir plusieurs régions génomiques fortement différenciées en particulier au milieu du chromosome 3.
@@ -79,14 +77,12 @@ Les valeurs de Bayes Factors sont contenues dans la colonne **_BF.dB._**<br>
 L'affichage des chromosomes peut se faire en grille (facet_wrap) ou en ligne (facet_grid).<br>
 </p>
 ```{r plot_BF, class.source='bg-chunk', class.output='bg-output'}
-#plot
+#plot simple
 Manplot.BF = ggplot(data=Full.res, aes(x=pos, y=BF.dB.)) +
   geom_point(aes(color=chr), alpha=0.8, size=0.25) +
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
 Manplot.BF + ggtitle("Plot Bayes Factors versus position")+
   facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
-Manplot.BF + ggtitle("Plot Bayes Factors versus position")+
-  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
 
 ## Les résultats de Contraste _C2_: {-}
@@ -103,23 +99,20 @@ L'affichage des chromosomes peut se faire en grille (facet_wrap) ou en ligne (fa
 </p>
 ```{r plot_C2, class.source='bg-chunk', class.output='bg-output'}
 #plot
-Manplot.BF = ggplot(data=Full.res, aes(x=pos, y=M_C2)) +
+Manplot.C2 = ggplot(data=Full.res, aes(x=pos, y=M_C2)) +
   geom_point(aes(color=chr), alpha=0.8, size=0.25) +
   theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
-Manplot.BF +
+Manplot.C2 +
   ggtitle("Plot contrast values versus position")+
   facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
-Manplot.BF +
-  ggtitle("Plot contrast values versus position")+
-  facet_grid(~chr,scales = 'free_x', space = 'free_x', switch = 'x')
 ```
 
 #Comparaison par diagramme de Venn:
 ```{r Listes, class.source='bg-chunk', class.output='bg-output'}
 #Filtrage selon conditions
 Datmp1 = subset(Full.res, M_XtX > quantile(Full.res$M_XtX, probs=0.99 ))
-Datmp2 = subset(Full.res, log10.1.pval. >quantile(Full.res$log10.1.pval., probs=0.99))
-Datmp3 = subset(Full.res, BF.dB.>= 15)
+Datmp2 = subset(Full.res, BF.dB.>= 15)
+Datmp3 = subset(Full.res, log10.1.pval. >quantile(Full.res$log10.1.pval., probs=0.99))
 
 #Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
 List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
@@ -129,10 +122,10 @@ List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
 ```
 
 
-```{r venn, class.source='bg-chunk', class.output='bg-output'}
+```{r venn, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
 #Diagramme de Venn
 #cat.col = c("darkgreen", "black", "darkblue")
-vd0 <- venn.diagram(x=list("XtX top1%" = List.SNP1, "log10.1.pval. top 1%" = List.SNP2, "BF >=15" = List.SNP3), fill = c("blue", "green", "red"), cat.col = c("blue", "green", "red"), cat.cex = 1.5, fontface = "bold", filename = NULL)
+vd0 <- venn.diagram(x=list("BF >=15" = List.SNP2, "XtX top1%" = List.SNP1, "log10.1.pval. top 1%" = List.SNP3), fill = c("lightblue", "lightgreen", "pink"), cat.col = c("blue", "darkgreen", "red"), fontface = "bold", filename = NULL)
 grid.newpage()
 grid.draw(vd0)
 
@@ -154,3 +147,4 @@ V.tmp<-separate(plyr::ldply(paste(tmp[,2]), cbind), col = "1",  sep = "_", into 
 V.bed <- plyr::ldply(paste(V.tmp[,1], as.numeric(V.tmp[,2])-1, V.tmp[,2]), cbind)
 V.bed<-mutate(separate(V.bed, col = "1",  sep = " ", into = c("chr", "start", "end")))
 write.table(V.bed, file=paste(path_res, "overlap_3_contrastes.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+```

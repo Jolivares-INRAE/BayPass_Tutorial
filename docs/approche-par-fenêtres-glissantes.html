@@ -4,13 +4,13 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Introduction | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
+  <title>Approche par fenêtres glissantes | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool</title>
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
   <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Introduction | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta property="og:title" content="Approche par fenêtres glissantes | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
   <meta property="og:image" content="https://jolivares-inrae.github.io/BayPass_Tutorial/C:/Users/Olivares/Documents/R/Git_Work/BayPass_Tutorial/cover.jpg" />
   <meta property="og:description" content="<p>This is a minimal example of using the bookdown package to write a book.
@@ -19,7 +19,7 @@ set in the _output.yml file.</p>" />
   <meta name="github-repo" content="https://github.com/Jolivares-INRAE/BayPass_Tutorial" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Introduction | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
+  <meta name="twitter:title" content="Approche par fenêtres glissantes | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   
   <meta name="twitter:description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
@@ -36,8 +36,8 @@ set in the _output.yml file.</p>" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="index.html"/>
-<link rel="next" href="présentation-du-logiciel-baypass-2.html"/>
+<link rel="prev" href="exploitation-des-résultats.html"/>
+<link rel="next" href="annexes.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -236,11 +236,49 @@ div.csl-indent {
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="introduction" class="section level1 unnumbered hasAnchor">
-<h1>Introduction<a href="introduction.html#introduction" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>Dans un contexte agronomique actuel de réduction de l’utilisation des pesticides ou de réchauffement climatique, analyser et comprendre les bases génétiques de l’adaptation des organismes aux méthodes de luttes qui leurs sont opposées ou à l’évolution de leur environnement est un enjeu majeur des recherches de ces dernières années.</p>
-<p>Les études d’associations pangénomiques (GWAS en anglais pour genome-wide association study) adossées aux techniques de séquençage haut débit (NGS) permettant le séquençage de génome complet, sont un outil de choix pour ce type d’analyse. L’étude au niveau populationnel demandant le séquençage d’un grand nombre d’individus, les couts d’analyses étaient initialement très élevés et ces études étaient souvent réservées aux organismes dit ‘‘modèles’’, humain en tête. Néanmoins il a été démontré depuis, que le séquençage en pool d’individus (poolseq) c’est-à-dire en mélangeant de manière équimolaire l’ADN d’un grand nombre d’individus (50 à 100) issus d’une même population permettait non seulement de réduire drastiquement les couts puisqu’on ne réalise qu’un seul séquençage mais aussi que la découverte des points de mutations (SNP) et l’estimation de leur fréquence allélique étaient souvent plus efficaces et précises <span class="citation">(<a href="références.html#ref-futschik_next_2010">Futschik and Schlötterer 2010</a>)</span>. Parmi les logiciels à même d’analyser ces fréquences alléliques on compte Baypass <span class="citation">(<a href="références.html#ref-gautier_genome-wide_2015">Gautier 2015</a>)</span> qui évalue par une approche baysienne, la différenciation des SNP en liaison avec une covariable environnementale en tenant compte de la structure et de la parenté entre les populations en estimant la covariance (Ω) des fréquences alléliques. Baypass 2.3 a la particularité supplémentaire de pouvoir calculer un contraste des fréquences alléliques entre deux groupes de populations caractérisés par un caractère binaire, sensible ou résistant par exemple.</p>
-<p>La documentation disponible de BayPass 2.3 décrit par le menu les algorithmes de fonctionnement et les différents paramètres du logiciel mais reste néanmoins, et assez logiquement, succincte sur les étapes en amont et en aval. A ma connaissance un seul tutoriel est disponible sur le web <span class="citation">(<a href="références.html#ref-nielsen_pool-seq_2020">Nielsen 2020</a>)</span> et décrit de manière plus détaillée la préparation des données brutes et l’analyse en mode « poolseq » de Baypass, mais il nécessite des bases quelque peu avancées de codage sous R et en environnement bash. Si les bio-informaticiens chevronnés ne rencontreront pas de difficultés particulières, il n’en va pas forcément de même pour bon nombre d’agents que les orientations des recherches associées à la baisse des coûts de séquençage ont aiguillé vers les voies de la génomique. Cet article a pour but de détailler les différentes étapes d’une analyse de type GWAS/poolseq avec le logiciel BayPass 2.3 et d’éclairer les points qui sont habituellement peu explicités car considérés comme évident.</p>
+<div id="approche-par-fenêtres-glissantes" class="section level1 unnumbered hasAnchor">
+<h1>Approche par fenêtres glissantes<a href="approche-par-fenêtres-glissantes.html#approche-par-fenêtres-glissantes" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Dans l’approche par fenêtre glissante, une fenêtre de longueur spécifiée se déplace sur les données, en se décalant d’un pas défini. A chaque glissement le nombre de données contenu dans la fenêtre est calculé. La fonction <em>Fenetres_glissantes.R</em> permet de faire ce calcul (Chunk <a href="approche-par-fenêtres-glissantes.html#exr:chunk11">11</a>), à partir d’une table contenant au minimum les colonnes <em>chr</em> et <em>pos</em>, en sortie, le nombre de valeurs contenues dans chaque fenêtre est reporté dans une colonne <em>nValues</em> et la position de chaque fenêtre est définie par les colonnes <em>Start</em> et <em>End</em>. Ce type de représentation permet de visualiser les régions génomiques qui sont concentrées en SNP sélectionnés sur la base d’une statistique d’intérêt. Cette approche est particulièrement intéressante quand les signatures de sélections sont faibles.</p>
+<div class="exercise">
+<p><span id="exr:chunk11" class="exercise"><strong>Chunk 11  </strong></span><span style="color:darkgreen">Visualisation par fenêtres glissantes.</span></p>
+</div>
+<p style="font-family: calibri; font-size:11pt; font-style:italic; color:darkgreen">
+Deux paramètres sont à renseigner: la taille de la fenêtre et le pas de glissement.<br>
+Une fois la fonction exécutée le résultat peut être visualisé par un plot (pos, nValues) de chaque chromosome<br>
+</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb32-1"><a href="approche-par-fenêtres-glissantes.html#cb32-1" tabindex="-1"></a><span class="co">#travail sur le top 1% des XtX.</span></span>
+<span id="cb32-2"><a href="approche-par-fenêtres-glissantes.html#cb32-2" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">subset</span>(Full.res, M_XtX <span class="sc">&gt;</span> <span class="fu">quantile</span>(Full.res<span class="sc">$</span>M_XtX, <span class="at">probs=</span><span class="fl">0.99</span> ))</span>
+<span id="cb32-3"><a href="approche-par-fenêtres-glissantes.html#cb32-3" tabindex="-1"></a>slide_x <span class="ot">&lt;-</span> <span class="fu">sliding_window_counts</span>(df, <span class="at">window_size =</span> <span class="dv">50000</span>, <span class="at">step_size =</span> <span class="dv">5000</span>)</span>
+<span id="cb32-4"><a href="approche-par-fenêtres-glissantes.html#cb32-4" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="approche-par-fenêtres-glissantes.html#cb32-5" tabindex="-1"></a><span class="co">#plot de la concentration du top 1% des XtX</span></span>
+<span id="cb32-6"><a href="approche-par-fenêtres-glissantes.html#cb32-6" tabindex="-1"></a>Manplot.SX <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>slide_x, <span class="fu">aes</span>(<span class="at">x=</span>Start, <span class="at">y=</span>nValues)) <span class="sc">+</span></span>
+<span id="cb32-7"><a href="approche-par-fenêtres-glissantes.html#cb32-7" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb32-8"><a href="approche-par-fenêtres-glissantes.html#cb32-8" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span>
+<span id="cb32-9"><a href="approche-par-fenêtres-glissantes.html#cb32-9" tabindex="-1"></a>Manplot.SX <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Plot du nombre de XtX dans le top 1% par fenêtres de 50Kb&quot;</span>)<span class="sc">+</span></span>
+<span id="cb32-10"><a href="approche-par-fenêtres-glissantes.html#cb32-10" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span> <span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>))</span></code></pre></div>
+<p><img src="BayPass_Fr_files/figure-html/plot_slide_BF-1.png" width="672" /></p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb33-1"><a href="approche-par-fenêtres-glissantes.html#cb33-1" tabindex="-1"></a><span class="co">#travail sur les Bayes Factors &gt;= 15</span></span>
+<span id="cb33-2"><a href="approche-par-fenêtres-glissantes.html#cb33-2" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">subset</span>(Full.res, BF.dB. <span class="sc">&gt;=</span> <span class="dv">15</span>)</span>
+<span id="cb33-3"><a href="approche-par-fenêtres-glissantes.html#cb33-3" tabindex="-1"></a>slide_bf <span class="ot">&lt;-</span> <span class="fu">sliding_window_counts</span>(df, <span class="at">window_size =</span> <span class="dv">50000</span>, <span class="at">step_size =</span> <span class="dv">5000</span>)</span>
+<span id="cb33-4"><a href="approche-par-fenêtres-glissantes.html#cb33-4" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="approche-par-fenêtres-glissantes.html#cb33-5" tabindex="-1"></a><span class="co">#plot de la concentration en BF &gt;= 15</span></span>
+<span id="cb33-6"><a href="approche-par-fenêtres-glissantes.html#cb33-6" tabindex="-1"></a>Manplot.SBF <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>slide_bf, <span class="fu">aes</span>(<span class="at">x=</span>Start, <span class="at">y=</span>nValues)) <span class="sc">+</span></span>
+<span id="cb33-7"><a href="approche-par-fenêtres-glissantes.html#cb33-7" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb33-8"><a href="approche-par-fenêtres-glissantes.html#cb33-8" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span>
+<span id="cb33-9"><a href="approche-par-fenêtres-glissantes.html#cb33-9" tabindex="-1"></a>Manplot.SBF <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Plot du nombre de Bayes Factors &gt;= 15 par fenêtres de 50Kb&quot;</span>)<span class="sc">+</span></span>
+<span id="cb33-10"><a href="approche-par-fenêtres-glissantes.html#cb33-10" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span> <span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>))</span></code></pre></div>
+<p><img src="BayPass_Fr_files/figure-html/plot_slide_BF-2.png" width="672" /></p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb34-1"><a href="approche-par-fenêtres-glissantes.html#cb34-1" tabindex="-1"></a><span class="co">#travail sur le top 1% des contrastes</span></span>
+<span id="cb34-2"><a href="approche-par-fenêtres-glissantes.html#cb34-2" tabindex="-1"></a>df<span class="ot">&lt;-</span><span class="fu">subset</span>(Full.res, M_C2 <span class="sc">&gt;</span> <span class="fu">quantile</span>(Full.res<span class="sc">$</span>M_C2, <span class="at">probs=</span><span class="fl">0.99</span> ))</span>
+<span id="cb34-3"><a href="approche-par-fenêtres-glissantes.html#cb34-3" tabindex="-1"></a>slide_C2 <span class="ot">&lt;-</span> <span class="fu">sliding_window_counts</span>(df, <span class="at">window_size =</span> <span class="dv">50000</span>, <span class="at">step_size =</span> <span class="dv">5000</span>)</span>
+<span id="cb34-4"><a href="approche-par-fenêtres-glissantes.html#cb34-4" tabindex="-1"></a></span>
+<span id="cb34-5"><a href="approche-par-fenêtres-glissantes.html#cb34-5" tabindex="-1"></a><span class="co">#plot de la concentration du top 1% des C2</span></span>
+<span id="cb34-6"><a href="approche-par-fenêtres-glissantes.html#cb34-6" tabindex="-1"></a>Manplot.SC2 <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>slide_C2, <span class="fu">aes</span>(<span class="at">x=</span>Start, <span class="at">y=</span>nValues)) <span class="sc">+</span></span>
+<span id="cb34-7"><a href="approche-par-fenêtres-glissantes.html#cb34-7" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb34-8"><a href="approche-par-fenêtres-glissantes.html#cb34-8" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>())</span>
+<span id="cb34-9"><a href="approche-par-fenêtres-glissantes.html#cb34-9" tabindex="-1"></a>Manplot.SC2 <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">&quot;Plot du nombre de contraste C2 dans le top 1% par fenêtres de 50Kb&quot;</span>)<span class="sc">+</span></span>
+<span id="cb34-10"><a href="approche-par-fenêtres-glissantes.html#cb34-10" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span> <span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>))</span></code></pre></div>
+<p><img src="BayPass_Fr_files/figure-html/plot_slide_BF-3.png" width="672" /></p>
 
 </div>
             </section>
@@ -248,8 +286,8 @@ div.csl-indent {
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="présentation-du-logiciel-baypass-2.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="exploitation-des-résultats.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="annexes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

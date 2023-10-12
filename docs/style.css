@@ -1,4 +1,8 @@
-.bg-linux {
+body {
+  text-align: justify;
+}
+
+bg-linux {
   background-color: black;
   color: white;
 }
