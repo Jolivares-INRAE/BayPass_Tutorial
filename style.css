@@ -1,10 +1,9 @@
 body {
   text-align: justify;
 }
-
-bg-linux {
-  background-color: black;
-  color: white;
+.bg-linux {
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .bg-chunk {
