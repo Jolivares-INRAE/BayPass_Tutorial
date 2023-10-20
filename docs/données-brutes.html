@@ -8,7 +8,7 @@
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
-  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.36 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Données brutes | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-10-19" />
+<meta name="date" content="2023-10-21" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -362,7 +362,7 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 <span id="cb8-7"><a href="données-brutes.html#cb8-7" tabindex="-1"></a>                                    <span class="at">output.snp.values =</span> <span class="cn">FALSE</span>,</span>
 <span id="cb8-8"><a href="données-brutes.html#cb8-8" tabindex="-1"></a>                                    <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <pre class="bg-output"><code>## 
-## Overall Analysis Time: 0 h 0 m 5 s</code></pre>
+## Overall Analysis Time: 0 h 0 m 6 s</code></pre>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb10-1"><a href="données-brutes.html#cb10-1" tabindex="-1"></a><span class="co">#conversion en matrice de distance</span></span>
 <span id="cb10-2"><a href="données-brutes.html#cb10-2" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">dist</span>(<span class="fu">t</span>(PairWise.fst<span class="sc">@</span>PairwiseFSTmatrix)))</span>
 <span id="cb10-3"><a href="données-brutes.html#cb10-3" tabindex="-1"></a><span class="co">#heatmap</span></span>

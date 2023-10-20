@@ -8,7 +8,7 @@
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
-  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.36 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Annexes | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-10-19" />
+<meta name="date" content="2023-10-21" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -243,25 +243,25 @@ div.csl-indent {
 <p>Il est possible de calculer des Fst multi-locus en balayant le génome avec une fenêtre glissante de SNP consécutifs et un chevauchement d’une demi fenêtre, une fois ploter, une région génomique très différenciée apparaîtra sous la forme d’une éruption de points colorés.</p>
 <div id="fst-en-fenêtre-glissante" class="section level3 unnumbered hasAnchor">
 <h3>Fst en fenêtre glissante<a href="annexes.html#fst-en-fenêtre-glissante" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<div class="sourceCode" id="cb39"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb39-1"><a href="annexes.html#cb39-1" tabindex="-1"></a><span class="co">#calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .</span></span>
-<span id="cb39-2"><a href="annexes.html#cb39-2" tabindex="-1"></a>Multi.Loc.fst <span class="ot">&lt;-</span> <span class="fu">computeFST</span>(pooldata,</span>
-<span id="cb39-3"><a href="annexes.html#cb39-3" tabindex="-1"></a>                            <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>,</span>
-<span id="cb39-4"><a href="annexes.html#cb39-4" tabindex="-1"></a>                            <span class="at">sliding.window.size =</span> <span class="dv">100</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb37-1"><a href="annexes.html#cb37-1" tabindex="-1"></a><span class="co">#calcul des Fst avec une fenêtre glissante de 100 SNP consécutifs .</span></span>
+<span id="cb37-2"><a href="annexes.html#cb37-2" tabindex="-1"></a>Multi.Loc.fst <span class="ot">&lt;-</span> <span class="fu">computeFST</span>(pooldata,</span>
+<span id="cb37-3"><a href="annexes.html#cb37-3" tabindex="-1"></a>                            <span class="at">method =</span> <span class="st">&quot;Anova&quot;</span>,</span>
+<span id="cb37-4"><a href="annexes.html#cb37-4" tabindex="-1"></a>                            <span class="at">sliding.window.size =</span> <span class="dv">100</span>)</span></code></pre></div>
 <pre class="bg-output"><code>## Start sliding-window scan
 ## 4 chromosomes scanned (with more than 100 SNPs)
 ## 
 ## Average (min-max) Window Sizes 9.3 ( 1.8 - 2751 ) kb</code></pre>
-<div class="sourceCode" id="cb41"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb41-1"><a href="annexes.html#cb41-1" tabindex="-1"></a><span class="co">#conversion en objet data frame</span></span>
-<span id="cb41-2"><a href="annexes.html#cb41-2" tabindex="-1"></a>df.fst<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(Multi.Loc.fst<span class="sc">$</span>sliding.windows.fst, <span class="at">h=</span>T)</span>
-<span id="cb41-3"><a href="annexes.html#cb41-3" tabindex="-1"></a><span class="co">#plot.</span></span>
-<span id="cb41-4"><a href="annexes.html#cb41-4" tabindex="-1"></a>Fst.plot <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>df.fst, <span class="fu">aes</span>(<span class="at">x=</span>CumulatedPosition<span class="sc">/</span><span class="fl">1e6</span>, <span class="at">y=</span>MultiLocusFst)) <span class="sc">+</span></span>
-<span id="cb41-5"><a href="annexes.html#cb41-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>Chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
-<span id="cb41-6"><a href="annexes.html#cb41-6" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;Fst en fenêtres glissantes&quot;</span>) <span class="sc">+</span></span>
-<span id="cb41-7"><a href="annexes.html#cb41-7" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept=</span>Multi.Loc.fst<span class="sc">$</span>FST,<span class="at">lty=</span><span class="dv">2</span>) <span class="co">#le seuil indique la Fst globale estimée à l&#39;échelle du génome</span></span>
-<span id="cb41-8"><a href="annexes.html#cb41-8" tabindex="-1"></a>Fst.plot <span class="sc">+</span> <span class="fu">scale_x_continuous</span>() <span class="sc">+</span></span>
-<span id="cb41-9"><a href="annexes.html#cb41-9" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>() <span class="sc">+</span></span>
-<span id="cb41-10"><a href="annexes.html#cb41-10" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span></span>
-<span id="cb41-11"><a href="annexes.html#cb41-11" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span><span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>)) <span class="co">#affichage des chromosomes en grille</span></span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb39-1"><a href="annexes.html#cb39-1" tabindex="-1"></a><span class="co">#conversion en objet data frame</span></span>
+<span id="cb39-2"><a href="annexes.html#cb39-2" tabindex="-1"></a>df.fst<span class="ot">&lt;-</span><span class="fu">as.data.frame</span>(Multi.Loc.fst<span class="sc">$</span>sliding.windows.fst, <span class="at">h=</span>T)</span>
+<span id="cb39-3"><a href="annexes.html#cb39-3" tabindex="-1"></a><span class="co">#plot.</span></span>
+<span id="cb39-4"><a href="annexes.html#cb39-4" tabindex="-1"></a>Fst.plot <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>df.fst, <span class="fu">aes</span>(<span class="at">x=</span>CumulatedPosition<span class="sc">/</span><span class="fl">1e6</span>, <span class="at">y=</span>MultiLocusFst)) <span class="sc">+</span></span>
+<span id="cb39-5"><a href="annexes.html#cb39-5" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color=</span>Chr), <span class="at">alpha=</span><span class="fl">0.8</span>, <span class="at">size=</span><span class="fl">1.5</span>) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="annexes.html#cb39-6" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">&quot;Fst en fenêtres glissantes&quot;</span>) <span class="sc">+</span></span>
+<span id="cb39-7"><a href="annexes.html#cb39-7" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept=</span>Multi.Loc.fst<span class="sc">$</span>FST,<span class="at">lty=</span><span class="dv">2</span>) <span class="co">#le seuil indique la Fst globale estimée à l&#39;échelle du génome</span></span>
+<span id="cb39-8"><a href="annexes.html#cb39-8" tabindex="-1"></a>Fst.plot <span class="sc">+</span> <span class="fu">scale_x_continuous</span>() <span class="sc">+</span></span>
+<span id="cb39-9"><a href="annexes.html#cb39-9" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>() <span class="sc">+</span></span>
+<span id="cb39-10"><a href="annexes.html#cb39-10" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.title.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.text.x=</span><span class="fu">element_blank</span>(), <span class="at">axis.ticks.x=</span><span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb39-11"><a href="annexes.html#cb39-11" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Chr, <span class="at">scales =</span> <span class="st">&#39;free_x&#39;</span>, <span class="at">strip.position =</span><span class="fu">c</span>(<span class="st">&quot;bottom&quot;</span>)) <span class="co">#affichage des chromosomes en grille</span></span></code></pre></div>
 <p><img src="BayPass_Fr_files/figure-html/plot-sliding-Fst-1.png" width="672" /></p>
 </div>
 </div>
@@ -271,31 +271,31 @@ div.csl-indent {
 <h3>Conversion de la matrice SVD en graphique ggplot<a href="annexes.html#conversion-de-la-matrice-svd-en-graphique-ggplot" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Il peut être intéressant de convertir la SVD en graphique ggplot, afin d’avoir la main sur tous les aspects cosmétiques en vue d’une publication par exemple.
 Le principe consiste à créer une table dans laquelle on intègre les informations à ploter (noms, phenotype, couleurs) ainsi que les les 2 premiers vecteurs propres (eigen vector) et leur variance, de la matrice SVD.</p>
-<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="annexes.html#cb42-1" tabindex="-1"></a><span class="co"># convertit en data.frame</span></span>
-<span id="cb42-2"><a href="annexes.html#cb42-2" tabindex="-1"></a>tab_SVD <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sample.id =</span> pnames,</span>
-<span id="cb42-3"><a href="annexes.html#cb42-3" tabindex="-1"></a>    <span class="co">#défini le phenotype de chaque population</span></span>
-<span id="cb42-4"><a href="annexes.html#cb42-4" tabindex="-1"></a>    <span class="at">phenotype =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">&quot;Sensible&quot;</span>,   <span class="st">&quot;Sensible&quot;</span>,  <span class="st">&quot;Sensible&quot;</span>, <span class="st">&quot;Resistant&quot;</span>, <span class="st">&quot;Resistant&quot;</span>, <span class="st">&quot;Resistant&quot;</span>)),</span>
-<span id="cb42-5"><a href="annexes.html#cb42-5" tabindex="-1"></a>    <span class="co">#attribut une couleur à chaque zone géographique</span></span>
-<span id="cb42-6"><a href="annexes.html#cb42-6" tabindex="-1"></a>    <span class="at">col_geo =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">&quot;orange&quot;</span>,   <span class="st">&quot;darkgreen&quot;</span>,  <span class="st">&quot;blue&quot;</span>, <span class="st">&quot;orange&quot;</span>, <span class="st">&quot;darkgreen&quot;</span>,<span class="st">&quot;blue&quot;</span>)),</span>
-<span id="cb42-7"><a href="annexes.html#cb42-7" tabindex="-1"></a>    <span class="at">PC =</span> SVD_omega<span class="sc">$</span>PC,    <span class="co"># the first eigenvector</span></span>
-<span id="cb42-8"><a href="annexes.html#cb42-8" tabindex="-1"></a>    <span class="at">eig =</span> SVD_omega<span class="sc">$</span>eig,    <span class="co"># the second eigenvector</span></span>
-<span id="cb42-9"><a href="annexes.html#cb42-9" tabindex="-1"></a>    <span class="at">VAR =</span> SVD_omega<span class="sc">$</span>pcent.var,    <span class="co"># variance de chaque eigenvector</span></span>
-<span id="cb42-10"><a href="annexes.html#cb42-10" tabindex="-1"></a>    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb42-11"><a href="annexes.html#cb42-11" tabindex="-1"></a></span>
-<span id="cb42-12"><a href="annexes.html#cb42-12" tabindex="-1"></a>ggplot_svd <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>tab_SVD, <span class="fu">aes</span>(<span class="at">x=</span>PC<span class="fl">.1</span>, <span class="at">y=</span>PC<span class="fl">.2</span>, <span class="at">shape=</span>phenotype, <span class="at">color=</span> col_geo)) <span class="sc">+</span></span>
-<span id="cb42-13"><a href="annexes.html#cb42-13" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="dv">1</span>, <span class="at">size=</span><span class="dv">5</span>)<span class="sc">+</span></span>
-<span id="cb42-14"><a href="annexes.html#cb42-14" tabindex="-1"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&#39;Sensible&#39;</span><span class="ot">=</span><span class="dv">79</span>, <span class="st">&#39;Resistant&#39;</span><span class="ot">=</span><span class="dv">16</span>))<span class="sc">+</span></span>
-<span id="cb42-15"><a href="annexes.html#cb42-15" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">name =</span> <span class="st">&quot;region&quot;</span>,</span>
-<span id="cb42-16"><a href="annexes.html#cb42-16" tabindex="-1"></a>                      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;sud&quot;</span>, <span class="st">&quot;nord&quot;</span>, <span class="st">&quot;est&quot;</span>),</span>
-<span id="cb42-17"><a href="annexes.html#cb42-17" tabindex="-1"></a>                      <span class="at">values =</span> col_geo)<span class="sc">+</span></span>
-<span id="cb42-18"><a href="annexes.html#cb42-18" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">paste0</span>(<span class="st">&quot;Singular Value Decomposition of the covariance (&quot;</span>,<span class="fu">expression</span>(<span class="st">&quot;\U03A9&quot;</span>),<span class="st">&quot;) matrix&quot;</span>))</span>
-<span id="cb42-19"><a href="annexes.html#cb42-19" tabindex="-1"></a></span>
-<span id="cb42-20"><a href="annexes.html#cb42-20" tabindex="-1"></a>ggplot_svd <span class="sc">+</span></span>
-<span id="cb42-21"><a href="annexes.html#cb42-21" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>()<span class="sc">+</span></span>
-<span id="cb42-22"><a href="annexes.html#cb42-22" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>()<span class="sc">+</span></span>
-<span id="cb42-23"><a href="annexes.html#cb42-23" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="fu">paste</span>(<span class="st">&quot;PC1 (&quot;</span>,<span class="fu">round</span>(tab_SVD<span class="sc">$</span>VAR[<span class="dv">1</span>], <span class="dv">2</span>), <span class="st">&quot;%)&quot;</span> , <span class="at">sep=</span><span class="st">&quot;&quot;</span>))<span class="sc">+</span></span>
-<span id="cb42-24"><a href="annexes.html#cb42-24" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">paste</span>(<span class="st">&quot;PC2 (&quot;</span>, <span class="fu">round</span>(tab_SVD<span class="sc">$</span>VAR[<span class="dv">2</span>], <span class="dv">2</span>), <span class="st">&quot;%)&quot;</span> , <span class="at">sep=</span><span class="st">&quot;&quot;</span>))<span class="sc">+</span></span>
-<span id="cb42-25"><a href="annexes.html#cb42-25" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sample.id), <span class="at">nudge_y =</span> <span class="fl">0.05</span>,<span class="at">fontface =</span> <span class="st">&#39;bold&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="annexes.html#cb40-1" tabindex="-1"></a><span class="co"># convertit en data.frame</span></span>
+<span id="cb40-2"><a href="annexes.html#cb40-2" tabindex="-1"></a>tab_SVD <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sample.id =</span> pnames,</span>
+<span id="cb40-3"><a href="annexes.html#cb40-3" tabindex="-1"></a>    <span class="co">#défini le phenotype de chaque population</span></span>
+<span id="cb40-4"><a href="annexes.html#cb40-4" tabindex="-1"></a>    <span class="at">phenotype =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">&quot;Sensible&quot;</span>,   <span class="st">&quot;Sensible&quot;</span>,  <span class="st">&quot;Sensible&quot;</span>, <span class="st">&quot;Resistant&quot;</span>, <span class="st">&quot;Resistant&quot;</span>, <span class="st">&quot;Resistant&quot;</span>)),</span>
+<span id="cb40-5"><a href="annexes.html#cb40-5" tabindex="-1"></a>    <span class="co">#attribut une couleur à chaque zone géographique</span></span>
+<span id="cb40-6"><a href="annexes.html#cb40-6" tabindex="-1"></a>    <span class="at">col_geo =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">&quot;orange&quot;</span>,   <span class="st">&quot;darkgreen&quot;</span>,  <span class="st">&quot;blue&quot;</span>, <span class="st">&quot;orange&quot;</span>, <span class="st">&quot;darkgreen&quot;</span>,<span class="st">&quot;blue&quot;</span>)),</span>
+<span id="cb40-7"><a href="annexes.html#cb40-7" tabindex="-1"></a>    <span class="at">PC =</span> SVD_omega<span class="sc">$</span>PC,    <span class="co"># the first eigenvector</span></span>
+<span id="cb40-8"><a href="annexes.html#cb40-8" tabindex="-1"></a>    <span class="at">eig =</span> SVD_omega<span class="sc">$</span>eig,    <span class="co"># the second eigenvector</span></span>
+<span id="cb40-9"><a href="annexes.html#cb40-9" tabindex="-1"></a>    <span class="at">VAR =</span> SVD_omega<span class="sc">$</span>pcent.var,    <span class="co"># variance de chaque eigenvector</span></span>
+<span id="cb40-10"><a href="annexes.html#cb40-10" tabindex="-1"></a>    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb40-11"><a href="annexes.html#cb40-11" tabindex="-1"></a></span>
+<span id="cb40-12"><a href="annexes.html#cb40-12" tabindex="-1"></a>ggplot_svd <span class="ot">=</span> <span class="fu">ggplot</span>(<span class="at">data=</span>tab_SVD, <span class="fu">aes</span>(<span class="at">x=</span>PC<span class="fl">.1</span>, <span class="at">y=</span>PC<span class="fl">.2</span>, <span class="at">shape=</span>phenotype, <span class="at">color=</span> col_geo)) <span class="sc">+</span></span>
+<span id="cb40-13"><a href="annexes.html#cb40-13" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="dv">1</span>, <span class="at">size=</span><span class="dv">5</span>)<span class="sc">+</span></span>
+<span id="cb40-14"><a href="annexes.html#cb40-14" tabindex="-1"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&#39;Sensible&#39;</span><span class="ot">=</span><span class="dv">79</span>, <span class="st">&#39;Resistant&#39;</span><span class="ot">=</span><span class="dv">16</span>))<span class="sc">+</span></span>
+<span id="cb40-15"><a href="annexes.html#cb40-15" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">name =</span> <span class="st">&quot;region&quot;</span>,</span>
+<span id="cb40-16"><a href="annexes.html#cb40-16" tabindex="-1"></a>                      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;sud&quot;</span>, <span class="st">&quot;nord&quot;</span>, <span class="st">&quot;est&quot;</span>),</span>
+<span id="cb40-17"><a href="annexes.html#cb40-17" tabindex="-1"></a>                      <span class="at">values =</span> col_geo)<span class="sc">+</span></span>
+<span id="cb40-18"><a href="annexes.html#cb40-18" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="fu">paste0</span>(<span class="st">&quot;Singular Value Decomposition of the covariance (&quot;</span>,<span class="fu">expression</span>(<span class="st">&quot;\U03A9&quot;</span>),<span class="st">&quot;) matrix&quot;</span>))</span>
+<span id="cb40-19"><a href="annexes.html#cb40-19" tabindex="-1"></a></span>
+<span id="cb40-20"><a href="annexes.html#cb40-20" tabindex="-1"></a>ggplot_svd <span class="sc">+</span></span>
+<span id="cb40-21"><a href="annexes.html#cb40-21" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>()<span class="sc">+</span></span>
+<span id="cb40-22"><a href="annexes.html#cb40-22" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>()<span class="sc">+</span></span>
+<span id="cb40-23"><a href="annexes.html#cb40-23" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="fu">paste</span>(<span class="st">&quot;PC1 (&quot;</span>,<span class="fu">round</span>(tab_SVD<span class="sc">$</span>VAR[<span class="dv">1</span>], <span class="dv">2</span>), <span class="st">&quot;%)&quot;</span> , <span class="at">sep=</span><span class="st">&quot;&quot;</span>))<span class="sc">+</span></span>
+<span id="cb40-24"><a href="annexes.html#cb40-24" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">paste</span>(<span class="st">&quot;PC2 (&quot;</span>, <span class="fu">round</span>(tab_SVD<span class="sc">$</span>VAR[<span class="dv">2</span>], <span class="dv">2</span>), <span class="st">&quot;%)&quot;</span> , <span class="at">sep=</span><span class="st">&quot;&quot;</span>))<span class="sc">+</span></span>
+<span id="cb40-25"><a href="annexes.html#cb40-25" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sample.id), <span class="at">nudge_y =</span> <span class="fl">0.05</span>,<span class="at">fontface =</span> <span class="st">&#39;bold&#39;</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="An3" class="section level2 unnumbered hasAnchor">
@@ -303,35 +303,35 @@ Le principe consiste à créer une table dans laquelle on intègre les informati
 <div id="concaténages-des-résultats-betai-et-contrastes" class="section level3 unnumbered hasAnchor">
 <h3>Concaténages des résultats Betai et contrastes<a href="annexes.html#concaténages-des-résultats-betai-et-contrastes" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>Valable pour le modèle standard pour Betai et pour les 3 modèles pour contraste.</p>
-<div class="sourceCode" id="cb43"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb43-1"><a href="annexes.html#cb43-1" tabindex="-1"></a></span>
-<span id="cb43-2"><a href="annexes.html#cb43-2" tabindex="-1"></a><span class="va">Snpdet_path</span><span class="op">=</span><span class="st">&#39;/../BayPass/Input/&#39;</span></span>
-<span id="cb43-3"><a href="annexes.html#cb43-3" tabindex="-1"></a><span class="va">My_prefix</span><span class="op">=</span><span class="st">&#39;project_STD.sub&#39;</span></span>
-<span id="cb43-4"><a href="annexes.html#cb43-4" tabindex="-1"></a></span>
-<span id="cb43-5"><a href="annexes.html#cb43-5" tabindex="-1"></a><span class="co">#on boucle sur toutes les covariables ou combinaisons de contraste</span></span>
-<span id="cb43-6"><a href="annexes.html#cb43-6" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">3</span><span class="dt">}</span></span>
-<span id="cb43-7"><a href="annexes.html#cb43-7" tabindex="-1"></a><span class="cf">do</span></span>
-<span id="cb43-8"><a href="annexes.html#cb43-8" tabindex="-1"></a><span class="co">#on boucle sur tous les fichiers</span></span>
-<span id="cb43-9"><a href="annexes.html#cb43-9" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">5</span><span class="dt">}</span></span>
-<span id="cb43-10"><a href="annexes.html#cb43-10" tabindex="-1"></a><span class="cf">do</span></span>
-<span id="cb43-11"><a href="annexes.html#cb43-11" tabindex="-1"></a><span class="va">file1</span><span class="op">=</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$Snpdet_path</span><span class="st">/snpdet.sub&quot;&quot;</span><span class="va">$i</span><span class="st">&quot;&quot;&quot;</span><span class="va">)</span></span>
-<span id="cb43-12"><a href="annexes.html#cb43-12" tabindex="-1"></a><span class="va">file2</span><span class="op">=</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$My_prefix</span><span class="st">&quot;&quot;</span><span class="va">$i</span><span class="st">&quot;&quot;_summary_betai_reg.out&quot;</span><span class="va">)</span>                          <span class="co">#adapter le préfixe</span></span>
-<span id="cb43-13"><a href="annexes.html#cb43-13" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-e</span> <span class="st">&quot;s/[[:space:]]\+/ /g&quot;</span> <span class="va">$file1</span> <span class="op">&gt;</span> SubSNP.b                                  <span class="co">#on remplace tous les séparateurs par tabulation, ça évite les bugs</span></span>
-<span id="cb43-14"><a href="annexes.html#cb43-14" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-e</span> <span class="st">&quot;s/[[:space:]]\+/ /g&quot;</span> <span class="va">$file2</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="at">-vK</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$k</span><span class="st">&quot;</span> <span class="st">&#39;{if($1 == K) {print}}&#39;</span> <span class="at">-</span> <span class="op">&gt;</span> SubData.b                <span class="co">#on prend si col 1 (covariable) = k</span></span>
-<span id="cb43-15"><a href="annexes.html#cb43-15" tabindex="-1"></a><span class="fu">paste</span> SubSNP.b SubData.b <span class="op">&gt;&gt;</span> tmp-Cov<span class="va">$k</span>.merged                            <span class="co">#on colle/incrémente dans un nouveau fichier</span></span>
-<span id="cb43-16"><a href="annexes.html#cb43-16" tabindex="-1"></a><span class="cf">done</span></span>
-<span id="cb43-17"><a href="annexes.html#cb43-17" tabindex="-1"></a><span class="co">#on tri par pos et on reconstruit l&#39;entête</span></span>
-<span id="cb43-18"><a href="annexes.html#cb43-18" tabindex="-1"></a><span class="fu">awk</span> <span class="st">&#39;{for (i=1;i&lt;=NF;i++) if ($i+0 == $i &amp;&amp; $i ~ /e/) $2 = sprintf(&quot;%.0f&quot;, $i)} 1&#39;</span> tmp-Cov<span class="va">$k</span>.merged <span class="kw">|</span> <span class="fu">sort</span> <span class="at">-k1,1</span> <span class="at">-k2,2n</span> <span class="at">-</span> <span class="op">&gt;</span> project_Betai.Cov<span class="va">$k</span>     </span>
-<span id="cb43-19"><a href="annexes.html#cb43-19" tabindex="-1"></a></span>
-<span id="cb43-20"><a href="annexes.html#cb43-20" tabindex="-1"></a><span class="co">#on vire les fichiers tmp</span></span>
-<span id="cb43-21"><a href="annexes.html#cb43-21" tabindex="-1"></a><span class="fu">rm</span> tmp-Cov<span class="va">$k</span>.merged</span>
-<span id="cb43-22"><a href="annexes.html#cb43-22" tabindex="-1"></a><span class="fu">rm</span> SubSNP.b</span>
-<span id="cb43-23"><a href="annexes.html#cb43-23" tabindex="-1"></a><span class="fu">rm</span> SubData.b</span>
-<span id="cb43-24"><a href="annexes.html#cb43-24" tabindex="-1"></a></span>
-<span id="cb43-25"><a href="annexes.html#cb43-25" tabindex="-1"></a><span class="co">#entête pour les résultats Betai:</span></span>
-<span id="cb43-26"><a href="annexes.html#cb43-26" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">&#39;1i chr pos All1 All2 COVARIABLE MRK M_Pearson SD_Pearson M_Spearman SD_Spearman BF(dB) Beta_is SD_Beta_is eBPis&#39;</span> project_Betai.Cov<span class="va">$k</span> </span>
-<span id="cb43-27"><a href="annexes.html#cb43-27" tabindex="-1"></a></span>
-<span id="cb43-28"><a href="annexes.html#cb43-28" tabindex="-1"></a><span class="co">#entête pour les résultats de contraste:</span></span>
-<span id="cb43-29"><a href="annexes.html#cb43-29" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">&#39;1i chr pos All1 All2 CONTRAST MRK M_C2 SD_C2 C2_std C2_log10(1/pval)&#39;</span> project_contrast-C<span class="va">$k</span></span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb41-1"><a href="annexes.html#cb41-1" tabindex="-1"></a></span>
+<span id="cb41-2"><a href="annexes.html#cb41-2" tabindex="-1"></a><span class="va">Snpdet_path</span><span class="op">=</span><span class="st">&#39;/../BayPass/Input/&#39;</span></span>
+<span id="cb41-3"><a href="annexes.html#cb41-3" tabindex="-1"></a><span class="va">My_prefix</span><span class="op">=</span><span class="st">&#39;project_STD.sub&#39;</span></span>
+<span id="cb41-4"><a href="annexes.html#cb41-4" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="annexes.html#cb41-5" tabindex="-1"></a><span class="co">#on boucle sur toutes les covariables ou combinaisons de contraste</span></span>
+<span id="cb41-6"><a href="annexes.html#cb41-6" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">3</span><span class="dt">}</span></span>
+<span id="cb41-7"><a href="annexes.html#cb41-7" tabindex="-1"></a><span class="cf">do</span></span>
+<span id="cb41-8"><a href="annexes.html#cb41-8" tabindex="-1"></a><span class="co">#on boucle sur tous les fichiers</span></span>
+<span id="cb41-9"><a href="annexes.html#cb41-9" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="dt">{</span><span class="dv">1</span><span class="dt">..</span><span class="dv">5</span><span class="dt">}</span></span>
+<span id="cb41-10"><a href="annexes.html#cb41-10" tabindex="-1"></a><span class="cf">do</span></span>
+<span id="cb41-11"><a href="annexes.html#cb41-11" tabindex="-1"></a><span class="va">file1</span><span class="op">=</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$Snpdet_path</span><span class="st">/snpdet.sub&quot;&quot;</span><span class="va">$i</span><span class="st">&quot;&quot;&quot;</span><span class="va">)</span></span>
+<span id="cb41-12"><a href="annexes.html#cb41-12" tabindex="-1"></a><span class="va">file2</span><span class="op">=</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$My_prefix</span><span class="st">&quot;&quot;</span><span class="va">$i</span><span class="st">&quot;&quot;_summary_betai_reg.out&quot;</span><span class="va">)</span>                          <span class="co">#adapter le préfixe</span></span>
+<span id="cb41-13"><a href="annexes.html#cb41-13" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-e</span> <span class="st">&quot;s/[[:space:]]\+/ /g&quot;</span> <span class="va">$file1</span> <span class="op">&gt;</span> SubSNP.b                                  <span class="co">#on remplace tous les séparateurs par tabulation, ça évite les bugs</span></span>
+<span id="cb41-14"><a href="annexes.html#cb41-14" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-e</span> <span class="st">&quot;s/[[:space:]]\+/ /g&quot;</span> <span class="va">$file2</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="at">-vK</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$k</span><span class="st">&quot;</span> <span class="st">&#39;{if($1 == K) {print}}&#39;</span> <span class="at">-</span> <span class="op">&gt;</span> SubData.b                <span class="co">#on prend si col 1 (covariable) = k</span></span>
+<span id="cb41-15"><a href="annexes.html#cb41-15" tabindex="-1"></a><span class="fu">paste</span> SubSNP.b SubData.b <span class="op">&gt;&gt;</span> tmp-Cov<span class="va">$k</span>.merged                            <span class="co">#on colle/incrémente dans un nouveau fichier</span></span>
+<span id="cb41-16"><a href="annexes.html#cb41-16" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb41-17"><a href="annexes.html#cb41-17" tabindex="-1"></a><span class="co">#on tri par pos et on reconstruit l&#39;entête</span></span>
+<span id="cb41-18"><a href="annexes.html#cb41-18" tabindex="-1"></a><span class="fu">awk</span> <span class="st">&#39;{for (i=1;i&lt;=NF;i++) if ($i+0 == $i &amp;&amp; $i ~ /e/) $2 = sprintf(&quot;%.0f&quot;, $i)} 1&#39;</span> tmp-Cov<span class="va">$k</span>.merged <span class="kw">|</span> <span class="fu">sort</span> <span class="at">-k1,1</span> <span class="at">-k2,2n</span> <span class="at">-</span> <span class="op">&gt;</span> project_Betai.Cov<span class="va">$k</span>     </span>
+<span id="cb41-19"><a href="annexes.html#cb41-19" tabindex="-1"></a></span>
+<span id="cb41-20"><a href="annexes.html#cb41-20" tabindex="-1"></a><span class="co">#on vire les fichiers tmp</span></span>
+<span id="cb41-21"><a href="annexes.html#cb41-21" tabindex="-1"></a><span class="fu">rm</span> tmp-Cov<span class="va">$k</span>.merged</span>
+<span id="cb41-22"><a href="annexes.html#cb41-22" tabindex="-1"></a><span class="fu">rm</span> SubSNP.b</span>
+<span id="cb41-23"><a href="annexes.html#cb41-23" tabindex="-1"></a><span class="fu">rm</span> SubData.b</span>
+<span id="cb41-24"><a href="annexes.html#cb41-24" tabindex="-1"></a></span>
+<span id="cb41-25"><a href="annexes.html#cb41-25" tabindex="-1"></a><span class="co">#entête pour les résultats Betai:</span></span>
+<span id="cb41-26"><a href="annexes.html#cb41-26" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">&#39;1i chr pos All1 All2 COVARIABLE MRK M_Pearson SD_Pearson M_Spearman SD_Spearman BF(dB) Beta_is SD_Beta_is eBPis&#39;</span> project_Betai.Cov<span class="va">$k</span> </span>
+<span id="cb41-27"><a href="annexes.html#cb41-27" tabindex="-1"></a></span>
+<span id="cb41-28"><a href="annexes.html#cb41-28" tabindex="-1"></a><span class="co">#entête pour les résultats de contraste:</span></span>
+<span id="cb41-29"><a href="annexes.html#cb41-29" tabindex="-1"></a><span class="fu">sed</span> <span class="at">-i</span> <span class="st">&#39;1i chr pos All1 All2 CONTRAST MRK M_C2 SD_C2 C2_std C2_log10(1/pval)&#39;</span> project_contrast-C<span class="va">$k</span></span></code></pre></div>
 </div>
 </div>
 <div id="An4" class="section level2 unnumbered hasAnchor">
@@ -339,37 +339,37 @@ Le principe consiste à créer une table dans laquelle on intègre les informati
 <div id="création-et-analyse-dun-jeu-de-données-pseudo-observées-pod" class="section level3 unnumbered hasAnchor">
 <h3>Création et analyse d’un jeu de données pseudo-observées (POD)<a href="annexes.html#création-et-analyse-dun-jeu-de-données-pseudo-observées-pod" class="anchor-section" aria-label="Anchor link to header"></a></h3>
 <p>La fonction geno2YN extrait les données de comptages brutes en « Pseudo-Observed Data » (POD) et la fonction simulate.baypass génère un jeu de données simulées à partir de la matrice Ω déjà calculée (omegaB) ainsi qu’un constante Pi.beta que l’on récupère dans un des fichiers de sorties.</p>
-<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="annexes.html#cb44-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)</span>
-<span id="cb44-2"><a href="annexes.html#cb44-2" tabindex="-1"></a><span class="co">#extrait les données de comptage</span></span>
-<span id="cb44-3"><a href="annexes.html#cb44-3" tabindex="-1"></a>POD.data<span class="ot">=</span><span class="fu">geno2YN</span>(<span class="fu">paste</span>(path_input, <span class="st">&quot;genobaypass&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span>
-<span id="cb44-4"><a href="annexes.html#cb44-4" tabindex="-1"></a><span class="co">#Extrait le beta pi moyen</span></span>
-<span id="cb44-5"><a href="annexes.html#cb44-5" tabindex="-1"></a>pi.betaK<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste0</span>(path_out, <span class="st">&quot;project.sub3_summary_beta_params.out&quot;</span>),<span class="at">h=</span>T)<span class="sc">$</span>Mean</span>
-<span id="cb44-6"><a href="annexes.html#cb44-6" tabindex="-1"></a><span class="co">#créé un jeu de données de 10 000 SNPs</span></span>
-<span id="cb44-7"><a href="annexes.html#cb44-7" tabindex="-1"></a>POD_BayPass<span class="ot">&lt;-</span><span class="fu">simulate.baypass</span>(<span class="at">omega.mat=</span>omegaB,</span>
-<span id="cb44-8"><a href="annexes.html#cb44-8" tabindex="-1"></a>                              <span class="at">nsnp =</span> <span class="dv">10000</span>,</span>
-<span id="cb44-9"><a href="annexes.html#cb44-9" tabindex="-1"></a>                              <span class="at">beta.coef =</span> <span class="cn">NA</span>,</span>
-<span id="cb44-10"><a href="annexes.html#cb44-10" tabindex="-1"></a>                              <span class="at">beta.pi =</span> pi.betaK,</span>
-<span id="cb44-11"><a href="annexes.html#cb44-11" tabindex="-1"></a>                              <span class="at">sample.size=</span>POD.data<span class="sc">$</span>NN,</span>
-<span id="cb44-12"><a href="annexes.html#cb44-12" tabindex="-1"></a>                              <span class="at">pi.maf=</span><span class="dv">0</span>, <span class="at">suffix=</span><span class="st">&quot;project.POD&quot;</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="annexes.html#cb42-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)</span>
+<span id="cb42-2"><a href="annexes.html#cb42-2" tabindex="-1"></a><span class="co">#extrait les données de comptage</span></span>
+<span id="cb42-3"><a href="annexes.html#cb42-3" tabindex="-1"></a>POD.data<span class="ot">=</span><span class="fu">geno2YN</span>(<span class="fu">paste</span>(path_input, <span class="st">&quot;genobaypass&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>))</span>
+<span id="cb42-4"><a href="annexes.html#cb42-4" tabindex="-1"></a><span class="co">#Extrait le beta pi moyen</span></span>
+<span id="cb42-5"><a href="annexes.html#cb42-5" tabindex="-1"></a>pi.betaK<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste0</span>(path_out, <span class="st">&quot;project.sub3_summary_beta_params.out&quot;</span>),<span class="at">h=</span>T)<span class="sc">$</span>Mean</span>
+<span id="cb42-6"><a href="annexes.html#cb42-6" tabindex="-1"></a><span class="co">#créé un jeu de données de 10 000 SNPs</span></span>
+<span id="cb42-7"><a href="annexes.html#cb42-7" tabindex="-1"></a>POD_BayPass<span class="ot">&lt;-</span><span class="fu">simulate.baypass</span>(<span class="at">omega.mat=</span>omegaB,</span>
+<span id="cb42-8"><a href="annexes.html#cb42-8" tabindex="-1"></a>                              <span class="at">nsnp =</span> <span class="dv">10000</span>,</span>
+<span id="cb42-9"><a href="annexes.html#cb42-9" tabindex="-1"></a>                              <span class="at">beta.coef =</span> <span class="cn">NA</span>,</span>
+<span id="cb42-10"><a href="annexes.html#cb42-10" tabindex="-1"></a>                              <span class="at">beta.pi =</span> pi.betaK,</span>
+<span id="cb42-11"><a href="annexes.html#cb42-11" tabindex="-1"></a>                              <span class="at">sample.size=</span>POD.data<span class="sc">$</span>NN,</span>
+<span id="cb42-12"><a href="annexes.html#cb42-12" tabindex="-1"></a>                              <span class="at">pi.maf=</span><span class="dv">0</span>, <span class="at">suffix=</span><span class="st">&quot;project.POD&quot;</span> )</span></code></pre></div>
 <p>Les 4 fichiers .POD générés (dans le dossier actif du pipeline) sont à copier sur le cluster de calcul. Le fichier G.project.POD sera analysé de la même manière que le jeu de données initial (contraste, ecotype…) sans qu’il soit nécéssaire de le subdiviser.</p>
 <p>###Analyse des résultats POD:
 Les fichiers résultats _*mat_omega_, _*summary_pi_xtx.out_, sont copiés tel quel en local, le fichier _*summary_contrast.out_, si il contient les résultats de plusieurs combinaison de contrastes, doit être subdivisé par combinaison au préalable et aussi copiées en local.
 La matrice Ω POD est comparée à la matrice Ω initialement calculée (omegaB) afin de valider la similarité des analyses. La fonction quantile calcule le seuil en fonction de la valeur probs qu’on lui donne : probs = 0,99 pour un seuil à 1%, probs=0,999 pour un seuil à 0,1% etc.
 Ces seuils seront utilisé comme seuil de significativité pour le jeu de données réel.</p>
-<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="annexes.html#cb45-1" tabindex="-1"></a>POD.omega<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_POD, <span class="st">&quot;project.POD_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
-<span id="cb45-2"><a href="annexes.html#cb45-2" tabindex="-1"></a><span class="fu">plot</span>(POD.omega,omegaB) ; <span class="fu">abline</span>(<span class="at">a=</span><span class="dv">0</span>,<span class="at">b=</span><span class="dv">1</span>)</span>
-<span id="cb45-3"><a href="annexes.html#cb45-3" tabindex="-1"></a>FMD.POD <span class="ot">&lt;-</span> <span class="fu">fmd.dist</span>(POD.omega,omegaB)</span>
-<span id="cb45-4"><a href="annexes.html#cb45-4" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Distance FMD =&quot;</span>, FMD.POD, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb45-5"><a href="annexes.html#cb45-5" tabindex="-1"></a></span>
-<span id="cb45-6"><a href="annexes.html#cb45-6" tabindex="-1"></a><span class="co">#Extrait la colonne des XtX et calcule un seuil correspondant au quantile que l&#39;on souhaite</span></span>
-<span id="cb45-7"><a href="annexes.html#cb45-7" tabindex="-1"></a>POD.XtX<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste</span>(path_POD, <span class="st">&quot;project.POD_summary_pi_xtx.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">h=</span>T)<span class="sc">$</span>M_XtX</span>
-<span id="cb45-8"><a href="annexes.html#cb45-8" tabindex="-1"></a>thresh.XtX<span class="ot">=</span><span class="fu">quantile</span>(POD.XtX,<span class="at">probs=</span><span class="fl">0.99</span>)</span>
-<span id="cb45-9"><a href="annexes.html#cb45-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seuil XtX =&quot;</span>, thresh.XtX, <span class="st">&quot;(Max=&quot;</span>, <span class="fu">max</span>(POD.XtX) ,<span class="st">&quot;)&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb45-10"><a href="annexes.html#cb45-10" tabindex="-1"></a></span>
-<span id="cb45-11"><a href="annexes.html#cb45-11" tabindex="-1"></a><span class="co">#Extrait la colonne des C2 et calcule un seuil correspondant au quantile que l&#39;on souhaite</span></span>
-<span id="cb45-12"><a href="annexes.html#cb45-12" tabindex="-1"></a>POD.C2<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste</span>(path_POD, <span class="st">&quot;project.POD_summary_contrast.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">h=</span>T)<span class="sc">$</span>M_C2</span>
-<span id="cb45-13"><a href="annexes.html#cb45-13" tabindex="-1"></a>thresh.C2<span class="ot">=</span><span class="fu">quantile</span>(POD.C2, <span class="at">probs=</span><span class="fl">0.99</span>)</span>
-<span id="cb45-14"><a href="annexes.html#cb45-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seuil de contraste C2 = &quot;</span>, thresh.C2, <span class="st">&quot;(Max=&quot;</span>, <span class="fu">max</span>(POD.C2) ,<span class="st">&quot;)&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="annexes.html#cb43-1" tabindex="-1"></a>POD.omega<span class="ot">=</span><span class="fu">as.matrix</span>(<span class="fu">read.table</span>(<span class="fu">paste</span>(path_POD, <span class="st">&quot;project.POD_mat_omega.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)))</span>
+<span id="cb43-2"><a href="annexes.html#cb43-2" tabindex="-1"></a><span class="fu">plot</span>(POD.omega,omegaB) ; <span class="fu">abline</span>(<span class="at">a=</span><span class="dv">0</span>,<span class="at">b=</span><span class="dv">1</span>)</span>
+<span id="cb43-3"><a href="annexes.html#cb43-3" tabindex="-1"></a>FMD.POD <span class="ot">&lt;-</span> <span class="fu">fmd.dist</span>(POD.omega,omegaB)</span>
+<span id="cb43-4"><a href="annexes.html#cb43-4" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Distance FMD =&quot;</span>, FMD.POD, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb43-5"><a href="annexes.html#cb43-5" tabindex="-1"></a></span>
+<span id="cb43-6"><a href="annexes.html#cb43-6" tabindex="-1"></a><span class="co">#Extrait la colonne des XtX et calcule un seuil correspondant au quantile que l&#39;on souhaite</span></span>
+<span id="cb43-7"><a href="annexes.html#cb43-7" tabindex="-1"></a>POD.XtX<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste</span>(path_POD, <span class="st">&quot;project.POD_summary_pi_xtx.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">h=</span>T)<span class="sc">$</span>M_XtX</span>
+<span id="cb43-8"><a href="annexes.html#cb43-8" tabindex="-1"></a>thresh.XtX<span class="ot">=</span><span class="fu">quantile</span>(POD.XtX,<span class="at">probs=</span><span class="fl">0.99</span>)</span>
+<span id="cb43-9"><a href="annexes.html#cb43-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seuil XtX =&quot;</span>, thresh.XtX, <span class="st">&quot;(Max=&quot;</span>, <span class="fu">max</span>(POD.XtX) ,<span class="st">&quot;)&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb43-10"><a href="annexes.html#cb43-10" tabindex="-1"></a></span>
+<span id="cb43-11"><a href="annexes.html#cb43-11" tabindex="-1"></a><span class="co">#Extrait la colonne des C2 et calcule un seuil correspondant au quantile que l&#39;on souhaite</span></span>
+<span id="cb43-12"><a href="annexes.html#cb43-12" tabindex="-1"></a>POD.C2<span class="ot">=</span><span class="fu">read.table</span>(<span class="fu">paste</span>(path_POD, <span class="st">&quot;project.POD_summary_contrast.out&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>),<span class="at">h=</span>T)<span class="sc">$</span>M_C2</span>
+<span id="cb43-13"><a href="annexes.html#cb43-13" tabindex="-1"></a>thresh.C2<span class="ot">=</span><span class="fu">quantile</span>(POD.C2, <span class="at">probs=</span><span class="fl">0.99</span>)</span>
+<span id="cb43-14"><a href="annexes.html#cb43-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Seuil de contraste C2 = &quot;</span>, thresh.C2, <span class="st">&quot;(Max=&quot;</span>, <span class="fu">max</span>(POD.C2) ,<span class="st">&quot;)&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
 
 </div>
 </div>
