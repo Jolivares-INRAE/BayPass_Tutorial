@@ -102,7 +102,6 @@ library(RColorBrewer)   #gestion couleur des heatmaps
 library(mixOmics)       #"cim" pour heatmap
 library(corrplot)       #matrice de corrélation pour heat map
 library(VennDiagram)    #création de diagramme de Venn
-library(nVennR)         #extraction de données d'un diagramme de Venn
 library(tidyverse)      #manipulation de données (dplyr) et plots (ggplot2)
 
 #définition des chemins de travail
@@ -119,7 +118,6 @@ library(RColorBrewer)   #gestion couleur des heatmaps
 library(mixOmics)       #"cim" pour heatmap
 library(corrplot)       #matrice de corrélation pour heat map
 library(VennDiagram)    #création de diagramme de Venn
-#library(nVennR)         #extraction de données d'un diagramme de Venn
 library(tidyverse)      #manipulation de données (dplyr) et plots (ggplot2)
 source("C:/BayPass/utils/baypass_utils.R")
 source("C:/BayPass/utils/Fenetres_glissantes.R")

@@ -43,3 +43,84 @@ Manplot.SC2 = ggplot(data=slide_C2, aes(x=Start, y=nValues)) +
 Manplot.SC2 + ggtitle("Plot du nombre de contraste C2 dans le top 1% par fenêtres de 50Kb")+
   facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
 ```
+
+
+Dans l'exemple précédent les fenêtres glissantes permettent de mettre en évidence 
+
+#Comparaison par diagramme de Venn:
+```{r Listes, class.source='bg-chunk', class.output='bg-output'}
+#Filtrage selon conditions
+Datmp1 = subset(Full.res, M_XtX > quantile(Full.res$M_XtX, probs=0.99 ))
+Datmp2 = subset(Full.res, BF.dB.>= 15)
+Datmp3 = subset(Full.res, log10.1.pval. >quantile(Full.res$log10.1.pval., probs=0.99))
+
+#Conversion en liste au format "chr1_pos1, chr1_pos2, chr1_pos3, ...", 
+List.SNP1<-paste(Datmp1[,1], "_", Datmp1[,2], sep="")
+List.SNP2<-paste(Datmp2[,1], "_", Datmp2[,2], sep="")
+List.SNP3<-paste(Datmp3[,1], "_", Datmp3[,2], sep="")
+```
+
+
+```{r venn, class.source='bg-chunk', class.output='bg-output'}
+#Diagramme de Venn
+v.list=list("BF >=15" = List.SNP2, "XtX (top1%)" = List.SNP1, "log10.1.pval. (top 1%)" = List.SNP3)
+vd0 <- venn.diagram(v.list, fill = c("lightgreen", "pink","lightblue"), cat.col = c("darkgreen", "red", "blue"), fontface = "bold", filename = NULL)
+grid.newpage()
+grid.draw(vd0)
+
+v.table<-get.venn.partitions(v.list, keep.elements = TRUE, hierarchical = TRUE)%>% #extrait les tables des intersects
+  select("..set..", "..values..") %>% #ne garde que les colonnes set (nom de l'intersect) et values (liste des éléments de l'intersect)
+  spread(key = "..set..", value = "..values..")%>% #réorganiser les données en 2 colonnes distinctes 
+  rename_all(~ gsub("∩", " & ", gsub("∖.*$", "", .)))%>%  #remplace le symbole "∩", par " & " et supprime tout ce qui est après "∖"
+  pivot_longer(cols = everything(), names_to = "intersect") %>%  #transpose/pivote les colonnes
+  unnest(cols = value)%>%
+  separate(value, into = c("chr", "pos"), sep = "_", extra = "merge")%>%
+  mutate_at(c(3), as.numeric)
+
+
+cat("Les noms et les effectifs des intersects du diagramme de Venn sont :",
+    "\n", paste0(names(table(v.table$intersect)),
+                 " n=", table(v.table$intersect)), sep = "\n")
+
+
+# # créé une table avec  une colonne par intersect et les items en dessous
+# test<-get.venn.partitions(v.list, keep.elements = TRUE, hierarchical = TRUE)%>% #extrait les tables des intersects
+#   select("..set..", "..values..") %>% #ne garde que les colonnes set (nom de l'intersect) et values (liste des éléments de l'intersect)
+#   spread(key = "..set..", value = "..values..")%>% #réorganiser les données en 2 colonnes distinctes
+#   rename_all(~ gsub("∩", " & ", .))%>%  #remplace le symbole "∩", par " & " dans les noms d'intersects
+#   rename_all(~ gsub("∖.*$", "", .))%>%
+#   pivot_longer(cols = everything(), names_to = "intersect") %>%  #transpose/pivote les colonnes
+#   unnest(cols = value)%>% #déploie les éléments de la colonne values
+#   group_by(intersect) %>%  #groupe les données par la colonne "name"
+#   mutate(row_id = row_number()) %>% #ajoute une nouvelle colonne "row_id" qui contient le numéro de ligne de chaque groupe.
+#   pivot_wider(names_from = intersect, values_from = value) %>% #remet les données avec les valeurs de chaque groupe "name" dans des colonnes séparées
+#   select(-row_id)
+
+#write.table(test, row.names = FALSE, file=paste(path_res, "venn.txt", sep=""), quote = FALSE, sep = "\t")
+```
+#Convertir les liste de SNP dans un intersecte en fichier bed
+```{r plot-Venn, eval=FALSE, class.source='bg-chunk', class.output='bg-output'}
+#subset en fonction de l'intersecte que l'on veut
+sub.venn<-v.table%>%
+  filter(intersect == "BF >=15 & XtX (top1%) & log10.1.pval. (top 1%)")%>%
+  left_join(Full.res, by = c("chr", "pos")) %>%
+  select(chr,pos,M_XtX,BF.dB.)
+
+#plot de la concentration du top 1% des C2
+Manplot.venn = ggplot(data=sub.venn, aes(x=pos, y=BF.dB.)) +
+  geom_point(aes(color=chr), alpha=0.8, size=1.5) +
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
+Manplot.venn + ggtitle("Plot du nombre de contraste C2 dans le top 1% par fenêtres de 50Kb")+
+  facet_wrap(~chr, scales = 'free_x', strip.position = c("bottom"))
+
+#Conversion de la table en fichier .bed
+sub.bed<-v.table%>%
+  filter(intersect == "BF >=15 & XtX (top1%) & log10.1.pval. (top 1%)")%>%
+  mutate(Start = pos - 1) %>%
+  select(chr, Start, pos)%>%
+  rename(End = pos)
+#write.table(sub.bed, file=paste0(path_res, "Intersect_SNP.bed", sep=""), quote = FALSE, sep = "\t", row.names = FALSE)
+```
+
+
+
