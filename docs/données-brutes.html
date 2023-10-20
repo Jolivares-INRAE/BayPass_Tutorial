@@ -8,7 +8,7 @@
   <meta name="description" content="<p>This is a minimal example of using the bookdown package to write a book.
 The HTML output format for this example is bookdown::gitbook,
 set in the _output.yml file.</p>" />
-  <meta name="generator" content="bookdown 0.34 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.35 and GitBook 2.6.7" />
 
   <meta property="og:title" content="Données brutes | BayPass 2.3: tutoriel de génomique d’association adapté au séquençage en pool" />
   <meta property="og:type" content="book" />
@@ -29,7 +29,7 @@ set in the _output.yml file.</p>" />
 <meta name="author" content="Jérôme OLIVARES" />
 
 
-<meta name="date" content="2023-10-14" />
+<meta name="date" content="2023-10-19" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -303,15 +303,14 @@ Dans un premier temps il faut charger les packages nécessaires et définir les 
 <span id="cb3-3"><a href="données-brutes.html#cb3-3" tabindex="-1"></a><span class="fu">library</span>(mixOmics)       <span class="co">#&quot;cim&quot; pour heatmap</span></span>
 <span id="cb3-4"><a href="données-brutes.html#cb3-4" tabindex="-1"></a><span class="fu">library</span>(corrplot)       <span class="co">#matrice de corrélation pour heat map</span></span>
 <span id="cb3-5"><a href="données-brutes.html#cb3-5" tabindex="-1"></a><span class="fu">library</span>(VennDiagram)    <span class="co">#création de diagramme de Venn</span></span>
-<span id="cb3-6"><a href="données-brutes.html#cb3-6" tabindex="-1"></a><span class="fu">library</span>(nVennR)         <span class="co">#extraction de données d&#39;un diagramme de Venn</span></span>
-<span id="cb3-7"><a href="données-brutes.html#cb3-7" tabindex="-1"></a><span class="fu">library</span>(tidyverse)      <span class="co">#manipulation de données (dplyr) et plots (ggplot2)</span></span>
-<span id="cb3-8"><a href="données-brutes.html#cb3-8" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="données-brutes.html#cb3-9" tabindex="-1"></a><span class="co">#définition des chemins de travail</span></span>
-<span id="cb3-10"><a href="données-brutes.html#cb3-10" tabindex="-1"></a>path_vcf <span class="ot">&lt;-</span> <span class="st">&quot;/../vcf/&quot;</span></span>
-<span id="cb3-11"><a href="données-brutes.html#cb3-11" tabindex="-1"></a>path_input <span class="ot">&lt;-</span> <span class="st">&quot;/../Input/&quot;</span></span>
-<span id="cb3-12"><a href="données-brutes.html#cb3-12" tabindex="-1"></a>path_out <span class="ot">&lt;-</span> <span class="st">&quot;/../Output/&quot;</span></span>
-<span id="cb3-13"><a href="données-brutes.html#cb3-13" tabindex="-1"></a>path_res <span class="ot">&lt;-</span> <span class="st">&quot;/../Resultats/&quot;</span></span>
-<span id="cb3-14"><a href="données-brutes.html#cb3-14" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)   <span class="co">#fonctions utilitaires de BayPass</span></span></code></pre></div>
+<span id="cb3-6"><a href="données-brutes.html#cb3-6" tabindex="-1"></a><span class="fu">library</span>(tidyverse)      <span class="co">#manipulation de données (dplyr) et plots (ggplot2)</span></span>
+<span id="cb3-7"><a href="données-brutes.html#cb3-7" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="données-brutes.html#cb3-8" tabindex="-1"></a><span class="co">#définition des chemins de travail</span></span>
+<span id="cb3-9"><a href="données-brutes.html#cb3-9" tabindex="-1"></a>path_vcf <span class="ot">&lt;-</span> <span class="st">&quot;/../vcf/&quot;</span></span>
+<span id="cb3-10"><a href="données-brutes.html#cb3-10" tabindex="-1"></a>path_input <span class="ot">&lt;-</span> <span class="st">&quot;/../Input/&quot;</span></span>
+<span id="cb3-11"><a href="données-brutes.html#cb3-11" tabindex="-1"></a>path_out <span class="ot">&lt;-</span> <span class="st">&quot;/../Output/&quot;</span></span>
+<span id="cb3-12"><a href="données-brutes.html#cb3-12" tabindex="-1"></a>path_res <span class="ot">&lt;-</span> <span class="st">&quot;/../Resultats/&quot;</span></span>
+<span id="cb3-13"><a href="données-brutes.html#cb3-13" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;/../baypass_utils.R&quot;</span>)   <span class="co">#fonctions utilitaires de BayPass</span></span></code></pre></div>
 <p>Le filtrage du <strong><em>vcf</em></strong> et la sélection des SNPs à analyser ce fait à l’aide du package PoolFstat (Chunk <a href="données-brutes.html#exr:chunk2">2</a>). Dans un premier temps il faut renseigner les noms des populations dans un objet <strong><em>pnames</em></strong> et les tailles haploïdes de chaque population dans un objet <strong><em>psizes</em></strong>. Pour les organismes diploïdes, le nombre total de copies des autosomes sera deux fois le nombre d’individus dans le pool, pour les gonosomes Y ou W la ploïdie sera égale au nombre d’individus XY/ZW et pour les gonosomes X ou Z le calcul sera (nombre de XX/ZZ * 2) + (nombre de XY/ZW * 1).
 La fonction <strong><em>vcf2poodata</em></strong> va balayer le fichier <strong><em>vcf</em></strong>, sélectionner les SNP bi-alléliques selon des critères définis par l’utilisateur et créer un objet <strong><em>pooldata</em></strong>.</p>
 <div class="exercise">
@@ -343,8 +342,8 @@ min.maf = fréquence allélique minimale autorisée pour l’allèle minoritaire
 ## for the alternate allele and RD field for the reference allele
 ## (N.B., positions with more than one alternate allele will be ignored)
 ## Parsing allele counts
-## 1e+06  lines processed in 0 h  0 m  15 s : 577119 SNPs found
-## 1810324  lines processed in 0 h  0 m  27 s : 1066980 SNPs found
+## 1e+06  lines processed in 0 h  0 m  14 s : 577119 SNPs found
+## 1810324  lines processed in 0 h  0 m  26 s : 1066980 SNPs found
 ## Data consists of 1066980 SNPs for 6 Pools</code></pre>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r bg-chunk"><code class="sourceCode r"><span id="cb6-1"><a href="données-brutes.html#cb6-1" tabindex="-1"></a><span class="co">#élimine le 1% supérieur considéré comme trop fortement couvert</span></span>
 <span id="cb6-2"><a href="données-brutes.html#cb6-2" tabindex="-1"></a><span class="co">#(région très dupliquée, biais de séquençage...)</span></span>
